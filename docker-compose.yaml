@@ -1,0 +1,16 @@
+services:
+  mintlify:
+    build: .
+    ports:
+      - "3002:3002" # Access via http://localhost:3002
+    volumes:
+      - .:/docs
+      # This line tells Docker to use its own node_modules 
+      # and ignore the ones on your Windows machine
+      - /docs/node_modules
+    environment:
+      - NODE_ENV=development      # Set the environment to development
+      - CHOKIDAR_USEPOLLING=true  # This ensures live-reload works on D:
+      - WATCHPACK_POLLING=true    # Extra insurance for Node-based tools
+      
+    command: ["mintlify", "dev", "--port", "3002", "--host", "0.0.0.0"]
