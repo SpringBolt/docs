@@ -50,9 +50,12 @@
         "tab": "Design Patterns",
         "groups": [
           {
-            "group": "Introduction",
+            "group": "Design Patterns",
             "pages": [
-              "docs/design-patterns/design-patterns"
+              "docs/design-patterns/design-patterns/",
+              "docs/design-patterns/creational/creational",
+              "docs/design-patterns/structural/structural",
+              "docs/design-patterns/behavioral/behavioral"
             ]
           },
           {
