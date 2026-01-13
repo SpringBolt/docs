@@ -1,0 +1,353 @@
+---
+title: "Types of Singleton Implementation"
+---
+
+### Singleton Pattern Overview
+
+<Card
+    title="Singleton Pattern"
+    icon="chain"
+    href="./singleton-pattern/"
+    arrow="true"
+>
+    The Singleton Pattern ensures a class has only one instance and provides a global point of access to it.
+</Card>
+
+There are several ways to implement the Singleton pattern in **Java**, each with its own advantages and trade-offs:
+
+### Eager Initialization
+
+<Accordion title="Eager Initialization">
+    In this approach, the Singleton instance is created at the time of class loading. This is the simplest method but may lead to resource wastage if the instance is never used.
+
+    ```java EagerSingleton.java icon="java"
+    public class EagerSingleton {
+
+        // Instance is created immediately when the class is loaded into memory.
+        // JVM guarantees this is thread-safe.
+        private static final EagerSingleton INSTANCE = new EagerSingleton();
+
+        private EagerSingleton() {
+            System.out.println("EagerSingleton initialized (at class loading).");
+        }
+
+        public static EagerSingleton getInstance() {
+            return INSTANCE;
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from EagerSingleton!");
+        }
+    }
+    ```
+</Accordion>
+
+### Lazy Initialization
+
+<Accordion title="Lazy Initialization">
+    This approach creates the Singleton instance only when it is requested for the first time. However, it is not thread-safe and can lead to multiple instances in a multi-threaded environment.
+
+    ```java LazySingleton.java icon="java"
+    public class LazySingleton {
+
+        // 1. Private static variable, initially null.
+        private static LazySingleton instance;
+
+        // 2. Private constructor to prevent instantiation from other classes.
+        private LazySingleton() {
+            System.out.println("LazySingleton initialized.");
+        }
+
+        // 3. Public static method to return the instance.
+        // NOT THREAD SAFE: If two threads call this simultaneously when instance is null,
+        // two instances might be created.
+        public static LazySingleton getInstance() {
+            if (instance == null) {
+                instance = new LazySingleton();
+            }
+            return instance;
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from LazySingleton!");
+        }
+    }
+    ```
+</Accordion>
+
+### Double-Checked Locking
+
+<Accordion title="Double-Checked Locking">
+    This approach reduces the overhead of acquiring a lock by first checking if the instance is already created before synchronizing. It is more efficient than synchronizing the entire `getInstance()` method.
+
+    ```java DoubleCheckedLockingSingleton.java icon="java"
+    public class DoubleCheckedLockingSingleton {
+
+        // 'volatile' is critical here. It prevents instruction reordering by the compiler.
+        // Without volatile, a thread might see a non-null 'instance' reference
+        // before the constructor has finished initializing the object.
+        private static volatile DoubleCheckedLockingSingleton instance;
+
+        private DoubleCheckedLockingSingleton() {
+            System.out.println("DoubleCheckedLockingSingleton initialized.");
+        }
+
+        public static DoubleCheckedLockingSingleton getInstance() {
+            // First check (no locking) - Improves performance for existing instances
+            if (instance == null) {
+                // Synchronize only if the instance might need creation
+                synchronized (DoubleCheckedLockingSingleton.class) {
+                    // Second check (inside lock) - Ensures only one thread creates the instance
+                    if (instance == null) {
+                        instance = new DoubleCheckedLockingSingleton();
+                    }
+                }
+            }
+            return instance;
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from DoubleCheckedLockingSingleton!");
+        }
+    }
+    ```
+</Accordion>
+
+### Bill Pugh Singleton
+
+<Accordion title="Bill Pugh Solution">
+    This approach uses a static inner class to hold the Singleton instance. It is thread-safe and does not require synchronization.
+
+    ```java BillPughSingleton.java icon="java"
+    public class BillPughSingleton {
+
+        private BillPughSingleton() {
+            System.out.println("BillPughSingleton initialized.");
+        }
+
+        // Static inner class. This class is NOT loaded until it is referenced in getInstance().
+        // This allows for Lazy Loading behavior without explicit synchronization.
+        private static class SingletonHelper {
+            private static final BillPughSingleton INSTANCE = new BillPughSingleton();
+        }
+
+        public static BillPughSingleton getInstance() {
+            return SingletonHelper.INSTANCE;
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from BillPughSingleton!");
+        }
+    }
+    ```
+</Accordion>
+
+### Enum Singleton
+
+<Accordion title="Enum Singleton">
+    This is the most straightforward and effective way to implement a Singleton in **Java**. Enums provide implicit support for thread safety and serialization.
+
+    ```java EnumSingleton.java icon="java"
+    public enum EnumSingleton {
+        // The Enum constant acts as the singleton instance.
+        INSTANCE;
+
+        // You can add constructors, fields, and methods just like a normal class
+        private EnumSingleton() {
+            System.out.println("EnumSingleton initialized.");
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from EnumSingleton!");
+        }
+
+        public void doSomething() {
+            System.out.println("Enum instance doing work...");
+        }
+    }
+    ```
+</Accordion>
+
+### Synchronized Method Singleton
+
+<Accordion title="Synchronized Method">
+    This approach uses a synchronized method to ensure that only one thread can access the `getInstance()` method at a time. It is simple but can lead to performance issues due to synchronization overhead.
+
+    ```java SynchronizedMethodSingleton.java icon="java"
+    public class SynchronizedSingleton {
+
+        private static SynchronizedSingleton instance;
+
+        private SynchronizedSingleton() {
+            System.out.println("SynchronizedSingleton initialized.");
+        }
+
+        // Adding 'synchronized' ensures only one thread can execute this method at a time.
+        // PRO: Thread-safe.
+        // CON: Reduces performance because every call to getInstance() is synchronized,
+        // even after the instance is already created.
+        public static synchronized SynchronizedSingleton getInstance() {
+            if (instance == null) {
+                instance = new SynchronizedSingleton();
+            }
+            return instance;
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from SynchronizedSingleton!");
+        }
+    }
+    ```
+</Accordion>
+
+### Static Block Initialization
+
+<Accordion title="Static Block Initialization">
+    This approach is similar to eager initialization but allows for exception handling during instance creation.
+
+    ```java StaticBlockSingleton.java icon="java"
+    public class StaticBlockSingleton {
+
+        private static StaticBlockSingleton instance;
+
+        static {
+            try {
+                instance = new StaticBlockSingleton();
+            } catch (Exception e) {
+                throw new RuntimeException("Exception occurred while creating singleton instance.");
+            }
+        }
+
+        private StaticBlockSingleton() {
+            System.out.println("StaticBlockSingleton initialized.");
+        }
+
+        public static StaticBlockSingleton getInstance() {
+            return instance;
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from StaticBlockSingleton!");
+        }
+    }
+    ```
+</Accordion>
+
+### Thread Local Singleton
+
+<Accordion title="Thread Local Singleton">
+    This approach creates a separate instance of the Singleton for each thread. It is useful when you want to maintain thread-specific data.
+
+    ```java ThreadLocalSingleton.java icon="java"
+    public class ThreadLocalSingleton {
+
+        private static final ThreadLocal<ThreadLocalSingleton> threadLocalInstance =
+            ThreadLocal.withInitial(() -> new ThreadLocalSingleton());
+
+        private ThreadLocalSingleton() {
+            System.out.println("ThreadLocalSingleton initialized for thread: " + Thread.currentThread().getName());
+        }
+
+        public static ThreadLocalSingleton getInstance() {
+            return threadLocalInstance.get();
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from ThreadLocalSingleton in thread: " + Thread.currentThread().getName());
+        }
+    }
+    ```
+</Accordion>
+
+### Serialization Safe Singleton
+
+<Accordion title="Serialization Safe Singleton">
+    This approach ensures that the Singleton property is maintained during serialization and deserialization.
+
+    ```java SerializationSafeSingleton.java icon="java"
+    import java.io.ObjectStreamException;
+    import java.io.Serializable;
+
+    public class SerializationSafeSingleton implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private static final SerializationSafeSingleton INSTANCE = new SerializationSafeSingleton();
+
+        private SerializationSafeSingleton() {
+            System.out.println("SerializationSafeSingleton initialized.");
+        }
+
+        public static SerializationSafeSingleton getInstance() {
+            return INSTANCE;
+        }
+
+        // Ensure that during deserialization, the same instance is returned
+        protected Object readResolve() throws ObjectStreamException {
+            return INSTANCE;
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from SerializationSafeSingleton!");
+        }
+    }
+    ```
+</Accordion>
+
+### Monostate Singleton
+
+<Accordion title="Monostate Singleton">
+    This approach uses static variables to share state across multiple instances of the class. While multiple instances can be created, they all share the same state.
+
+    ```java MonostateSingleton.java icon="java"
+    public class MonostateSingleton {
+
+        private static String sharedState;
+
+        public MonostateSingleton() {
+            System.out.println("MonostateSingleton instance created.");
+        }
+
+        public void setState(String state) {
+            sharedState = state;
+        }
+
+        public String getState() {
+            return sharedState;
+        }
+    }
+    ```
+</Accordion>
+
+### Registry-Based Singleton
+
+<Accordion title="Registry-Based Singleton">
+    This approach uses a registry to manage multiple singleton instances identified by unique keys. It is useful when you need to manage different singletons in a centralized manner.
+
+    ```java RegistryBasedSingleton.java icon="java"
+    import java.util.HashMap;
+    import java.util.Map;
+
+    public class RegistryBasedSingleton {
+
+        private static final Map<String, RegistryBasedSingleton> registry = new HashMap<>();
+
+        private RegistryBasedSingleton() {
+            System.out.println("RegistryBasedSingleton instance created.");
+        }
+
+        public static RegistryBasedSingleton getInstance(String key) {
+            synchronized (registry) {
+                if (!registry.containsKey(key)) {
+                    registry.put(key, new RegistryBasedSingleton());
+                }
+                return registry.get(key);
+            }
+        }
+
+        public void showMessage() {
+            System.out.println("Hello from RegistryBasedSingleton!");
+        }
+    }
+    ```
+</Accordion>
