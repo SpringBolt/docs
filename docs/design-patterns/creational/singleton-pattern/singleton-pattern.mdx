@@ -21,6 +21,7 @@ To implement a Singleton in **Java**, you must ensure that no other class can in
 Below is an example of a `DatabaseConnector` class implemented as a Singleton using _lazy initialization_, meaning the instance is created only when it is first requested.
 
 ```java DatabaseConnector.java icon="java"
+// Singleton Class
 public class DatabaseConnector {
 
     // 1. Private static variable of the same class that is the only instance of the class.
@@ -52,6 +53,7 @@ public class DatabaseConnector {
 In the following **Java** `Main` class, we attempt to get the instance of the `DatabaseConnector` twice. Because it is a Singleton, both variables will point to the exact same object in memory.
 
 ```java Main.java icon="java"
+// Main class to demonstrate Singleton Pattern
 public class Main {
     public static void main(String[] args) {
         // First request for the instance
@@ -80,7 +82,7 @@ public class Main {
 
 **Output:**
 
-```text icon="text"
+```text icon=terminal
 Requesting first connection instance...
 Initializing Database Connection...
 Executing query: SELECT * FROM users
@@ -100,6 +102,7 @@ While the basic approach works, it can have issues in multi-threaded environment
 We define the class and ensure no other class can instantiate it using `new`.
 
 ```java Singleton.java icon="java"
+// Singleton Class
 public class Singleton {
     // Private constructor to prevent instantiation from other classes
     private Singleton() {
@@ -141,6 +144,7 @@ This provides the global access point. When called, it triggers the loading of `
 The following **Java** `Main` class demonstrates how to access the Singleton instance. We will verify that multiple calls to `getInstance()` return the exact same object.
 
 ```java Main.java icon="java"
+// Main class to demonstrate Bill Pugh Singleton Pattern
 public class Main {
     public static void main(String[] args) {
         System.out.println("--- Testing Singleton Access ---");
@@ -166,14 +170,15 @@ public class Main {
 
 **Output:**
 
-```text icon="text"
+```text icon=terminal
 --- Testing Singleton Access ---
 Singleton instance initialized via Bill Pugh approach.
 Hello from the Singleton instance!
 Success: Both references point to the same object (Identity Verified).
 ```
 
-### All Types of Singleton Implementation
+### Types of Singleton Implementation
+
 There are several ways to implement the Singleton pattern in Java, each with its own advantages and trade-offs. Common implementations include:
 
 <Card
