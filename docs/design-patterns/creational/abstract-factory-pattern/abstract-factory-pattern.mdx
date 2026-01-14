@@ -75,7 +75,7 @@ class MacOSCheckbox implements Checkbox {
 
 The Abstract Factory interface declares methods for creating each type of product.
 
-```java
+```java GUIFactory.java icon=java
 // Abstract Factory Interface
 public interface GUIFactory {
     Button createButton();
@@ -195,5 +195,7 @@ Rendering a MacOS style checkbox.
 1. **Consistency Enforcement:** It ensures that products created by a factory are compatible with each other, preventing runtime errors caused by mismatched object types.
 2. **Single Responsibility Principle:** It extracts the product creation code into one place, making the code easier to support and extend.
 3. **Open/Closed Principle:** You can introduce new variants of products (e.g., a "Linux" family) without breaking existing client code.
+
+### Conclusion
 
 **Abstract Factory Pattern** is a fundamental concept for building complex **Java** systems that need to support multiple environments or configurations, ensuring that all components within a specific context remain consistent and compatible.
