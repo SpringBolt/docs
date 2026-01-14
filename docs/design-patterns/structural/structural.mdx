@@ -1,10 +1,10 @@
 ---
-title: Structural
+title: Structural Patterns
 description: "These patterns focus on how classes and objects are composed to form larger structures."
 icon: 'puzzle-piece'
 ---
 
-### Structural Design Patterns
+### Overview
 
 Structural design patterns are blueprints for how to assemble objects and classes into larger structures while keeping these structures flexible and efficient. They focus on composition (how objects are connected) and relationships (how they interact).
 
@@ -21,3 +21,27 @@ The primary goal is to ensure that if one part of a system changes, the entire s
 | [Facade](./facade-pattern/facade-pattern) | Simplified entry point | Reduces complexity and dependency. |
 | [Flyweight](./flyweight-pattern/flyweight-pattern) | Object sharing | Reduces memory usage for large numbers of objects. |
 | [Proxy](./proxy-pattern/proxy-pattern) | Access control | Adds security, lazy loading, or logging. |
+
+### Advantages of Structural Patterns
+
+- **Improved Code Organization**: They help in organizing code in a way that is easier to understand and maintain.
+- **Flexibility**: They allow for more flexible code by enabling the composition of objects in various ways.
+- **Reusability**: They promote code reuse by allowing existing classes to be used in new ways without modification.
+- **Decoupling**: They reduce dependencies between classes, making the system more modular and easier to change.
+- **Enhanced Maintainability**: By defining clear structures and relationships, they make it easier to maintain and extend the system over time.
+- **Performance Optimization**: Some patterns, like Flyweight, help optimize resource usage, especially in memory-intensive applications.
+- **Simplified Interfaces**: Patterns like Facade provide simplified interfaces to complex subsystems, making them easier to use.
+
+### When to Use Structural Patterns
+
+- When you need to integrate classes with incompatible interfaces.
+- When you need to create complex structures from simpler objects while keeping them manageable.
+- When you want to provide a simplified interface to a complex subsystem.
+- When you need to add responsibilities to objects dynamically without affecting other objects.
+- When you want to share objects to support a large number of similar objects efficiently.
+- When you need to control access to an object, adding layers of functionality like logging or security.
+- When you want to separate abstraction from implementation to allow independent development.
+
+### Conclusion
+
+Structural design patterns are essential for building robust and maintainable software systems. By understanding and applying these patterns, developers can create systems that are easier to manage, extend, and adapt to changing requirements.
