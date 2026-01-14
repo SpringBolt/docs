@@ -4,6 +4,8 @@ title: "Types of Singleton Implementation"
 
 ### Singleton Pattern Overview
 
+Before diving into the various implementations, let's briefly recap what the Singleton Pattern is.
+
 <Card
     title="Singleton Pattern"
     icon="chain"
@@ -13,12 +15,17 @@ title: "Types of Singleton Implementation"
     The Singleton Pattern ensures a class has only one instance and provides a global point of access to it.
 </Card>
 
+Now that we have a basic understanding of the Singleton Pattern, let's explore the different ways to implement it in **Java**.
+
 There are several ways to implement the Singleton pattern in **Java**, each with its own advantages and trade-offs:
 
 ### Eager Initialization
 
+In this approach, the Singleton instance is created at the time of class loading. This is the simplest method but may lead to resource wastage if the instance is never used.
+ 
 <Accordion title="Eager Initialization">
-    In this approach, the Singleton instance is created at the time of class loading. This is the simplest method but may lead to resource wastage if the instance is never used.
+
+    **Singleton Implementation:**
 
     ```java EagerSingleton.java icon="java"
     public class EagerSingleton {
@@ -27,10 +34,12 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         // JVM guarantees this is thread-safe.
         private static final EagerSingleton INSTANCE = new EagerSingleton();
 
+        // Private constructor to prevent instantiation from other classes.
         private EagerSingleton() {
             System.out.println("EagerSingleton initialized (at class loading).");
         }
 
+        // Public method to provide access to the singleton instance
         public static EagerSingleton getInstance() {
             return INSTANCE;
         }
@@ -40,25 +49,47 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         }
     }
     ```
+    **Using Eager Initialization in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Eager Initialization Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Access the singleton instance
+            EagerSingleton singleton = EagerSingleton.getInstance();
+            singleton.showMessage();
+        }
+    }
+    ```
+
+    **Output:**
+
+    ```text icon=terminal
+    EagerSingleton initialized (at class loading).
+    Hello from EagerSingleton!
+    ```
 </Accordion>
 
 ### Lazy Initialization
 
+This approach creates the Singleton instance only when it is requested for the first time. However, it is not thread-safe and can lead to multiple instances in a multi-threaded environment.
+
 <Accordion title="Lazy Initialization">
-    This approach creates the Singleton instance only when it is requested for the first time. However, it is not thread-safe and can lead to multiple instances in a multi-threaded environment.
+
+    **Singleton Implementation:**
 
     ```java LazySingleton.java icon="java"
     public class LazySingleton {
 
-        // 1. Private static variable, initially null.
+        // Private static variable, initially null.
         private static LazySingleton instance;
 
-        // 2. Private constructor to prevent instantiation from other classes.
+        // Private constructor to prevent instantiation from other classes.
         private LazySingleton() {
             System.out.println("LazySingleton initialized.");
         }
 
-        // 3. Public static method to return the instance.
+        // Public static method to return the instance.
         // NOT THREAD SAFE: If two threads call this simultaneously when instance is null,
         // two instances might be created.
         public static LazySingleton getInstance() {
@@ -73,12 +104,35 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         }
     }
     ```
+
+    **Using Lazy Initialization in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Lazy Initialization Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Access the singleton instance
+            LazySingleton singleton = LazySingleton.getInstance();
+            singleton.showMessage();
+        }
+    }
+    ```
+
+    **Output:**
+
+    ```text icon=terminal
+    LazySingleton initialized.
+    Hello from LazySingleton!
+    ```
 </Accordion>
 
 ### Double-Checked Locking
 
+This approach reduces the overhead of acquiring a lock by first checking if the instance is already created before synchronizing. It is more efficient than synchronizing the entire `getInstance()` method.
+
 <Accordion title="Double-Checked Locking">
-    This approach reduces the overhead of acquiring a lock by first checking if the instance is already created before synchronizing. It is more efficient than synchronizing the entire `getInstance()` method.
+
+    **Singleton Implementation:**
 
     ```java DoubleCheckedLockingSingleton.java icon="java"
     public class DoubleCheckedLockingSingleton {
@@ -88,10 +142,12 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         // before the constructor has finished initializing the object.
         private static volatile DoubleCheckedLockingSingleton instance;
 
+        // Private constructor to prevent instantiation from other classes
         private DoubleCheckedLockingSingleton() {
             System.out.println("DoubleCheckedLockingSingleton initialized.");
         }
 
+        // Public method to provide access to the singleton instance
         public static DoubleCheckedLockingSingleton getInstance() {
             // First check (no locking) - Improves performance for existing instances
             if (instance == null) {
@@ -111,16 +167,40 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         }
     }
     ```
+
+    **Using Double-Checked Locking in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Double-Checked Locking Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Access the singleton instance
+            DoubleCheckedLockingSingleton singleton = DoubleCheckedLockingSingleton.getInstance();
+            singleton.showMessage();
+        }
+    }
+    ```
+
+    **Output:**
+
+    ```text icon=terminal
+    DoubleCheckedLockingSingleton initialized.
+    Hello from DoubleCheckedLockingSingleton!
+    ```
 </Accordion>
 
 ### Bill Pugh Singleton
 
+This approach uses a static inner class to hold the Singleton instance. It is thread-safe and does not require synchronization.
+
 <Accordion title="Bill Pugh Solution">
-    This approach uses a static inner class to hold the Singleton instance. It is thread-safe and does not require synchronization.
+
+    **Singleton Implementation:**
 
     ```java BillPughSingleton.java icon="java"
     public class BillPughSingleton {
 
+        // Private constructor to prevent instantiation from other classes
         private BillPughSingleton() {
             System.out.println("BillPughSingleton initialized.");
         }
@@ -131,6 +211,7 @@ There are several ways to implement the Singleton pattern in **Java**, each with
             private static final BillPughSingleton INSTANCE = new BillPughSingleton();
         }
 
+        // Public method to provide access to the singleton instance
         public static BillPughSingleton getInstance() {
             return SingletonHelper.INSTANCE;
         }
@@ -140,12 +221,35 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         }
     }
     ```
+
+    **Using Bill Pugh Singleton in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Bill Pugh Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Access the singleton instance
+            BillPughSingleton singleton = BillPughSingleton.getInstance();
+            singleton.showMessage();
+        }
+    }
+    ```
+
+    **Output:**
+
+    ```text icon=terminal
+    BillPughSingleton initialized.
+    Hello from BillPughSingleton!
+    ```
 </Accordion>
 
 ### Enum Singleton
 
+This is the most straightforward and effective way to implement a Singleton in **Java**. Enums provide implicit support for thread safety and serialization.
+
 <Accordion title="Enum Singleton">
-    This is the most straightforward and effective way to implement a Singleton in **Java**. Enums provide implicit support for thread safety and serialization.
+
+    **Singleton Implementation:**
 
     ```java EnumSingleton.java icon="java"
     public enum EnumSingleton {
@@ -166,18 +270,45 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         }
     }
     ```
+
+    **Using Enum Singleton in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Enum Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Access the singleton instance
+            EnumSingleton singleton = EnumSingleton.INSTANCE;
+            singleton.showMessage();
+            singleton.doSomething();
+        }
+    }
+    ```
+
+    **Output:**
+
+    ```text icon=terminal
+    EnumSingleton initialized.
+    Hello from EnumSingleton!
+    Enum instance doing work...
+    ```
 </Accordion>
 
 ### Synchronized Method Singleton
 
+This approach uses a synchronized method to ensure that only one thread can access the `getInstance()` method at a time. It is simple but can lead to performance issues due to synchronization overhead.
+
 <Accordion title="Synchronized Method">
-    This approach uses a synchronized method to ensure that only one thread can access the `getInstance()` method at a time. It is simple but can lead to performance issues due to synchronization overhead.
+
+    **Singleton Implementation:**
 
     ```java SynchronizedMethodSingleton.java icon="java"
     public class SynchronizedSingleton {
 
+        // Private static variable to hold the single instance
         private static SynchronizedSingleton instance;
 
+        // Private constructor to prevent instantiation from other classes
         private SynchronizedSingleton() {
             System.out.println("SynchronizedSingleton initialized.");
         }
@@ -198,18 +329,43 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         }
     }
     ```
+
+    **Using Synchronized Method Singleton in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Synchronized Method Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Access the singleton instance
+            SynchronizedSingleton singleton = SynchronizedSingleton.getInstance();
+            singleton.showMessage();
+        }
+    }
+    ```
+
+    **Output:**
+
+    ```text icon=terminal
+    SynchronizedSingleton initialized.
+    Hello from SynchronizedSingleton!
+    ```
 </Accordion>
 
 ### Static Block Initialization
 
+This approach is similar to eager initialization but allows for exception handling during instance creation.
+
 <Accordion title="Static Block Initialization">
-    This approach is similar to eager initialization but allows for exception handling during instance creation.
+
+    **Singleton Implementation:**
 
     ```java StaticBlockSingleton.java icon="java"
     public class StaticBlockSingleton {
 
+        // Static variable to hold the single instance
         private static StaticBlockSingleton instance;
 
+        // Static block for instance creation with exception handling
         static {
             try {
                 instance = new StaticBlockSingleton();
@@ -218,10 +374,12 @@ There are several ways to implement the Singleton pattern in **Java**, each with
             }
         }
 
+        // Private constructor to prevent instantiation from other classes
         private StaticBlockSingleton() {
             System.out.println("StaticBlockSingleton initialized.");
         }
 
+        // Public method to provide access to the singleton instance
         public static StaticBlockSingleton getInstance() {
             return instance;
         }
@@ -231,23 +389,48 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         }
     }
     ```
+
+    **Using Static Block Initialization in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Static Block Initialization Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Access the singleton instance
+            StaticBlockSingleton singleton = StaticBlockSingleton.getInstance();
+            singleton.showMessage();
+        }
+    }
+    ```
+    **Output:**
+
+    ```text icon=terminal
+    StaticBlockSingleton initialized.
+    Hello from StaticBlockSingleton!
+    ```
 </Accordion>
 
 ### Thread Local Singleton
 
+This approach creates a separate instance of the Singleton for each thread. It is useful when you want to maintain thread-specific data.
+
 <Accordion title="Thread Local Singleton">
-    This approach creates a separate instance of the Singleton for each thread. It is useful when you want to maintain thread-specific data.
+
+    **Singleton Implementation:**
 
     ```java ThreadLocalSingleton.java icon="java"
     public class ThreadLocalSingleton {
 
+        // ThreadLocal variable to hold the singleton instance for each thread
         private static final ThreadLocal<ThreadLocalSingleton> threadLocalInstance =
             ThreadLocal.withInitial(() -> new ThreadLocalSingleton());
 
+        // Private constructor to prevent instantiation from other classes
         private ThreadLocalSingleton() {
             System.out.println("ThreadLocalSingleton initialized for thread: " + Thread.currentThread().getName());
         }
 
+        // Public method to provide access to the singleton instance
         public static ThreadLocalSingleton getInstance() {
             return threadLocalInstance.get();
         }
@@ -257,12 +440,45 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         }
     }
     ```
+
+    **Using Thread Local Singleton in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Thread Local Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Create multiple threads to demonstrate ThreadLocalSingleton
+            Runnable task = () -> {
+                ThreadLocalSingleton singleton = ThreadLocalSingleton.getInstance();
+                singleton.showMessage();
+            };
+
+            Thread thread1 = new Thread(task, "Thread-1");
+            Thread thread2 = new Thread(task, "Thread-2");
+
+            thread1.start();
+            thread2.start();
+        }
+    }
+    ```
+
+    **Output:**
+
+    ```text icon=terminal
+    ThreadLocalSingleton initialized for thread: Thread-1
+    Hello from ThreadLocalSingleton in thread: Thread-1
+    ThreadLocalSingleton initialized for thread: Thread-2
+    Hello from ThreadLocalSingleton in thread: Thread-2
+    ```
 </Accordion>
 
 ### Serialization Safe Singleton
 
+This approach ensures that the Singleton property is maintained during serialization and deserialization.
+
 <Accordion title="Serialization Safe Singleton">
-    This approach ensures that the Singleton property is maintained during serialization and deserialization.
+
+    **Singleton Implementation:**
 
     ```java SerializationSafeSingleton.java icon="java"
     import java.io.ObjectStreamException;
@@ -270,14 +486,18 @@ There are several ways to implement the Singleton pattern in **Java**, each with
 
     public class SerializationSafeSingleton implements Serializable {
 
+        // Serialization version UID
         private static final long serialVersionUID = 1L;
 
+        // Private static variable to hold the single instance
         private static final SerializationSafeSingleton INSTANCE = new SerializationSafeSingleton();
 
+        // Private constructor to prevent instantiation from other classes
         private SerializationSafeSingleton() {
             System.out.println("SerializationSafeSingleton initialized.");
         }
 
+        // Public method to provide access to the singleton instance
         public static SerializationSafeSingleton getInstance() {
             return INSTANCE;
         }
@@ -292,37 +512,92 @@ There are several ways to implement the Singleton pattern in **Java**, each with
         }
     }
     ```
+
+    **Using Serialization Safe Singleton in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Serialization Safe Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Access the singleton instance
+            SerializationSafeSingleton singleton = SerializationSafeSingleton.getInstance();
+            singleton.showMessage();
+        }
+    }
+    ```
+
+    **Output:**
+
+    ```text icon=terminal
+    SerializationSafeSingleton initialized.
+    Hello from SerializationSafeSingleton!
+    ```
 </Accordion>
 
 ### Monostate Singleton
 
+This approach uses static variables to share state across multiple instances of the class. While multiple instances can be created, they all share the same state.
+
 <Accordion title="Monostate Singleton">
-    This approach uses static variables to share state across multiple instances of the class. While multiple instances can be created, they all share the same state.
+
+    **Singleton Implementation:**
 
     ```java MonostateSingleton.java icon="java"
     public class MonostateSingleton {
 
+        // Static variables to hold shared state
         private static String sharedState;
 
+        // Public constructor allows multiple instances
         public MonostateSingleton() {
             System.out.println("MonostateSingleton instance created.");
         }
 
+        // Methods to manipulate shared state
         public void setState(String state) {
             sharedState = state;
         }
 
+        // Method to retrieve shared state
         public String getState() {
             return sharedState;
         }
     }
     ```
+
+    **Using Monostate Singleton in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Monostate Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Create first instance and set state
+            MonostateSingleton instance1 = new MonostateSingleton();
+            instance1.setState("Shared State from Instance 1");
+
+            // Create second instance and get state
+            MonostateSingleton instance2 = new MonostateSingleton();
+            System.out.println("State from Instance 2: " + instance2.getState());
+        }
+    }
+    ```
+    **Output:**
+
+    ```text icon=terminal
+    MonostateSingleton instance created.
+    MonostateSingleton instance created.
+    MonostateSingleton instance created.
+    State from Instance 2: Shared State from Instance 1
+    ```
 </Accordion>
 
 ### Registry-Based Singleton
 
+This approach uses a registry to manage multiple singleton instances identified by unique keys. It is useful when you need to manage different singletons in a centralized manner.
+
 <Accordion title="Registry-Based Singleton">
-    This approach uses a registry to manage multiple singleton instances identified by unique keys. It is useful when you need to manage different singletons in a centralized manner.
+
+    **Singleton Implementation:**
 
     ```java RegistryBasedSingleton.java icon="java"
     import java.util.HashMap;
@@ -330,12 +605,15 @@ There are several ways to implement the Singleton pattern in **Java**, each with
 
     public class RegistryBasedSingleton {
 
+        // Registry to hold singleton instances
         private static final Map<String, RegistryBasedSingleton> registry = new HashMap<>();
 
+        // Private constructor to prevent instantiation from other classes
         private RegistryBasedSingleton() {
             System.out.println("RegistryBasedSingleton instance created.");
         }
 
+        // Public method to get singleton instance by key
         public static RegistryBasedSingleton getInstance(String key) {
             synchronized (registry) {
                 if (!registry.containsKey(key)) {
@@ -345,9 +623,44 @@ There are several ways to implement the Singleton pattern in **Java**, each with
             }
         }
 
+        // Sample method to demonstrate functionality
         public void showMessage() {
             System.out.println("Hello from RegistryBasedSingleton!");
         }
     }
     ```
+
+    **Using Registry-Based Singleton in the Main Method:**
+
+    ```java Main.java icon="java"
+    // Main class to demonstrate Registry-Based Singleton Pattern
+    public class Main {
+        public static void main(String[] args) {
+            // Access singleton instances with different keys
+            RegistryBasedSingleton singletonA = RegistryBasedSingleton.getInstance("A");
+            singletonA.showMessage();
+
+            RegistryBasedSingleton singletonB = RegistryBasedSingleton.getInstance("B");
+            singletonB.showMessage();
+
+            // Access the same instance again
+            RegistryBasedSingleton singletonA2 = RegistryBasedSingleton.getInstance("A");
+            if (singletonA == singletonA2) {
+                System.out.println("singletonA and singletonA2 are the same instance.");
+            }
+        }
+    }
+    ```
+
+    **Output:**
+
+    ```text icon=terminal
+    Hello from RegistryBasedSingleton!
+    Hello from RegistryBasedSingleton!
+    singletonA and singletonA2 are the same instance.
+    ```
 </Accordion>
+
+### Summary
+
+The Singleton pattern can be implemented in various ways in **Java**, each with its own pros and cons. The choice of implementation depends on the specific requirements of your application, such as thread safety, performance, and serialization needs.
