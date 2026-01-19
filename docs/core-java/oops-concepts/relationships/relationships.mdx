@@ -2,7 +2,7 @@
 title: Relationships
 ---
 
-**Object-Oriented Programming (OOP)**: _Association, Aggregation, and Composition_.
+**Object-Oriented Programming**: _Association, Aggregation, and Composition_.
 
 While **Inheritance** defines an "IS-A" relationship (e.g., a Teacher _is a_ Person), real-world applications often require objects to work together in different ways. These are known as **Has-A** relationships.
 
@@ -20,12 +20,14 @@ Association is a general binary relationship that describes an activity between 
 * **Direction:** Can be one-way (uni-directional) or two-way (bi-directional).
 * **Example:** A **Teacher** and a **Student**. A teacher can have many students, and a student can have many teachers. If a teacher leaves the school, the student still exists, and vice versa.
 
-```java
+```java Teacher.java icon="java"
 class Teacher {
     private String name;
     // ...
 }
+```
 
+```java Student.java icon="java"
 class Student {
     private String name;
     // Association: Student "knows" about Teachers (but doesn't own them)
@@ -46,14 +48,16 @@ Aggregation is a specialized form of association. It represents a **"Has-A"** re
 
 **Java Example:**
 
-```java
+```java Teacher.java icon="java"
 class Teacher {
     String name;
     public Teacher(String name) {
         this.name = name;
     }
 }
+```
 
+```java Department.java icon="java"
 class Department {
     String name;
     private List<Teacher> teachers; // Aggregation
@@ -63,7 +67,9 @@ class Department {
         this.teachers = teachers;
     }
 }
+```
 
+```java Main.java icon="java"
 public class Main {
     public static void main(String[] args) {
         Teacher t1 = new Teacher("Alice");
@@ -93,14 +99,16 @@ Composition is a restricted form of Aggregation. It represents a **strong "Has-A
 
 **Java Example:**
 
-```java
+```java Engine.java icon="java"
 class Engine {
     String type;
     public Engine(String type) {
         this.type = type;
     }
 }
+```
 
+```java Car.java icon="java"
 class Car {
     private final Engine engine; // Composition
 
@@ -110,7 +118,9 @@ class Car {
         this.engine = new Engine(engineType);
     }
 }
+```
 
+```java Main.java icon="java"
 public class Main {
     public static void main(String[] args) {
         Car myCar = new Car("V8");

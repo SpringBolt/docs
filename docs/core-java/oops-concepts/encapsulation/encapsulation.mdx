@@ -2,7 +2,7 @@
 title: Encapsulation
 ---
 
-**Object-Oriented Programming (OOP)**: _Encapsulation_.
+**Object-Oriented Programming**: _Encapsulation_.
 
 Encapsulation is defined as the wrapping up of data (variables) and code acting on the data (methods) together as a single unit. In encapsulation, the variables of a class will be hidden from other classes, and can be accessed only through the methods of their current class. Therefore, it is also known as **data hiding**.
 
@@ -21,7 +21,7 @@ To implement encapsulation, we define a class where the fields are private, mean
 
 Here is an example of an encapsulated `Account` class:
 
-```java
+```java Account.java icon="java"
 public class Account {
     // Private data members
     private long accountNumber;
@@ -62,7 +62,7 @@ In this example, the `accountNumber`, `name`, and `amount` fields are _private_.
 
 Let's see how we can interact with the `Account` class. Since the fields are _private_, we cannot do `acc.name = "John"`. Instead, we must use the methods provided.
 
-```java
+```java Main.java icon="java"
 public class Main {
     public static void main(String[] args) {
         // Creating an object of Account class
@@ -97,7 +97,7 @@ Encapsulation allows you to make a class Read-Only or Write-Only by omitting the
 
 **Read-Only Class:** If you only provide getter methods, the class becomes read-only. External classes can read the data but cannot modify it.
 
-```java
+```java ReadOnlyStudent.java icon="java"
 public class ReadOnlyStudent {
     private String college = "MIT";
 
@@ -110,7 +110,7 @@ public class ReadOnlyStudent {
 
 **Write-Only Class:** If you only provide setter methods, the class becomes write-only. External classes can modify the data but cannot read it.
 
-```java
+```java WriteOnlyStudent.java icon="java"
 public class WriteOnlyStudent {
     private String college;
 
@@ -138,5 +138,8 @@ Encapsulation is powerful for several reasons:
 2. **Testing:** It is easier to test encapsulated code because it is isolated from other parts of the application.
 
 3. **Maintainability:** You can change the code of the class (e.g., changing the data type of a variable) without affecting the other classes that use it, provided the method signatures remain the same.
+
+
+### Conclusion
 
 **Encapsulation** is essential for creating robust and maintainable applications by ensuring that objects manage their own state and behavior.

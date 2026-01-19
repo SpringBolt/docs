@@ -2,7 +2,7 @@
 title: Inheritance
 ---
 
-**Object-Oriented Programming (OOP)**: _Inheritance_.
+**Object-Oriented Programming**: _Inheritance_.
 
 Inheritance allows us to create a new class based on an existing class. By using inheritance, we can reuse code, add new features, and make our programs easier to manage and understand.
 
@@ -16,7 +16,7 @@ To better understand this concept, we'll use an example involving a `Person` cla
 
 Let’s start by defining a `Person` class, which will act as the `base` class in our example:
 
-```java
+```java Person.java icon="java"
 // Define the base class Person with name and age attributes
 class Person {
     private String name;
@@ -41,7 +41,7 @@ In this snippet, the `Person` class is defined with private attributes name and 
 
 Now, let’s create a `Employee` class that inherits from the `Person` class:
 
-```java
+```java Employee.java icon="java"
 // Define the derived class Employee, inheriting from Person
 class Employee extends Person {
     private String role;
@@ -65,7 +65,7 @@ In the `Employee` class, we use the `extends` keyword to inherit from `Person`. 
 
 Finally, let’s see how we can use these classes in a Main method:
 
-```java
+```java Main.java icon="java"
 public class Main {
     public static void main(String[] args) {
         // Create a Employee object and display its details
@@ -97,5 +97,8 @@ Inheritance is powerful for several reasons:
 1. **Code Reusability:** Instead of rewriting common functionalities, you can inherit them from a base class, making maintenance easier and reducing errors.
 2. **Extension:** You can extend existing code by adding new features to a derived class without changing the existing base class.
 3. **Hierarchy:** It helps in organizing code in a hierarchical manner, which reflects real-world relationships and improves code readability and structure.
+
+
+### Conclusion
 
 **Inheritance** is a cornerstone of OOP, and understanding it will enable us to design more flexible and scalable applications. It's an essential concept for mastering OOP.
