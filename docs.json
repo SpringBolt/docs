@@ -8,6 +8,9 @@
     "dark": "#15803D"
   },
   "favicon": "/favicon.svg",
+  "icons": {
+    "library": "lucide"
+  },
   "navigation": {
     "tabs": [
       {
@@ -26,16 +29,16 @@
         "tab" : "Core Java",
         "groups": [
           {
-            "group": "Introduction",
+            "group": "Core Java",
             "pages": [
-              "docs/core-java/core-java"
+              "docs/core-java/core-java",
+              "docs/core-java/oops-concepts/oops-concepts"
             ]
           },
           {
-            "group": "OOPs Concepts",
+            "group": "Object Oriented Programming",
             "pages": [
-              "docs/core-java/oops-concepts/oops-concepts",
-              "docs/core-java/oops-concepts/classes-objects/classes-objects",
+              "docs/core-java/oops-concepts/classes-and-objects/classes-and-objects",
               "docs/core-java/oops-concepts/enum/enum",    
               "docs/core-java/oops-concepts/encapsulation/encapsulation",
               "docs/core-java/oops-concepts/inheritance/inheritance",
@@ -147,13 +150,21 @@
     "404": {
       "redirect": false,
       "title": "Page Not Found",
-      "description": "Please check the URL or return to the [homepage](/)."
+      "description": "Oops! We can't find that page. It looks like the URL is incorrect or the topic is still under construction. Let's get you back to the [home page](/)."
     }
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/SpringBolt_",
-      "github": "https://github.com/SpringBolt"
+      "github": "https://github.com/jitenraj",
+      "x":"https://x.com/jitenrajx",
+      "website": "https://jitenraj.github.io/"
     }
-  }
+  },
+  "seo": {
+    "metatags": {
+      "canonical": "https://springbolt.mintlify.app", 
+      "og:locale": "en_US",
+      "keywords": "java, spring boot, algorithms, design patterns, coding patterns, oops, dsa, backend development"
+    }
+}
 }

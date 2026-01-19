@@ -2,7 +2,7 @@
 title: Classes and Objects
 ---
 
-**Object-Oriented Programming (OOP)**: _Classes, Objects and Constructors_.
+**Object-Oriented Programming**: _Classes, Objects and Constructors_.
 
 Classes and objects are the building blocks of OOP. A `class` acts as a blueprint for creating objects, which are instances of the `class`. Understanding these basics is essential before moving on to more advanced OOP topics like inheritance, polymorphism, and encapsulation.
 
@@ -10,7 +10,7 @@ Classes and objects are the building blocks of OOP. A `class` acts as a blueprin
 
 In **Java**, a `class` is defined using the `class` keyword. A class serves as a blueprint to create objects. Here's a simple example:
 
-```java
+```java Person.java icon="java"
 // Defining a class named Person
 
 public class Person {
@@ -45,7 +45,7 @@ Constructors are special methods used to initialize a newly created object's sta
 
 In the `Person` class, we can define a constructor to set the name and age:
 
-```java
+```java Person.java icon="java"
 public class Person {
     private String name;
     private int age;
@@ -66,7 +66,7 @@ In the constructor, `this` refers to the current instance of the class. It is us
 
 Here's an example of a class with overloaded constructors:
 
-```java
+```java Car.java icon="java"
 public class Car {
     private String brand;
     private int year;
@@ -103,7 +103,7 @@ A copy constructor in **Java** is a special type of constructor used to create a
 
 Here’s how a copy constructor looks:
 
-```java
+```java Car.java icon="java"
 public class Car {
     private String brand;
     private int year;
@@ -134,7 +134,7 @@ When you create an object (e.g., `new Car()`), code executes in a specific order
 2. **Instance Initialization Blocks / Fields:** Run every time an object is created, _before_ the constructor.
 3. **Constructor:** Runs last to perform final initialization.
 
-```java
+```java Demo.java icon="java"
 public class Demo {
     // 1. Static Block
     static {
@@ -162,7 +162,7 @@ public class Demo {
 
 Member functions define the behavior of the object. For the `Person` class, we can define a method to display the object's data:
 
-```java
+```java Person.java icon="java"
 public class Person {
     private String name;
     private int age;
@@ -183,7 +183,7 @@ public class Person {
 
 Once you have defined a class, you can create objects (instances of the class). Here’s how we can create and use objects of the `Person` class:
 
-```java
+```java Person.java icon="java"
 public class Person {
     // Data members of the class (name and age)
     private String name;
@@ -200,7 +200,9 @@ public class Person {
         System.out.println("Name: " + name + ", Age: " + age);
     }
 }
+```
 
+```java Main.java icon="java"
 public class Main {
     public static void main(String[] args) {
         Person person = new Person("Alice", 30);  // Creating an object using the new keyword
@@ -224,4 +226,3 @@ In languages like C++, we must manually destroy objects to free memory. In **Jav
 <Note>
    If we need to close resources (like files or database connections), we should use the `try-with-resources` statement or an explicit `close()` method rather than relying on the Garbage Collector. 
 </Note>
-

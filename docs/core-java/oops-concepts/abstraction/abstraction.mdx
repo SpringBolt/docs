@@ -2,9 +2,11 @@
 title: Abstraction
 ---
 
-**Object-Oriented Programming (OOP)**: _Abstraction_.
+**Object-Oriented Programming**: _Abstraction_.
 
-Abstraction is the process of hiding the implementation details and showing only the functionality to the user. In other words, it shows only essential things to the user and hides the internal details, for example, sending an SMS where you type the text and send the message. You don't know the internal processing about the message delivery.
+Abstraction is the process of hiding the implementation details and showing only the functionality to the user.
+
+In other words, it shows only essential things to the user and hides the internal details, for example, sending an SMS where you type the text and send the message. You don't know the internal processing about the message delivery.
 
 ### What is Abstraction?
 
@@ -21,7 +23,7 @@ A class which is declared with the `abstract` keyword is known as an abstract cl
 
 Here is an example of an abstract class `Vehicle`:
 
-```java
+```java Vehicle.java icon="java"
 // Abstract class
 abstract class Vehicle {
     // Constructor in abstract class
@@ -37,7 +39,9 @@ abstract class Vehicle {
         System.out.println("Vehicle stopped");
     }
 }
+```
 
+```java Car.java icon="java"
 // Concrete class Car extends Vehicle
 class Car extends Vehicle {
     @Override
@@ -45,7 +49,9 @@ class Car extends Vehicle {
         System.out.println("Car starts with key");
     }
 }
+```
 
+```java Bike.java icon="java"
 // Concrete class Bike extends Vehicle
 class Bike extends Vehicle {
     @Override
@@ -63,19 +69,23 @@ An _interface_ in Java is a blueprint of a _class_. It has static constants and 
 
 Here is an example of an interface `Drawable`:
 
-```java
+```java Drawable.java icon="java"
 // Interface declaration
 interface Drawable {
     void draw();
 }
+```
 
+```java Rectangle.java icon="java"
 // Implementation: Rectangle class implements Drawable
 class Rectangle implements Drawable {
     public void draw() {
         System.out.println("Drawing a rectangle");
     }
 }
+```
 
+```java Circle.java icon="java"
 // Implementation: Circle class implements Drawable
 class Circle implements Drawable {
     public void draw() {
@@ -90,7 +100,7 @@ In this snippet, `Drawable` is an interface with a single method `draw()`. The R
 
 Let's see how we can use these classes and interfaces in a `Main` method. We can use the parent class (or interface) reference to hold the child class object, which is a common practice in OOP to achieve flexibility.
 
-```java
+```java Main.java icon="java"
 public class Main {
     public static void main(String[] args) {
         // Using Abstract Class
@@ -112,7 +122,7 @@ public class Main {
 
 **Output:**
 
-```text
+```text icon=terminal
 Vehicle is created
 Car starts with key
 Vehicle stopped
@@ -142,5 +152,7 @@ Abstraction is powerful for several reasons:
 2. **Simplicity:** It reduces the complexity of viewing things. By using an interface, you separate the definition of a method from the inheritance hierarchy.
 
 3. **Maintainability:** It allows you to change the internal implementation without affecting the classes that use it, as long as the method signature remains the same.
+
+### Conclusion
 
 **Abstraction** is a fundamental concept that enables us to design complex systems by breaking them down into manageable, abstract layers.

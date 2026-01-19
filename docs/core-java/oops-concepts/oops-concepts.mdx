@@ -1,7 +1,54 @@
 ---
-title: Introduction
+title: Object Oriented Programming
+description: "A paradigm that organizes software design around objects (data) rather than functions and logic."
 ---
 
-## Java OOPs Concepts
+### Overview
 
-The core pillars of Object-Oriented Programming in Java **classes**, **objects**, **inheritance**, **polymorphism**, **abstraction**, and **encapsulation** establish the foundation for robust software design. Command over these principles is essential for architecting scalable solutions and mastering advanced design patterns.
+Object-Oriented Programming (OOP) is a programming paradigm based on the concept of "objects," which can contain data (attributes) and code (methods). It aims to incorporate the advantages of modularity and reusability.
+
+Unlike procedural programming, which focuses on writing functions or procedures that perform operations on data, OOP focuses on creating objects that interact with one another. This approach makes it easier to model real-world entities, manage complexity in large software systems, and maintain code over time.
+
+### Quick Comparison Table
+
+| Concept | Core Idea | Key Benefit |
+| --- | --- | --- |
+| [Classes & Objects](./classes-and-objects/classes-and-objects) | Blueprint vs. Instance | Provides the fundamental structure; Classes define the shape, Objects use it. |
+| [Enum](./enum/enum) | Fixed set of constants | Increases type safety and readability by restricting variables to predefined values. |
+| [Encapsulation](./encapsulation/encapsulation) | Data Hiding | Protects internal state by restricting direct access and modification ("black boxing"). |
+| [Inheritance](./inheritance/inheritance) | "Is-A" Relationship | Promotes code reusability by allowing new classes to adopt properties of existing ones. |
+| [Polymorphism](./polymorphism/polymorphism) | "Many Forms" | Increases flexibility by allowing objects to be treated as instances of their parent class. |
+| [Abstraction](./abstraction/abstraction) | Hiding Complexity | Reduces complexity by showing only essential features and hiding implementation details. |
+| [Relationships](./relationships/relationships)| Association, Aggregation, and Composition | Defines how distinct objects interact and depend on each other (beyond simple inheritance). |
+
+### Advantages of OOP
+
+* **Modularity for Troubleshooting**: When working with objects, you know exactly where to look when something goes wrong. Code is compartmentalized.
+* **Reuse of Code through Inheritance**: You can write a generic class (like `Vehicle`) and then inherit from it to create specific classes (like `Car` or `Truck`), saving time and reducing redundancy.
+* **Flexibility through Polymorphism**: It allows a single interface to control access to a general class of actions. For example, a `draw()` method can work differently for a `Circle` object versus a `Square` object.
+* **Effective Problem Solving**: OOP decomposes a complex problem into smaller, manageable chunks (objects), which makes solving the overall problem easier.
+* **Security**: Through encapsulation and abstraction, sensitive data is hidden, and only necessary data is exposed to the user.
+* **Parallel Development**: Since classes are strictly modular, different developers can work on different classes simultaneously without stepping on each other's toes.
+
+### When to Use OOP
+
+* **Large, Complex Systems**: When the software is large and complex, OOP helps in managing that complexity through modularity.
+* **Team Development**: Ideally suited for situations where multiple programmers are working on different parts of the same project.
+* **Long-term Maintenance**: When the application needs to be maintained and updated over a long period, OOP makes it easier to add new features without breaking existing ones.
+* **Modeling Real-World Scenarios**: When the problem domain involves many distinct entities (e.g., Users, Products, Orders) that interact with each other.
+* **UI Development**: Most modern UI frameworks are object-oriented (buttons, windows, and menus are all objects).
+
+### Relationships Beyond Inheritance
+
+While Inheritance represents an **"Is-A"** relationship, real-world modeling requires more nuanced connections. These are generally categorized as **"Has-A"** or **"Uses-A"** relationships:
+
+1. **Association**: A general relationship where all objects have their own lifecycle and there is no specific owner. (e.g., A `Student` and a `Teacher`).
+2. **Aggregation**: A specialized form of association representing a "whole-part" relationship. The part can exist independently of the whole. (e.g., A `Department` and a `Teacher`; if the department closes, the teacher still exists).
+3. **Composition**: A strong form of aggregation. The child object cannot exist without the parent object. (e.g., A `House` and a `Room`; if the house is destroyed, the rooms are destroyed too).
+
+### Conclusion
+
+Object-Oriented Programming provides a clear modular structure for programs. It is good for defining abstract data types where implementation details are hidden and the unit is clearly defined.
+
+By mastering Classes, Enums, the four pillars (Encapsulation, Inheritance, Polymorphism, Abstraction), and complex Relationships, developers can architect systems that are scalable, maintainable, and robust.
+

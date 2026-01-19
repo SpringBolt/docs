@@ -2,7 +2,7 @@
 title: Enum
 ---
 
-**Object-Oriented Programming (OOP)**: _Enumerations_.
+**Object-Oriented Programming**: _Enumerations_.
 
 An Enumeration (often shortened to Enum) is a special data type that allows a variable to be one of a set of predefined constants.
 
@@ -12,7 +12,7 @@ An `enum` in **Java** is defined using `enum` keyword. An Enum is used to define
 
 Here’s a simple example of it, the code begins by defining the `Planet` enum with constants for each planet. Each constant in the `Planet` enum represents a distinct planet and is instantiated with specific mass and radius values:
 
-```java
+```java Planet.java icon="java"
 public enum Planet {
     MERCURY(3.303e+23, 2.4397e6),
     VENUS(4.869e+24, 6.0518e6),
@@ -31,7 +31,7 @@ Each constant (`MERCURY`, `VENUS`, etc.) is an instance of the `Planet` enum, in
 
 Enums in Java can also have fields, methods, and constructors. Below is the `Planet` enum with private fields used to store the mass and radius of each planet:
 
-```java
+```java Planet.java icon="java"
 public enum Planet {
     MERCURY(3.303e+23, 2.4397e6),
     VENUS(4.869e+24, 6.0518e6),
@@ -78,7 +78,8 @@ Enums can also have additional methods to perform operations. The `surfaceGravit
 
 ```java
 public double surfaceGravity() {
-    final double G = 6.67300E-11; // gravitational constant in m^3 kg^-1 s^-2 (E-11 signifies 10^-11)
+    final double G = 6.67300E-11;
+    // gravitational constant in m^3 kg^-1 s^-2 (E-11 signifies 10^-11)
     return G * mass / (radius * radius);
 }
 ```
@@ -99,7 +100,7 @@ The `surfaceWeight` method calls `surfaceGravity()` and multiplies it by the obj
 
 Here is the final, complete `Planet` enum that we've developed throughout the lesson:
 
-```java
+```java Planet.java icon="java"
 public enum Planet {
     MERCURY(3.303e+23, 2.4397e6),
     VENUS(4.869e+24, 6.0518e6),
@@ -143,7 +144,7 @@ This `Planet` enum encapsulates not just the basic attributes of each planet, su
 
 Now that we have the complete `Planet` enum, let's see how it can be used in a practical context:
 
-```java
+```java Main.java icon="java"
 public class Main {
     public static void main(String[] args) {
         Planet earth = Planet.EARTH;
@@ -157,7 +158,7 @@ In this example, we retrieve the `EARTH` constant from the `Planet` enum and use
 
 **Output:**
 
-```text
+```text icon=terminal
 The mass of EARTH is 5.976E24 kg.
 The radius of EARTH is 6378140.0 meters.
 ```
@@ -173,5 +174,7 @@ Enumerations in Java are powerful because they bring several advantages:
 * **Type Safety:** They ensure that variables of the enum type can only hold predefined values, helping to avoid errors related to invalid values.
 * **Code Readability:** Enumerations improve readability by grouping related constants and their associated behaviors in a cohesive manner, making the code easier to understand.
 * **Maintainability:** By encapsulating related constants and their behaviors, enums help keep the code maintainable. Changes and updates are easier to manage within a well-defined structure.
+
+### Conclusion
 
 Using the `Planet` enum example, we can see these advantages in action. Enums are used not just to define constants (like the mass and radius of planets) but also to associate detailed data and behavior (such as calculating surface gravity and weight) with those constants. This leads to cleaner and more maintainable code, demonstrating how enums can transform the way you write and organize your Java programs.
