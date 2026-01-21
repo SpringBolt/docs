@@ -97,6 +97,39 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "J2EE Patterns",
+        "groups": [
+          {
+            "group": "J2EE Patterns",
+            "pages": [
+              "docs/J2EE-patterns/J2EE-patterns"
+            ]
+          },
+          {
+            "group": "Presentation Tier",
+            "pages": [
+              "docs/J2EE-patterns/model-view-controller/model-view-controller",
+              "docs/J2EE-patterns/front-controller/front-controller",
+              "docs/J2EE-patterns/intercepting-filter/intercepting-filter"
+            ]
+          },
+          {
+            "group": "Business Tier",
+            "pages": [
+              "docs/J2EE-patterns/business-delegate/business-delegate",
+              "docs/J2EE-patterns/service-locator/service-locator"
+            ]
+          },
+          {
+            "group": "Integration Tier",
+            "pages": [
+              "docs/J2EE-patterns/data-access-object/data-access-object",
+              "docs/J2EE-patterns/data-transfer-object/data-transfer-object"
+            ]
+          }
+        ]
       }
     ],
     "global": {

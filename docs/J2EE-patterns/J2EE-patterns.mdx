@@ -1,0 +1,126 @@
+---
+title: Overview of J2EE Patterns
+description: "Architectural solutions for the Presentation, Business, and Integration tiers of enterprise applications."
+---
+
+## What are J2EE Patterns?
+
+**Java 2 Platform, Enterprise Edition (J2EE)** patterns are specific architectural solutions for problems commonly faced in enterprise web applications.
+
+While the original "Gang of Four" (GoF) patterns focus on general object-oriented design, J2EE patterns focus on the **Presentation**, **Business**, and **Integration** tiers of a distributed application.
+
+Many of these patterns form the underlying architecture of modern frameworks like **Spring Boot**. Understanding them explains _how_ Spring works under the hood.
+
+### Presentation Tier
+
+This tier handles the interaction with the user (UI) and the initial processing of requests.
+
+<Card
+    title="Model-View-Controller (MVC)"
+    icon="columns"
+    href="./model-view-controller/model-view-controller"
+    arrow="true"
+    horizontal
+>
+    The standard architecture for web applications, separating data, UI, and logic.
+</Card>
+
+<Card
+    title="Front Controller"
+    icon="bullseye"
+    href="./front-controller/front-controller"
+    arrow="true"
+    horizontal
+>
+    A single entry point for all requests (the concept behind Spring's DispatcherServlet).
+</Card>
+
+<Card
+    title="Intercepting Filter"
+    icon="filter"
+    href="./intercepting-filter/intercepting-filter"
+    arrow="true"
+    horizontal
+>
+    Pluggable filters for pre/post-processing requests (the concept behind Spring Security).
+</Card>
+
+### Business Tier
+
+This tier hosts the application's business logic and transactions.
+
+<Card
+    title="Business Delegate"
+    icon="briefcase"
+    href="./business-delegate/business-delegate"
+    arrow="true"
+    horizontal
+>
+    Decouples the client from business services to hide the complexity of remote lookups.
+</Card>
+
+<Card
+    title="Service Locator"
+    icon="search-location"
+    href="./service-locator/service-locator"
+    arrow="true"
+    horizontal
+>
+    Centralizes and caches the lookup of expensive service objects.
+</Card>
+
+### Integration Tier
+
+This tier manages connections to databases, legacy systems, and external services.
+
+<Card
+    title="Data Access Object (DAO)"
+    icon="database"
+    href="./data-access-object/data-access-object"
+    arrow="true"
+    horizontal
+>
+    Abstracts and encapsulates all access to the data source.
+</Card>
+<Card
+    title="Data Transfer Object (DTO)"
+    icon="truck-loading"
+    href="./data-transfer-object/data-transfer-object"
+    arrow="true"
+    horizontal
+>
+    An object used to carry data between processes to reduce the number of method calls.
+</Card>
+
+---
+
+## Summary Table
+
+| Pattern | Scope | Core Function | Modern Spring Equivalent |
+| :--- | :--- | :--- | :--- |
+| **MVC** | Architecture | Separates UI, Data, and Logic. | `@RestController`, `@Controller` |
+| **Front Controller** | Presentation | Centralized entry point for requests. | `DispatcherServlet` |
+| **Intercepting Filter** | Presentation | Pre/Post-processing of requests. | `Filter`, Spring Security Chain |
+| **Business Delegate** | Business | Decouples client from services. | `@Autowired` (Dependency Injection) |
+| **Service Locator** | Business | Caches service lookups. | `ApplicationContext` (Spring IoC Container) |
+| **DAO** | Data | Abstracts data persistence logic. | `JpaRepository` (Spring Data JPA) |
+| **DTO** | Data | Carries data between processes. | `record` (Java) / POJO |
+
+## Advantages of J2EE Patterns
+
+* **Standardization**: They provide a shared vocabulary and standard approach for developers to solve common enterprise problems.
+* **Separation of Concerns**: By dividing the application into Tiers (Presentation, Business, Integration), code becomes easier to maintain and test.
+* **Performance Optimization**: Patterns like *Service Locator* and *DTO* are specifically designed to reduce network traffic and latency in distributed systems.
+* **Decoupling**: Patterns like *Business Delegate* and *DAO* ensure that if the database or business logic changes, the front-end code remains unaffected.
+* **Security**: Centralized patterns like *Front Controller* and *Intercepting Filter* ensure that security checks are applied consistently across the application.
+
+## When to Use J2EE Patterns
+
+* **Building Frameworks**: If you are building a web framework from scratch, these are the fundamental building blocks you will need.
+* **Understanding Legacy Code**: Many legacy banking and enterprise systems are explicitly built on these patterns without using modern frameworks.
+* **Mastering Spring/Jakarta EE**: To truly understand *why* Spring behaves the way it does, you must understand the J2EE patterns it abstracts away.
+* **Complex Enterprise Systems**: When building distributed systems where network overhead and resource management are critical concerns.
+
+## Conclusion
+
+While the explicit implementation of "J2EE" (now Jakarta EE) has evolved, the patterns themselves remain timeless. They are the architectural foundation of almost all modern Java web development.
