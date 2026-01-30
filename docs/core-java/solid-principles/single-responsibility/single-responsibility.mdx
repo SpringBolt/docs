@@ -1,0 +1,124 @@
+---
+title: Single Responsibility
+parent: SOLID Principles
+---
+
+### Overview
+
+The **Single Responsibility Principle (SRP)** is the first of the five SOLID principles of object-oriented design. It states that **"A class should have only one reason to change."**
+
+This principle means that a class or module should be responsible for only one specific part of the software's functionality.
+
+It doesn't mean a class should only have one method; rather, all the methods in the class should work towards a single purpose or act on behalf of a single "actor" (user or stakeholder).
+
+### The Problem
+A common mistake in software development is creating a class that knows too much or does too many things. This is often referred to as a **"God Class"**.
+
+Consider an `Employee` class that manages:
+1.  Employee data (Business rules).
+2.  Salary calculations (Financial logic).
+3.  Saving employee details to a database (Persistence logic).
+
+**Violation Example:**
+
+```java Employee.java icon="java"
+public class Employee {
+    private String name;
+    private double salary;
+
+    // 1. Business Logic
+    public String getName() { return name; }
+
+    // 2. Financial Logic
+    public double calculateTax() {
+        return salary * 0.2;
+    }
+
+    // 3. Persistence Logic
+    public void saveToDatabase() {
+        System.out.println("Saving " + name + " to DB...");
+    }
+}
+```
+
+### Why is this Bad?
+
+1. **High Coupling:** The business logic is tightly coupled with the database logic. If you change the database (e.g., from MySQL to MongoDB), you risk breaking the tax calculation logic because they live in the same file.
+2. **Fragility:** Changes to one part of the class can inadvertently affect other unrelated parts.
+3. **Hard to Test:** To test the `calculateTax` method, you might be forced to mock the database connection, adding unnecessary complexity.
+
+### The Solution
+
+The solution is to separate these concerns into different classes, each with a single responsibility.
+
+**Refactored Code:**
+
+1. **Domain Responsibility (The Data):**
+
+```java Employee.java icon="java"
+public class Employee {
+    private String name;
+    private double salary;
+    // Getters and setters only
+}
+```
+
+
+2. **Financial Responsibility (The Logic):**
+
+```java TaxCalculator.java icon="java"
+public class TaxCalculator {
+    public double calculateTax(Employee employee) {
+        return employee.getSalary() * 0.2;
+    }
+}
+```
+
+
+3. **Persistence Responsibility (The Storage):**
+
+```java EmployeeRepository.java icon="java"
+public class EmployeeRepository {
+    public void save(Employee employee) {
+        // Database code here
+    }
+}
+```
+
+### Real-World Analogy
+
+Think of a **Restaurant Staff**:
+
+* **The Chef:** Cooks the food.
+* **The Waiter:** Serves the food.
+* **The Janitor:** Cleans the floor.
+
+If you had a "Super Employee" who cooked, served, and cleaned all at once, the kitchen would stop whenever a customer needed water. By separating roles, the Chef can focus entirely on cooking without worrying about dirty tables.
+
+### When to Apply
+
+* **Code Refactoring:** When you notice a class has grown too large (e.g., over 500 lines) or handles multiple distinct tasks.
+* **Version Control Conflicts:** If multiple developers are constantly editing the same file for different reasons (one for UI, one for backend), it’s a sign the class does too much.
+* **Unit Testing:** When writing tests becomes difficult because you have to mock too many unrelated dependencies.
+
+### Key Characteristics
+
+* **High Cohesion:** Elements inside the class belong together and serve a single purpose.
+* **Loose Coupling:** The class depends on few other classes and can be changed without affecting the rest of the system.
+* **Focused:** The class has a clear, narrow definition of what it does.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Maintainability:** Smaller, focused classes are easier to read and understand. | **File Explosion:** You end up with more files in your project, which can be overwhelming at first. |
+| **Reusability:** A class that does only one thing (e.g., `EmailSender`) can be easily reused in other projects. | **Development Time:** It takes more time initially to plan and split the code structure effectively. |
+| **Testability:** Unit tests become simple and specific. |  |
+
+### Why It Matters
+
+SRP is the foundation of good architecture. Without it, your code becomes "Spaghetti Code", a tangled mess where everything is connected to everything else. Applying SRP makes your application **modular**, meaning you can swap out parts (like changing a database or an email provider) without rewriting the whole system.
+
+### Conclusion
+
+The Single Responsibility Principle is about clarity and organization. By ensuring that each class has only one reason to change, you create a system that is robust, flexible, and easy to maintain over the long term.
