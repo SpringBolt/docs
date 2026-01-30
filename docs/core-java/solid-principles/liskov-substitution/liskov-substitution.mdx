@@ -1,0 +1,144 @@
+---
+title: Liskov Substitution
+parent: SOLID Principles
+---
+
+### Overview
+
+The **Liskov Substitution Principle (LSP)** states that **"Objects of a superclass shall be replaceable with objects of its subclasses without breaking the application."**
+
+In simpler terms: If `Class B` is a subtype of `Class A`, then we should be able to replace `A` with `B` without disrupting the behavior of our program.
+
+If you have a function that accepts a `Parent` class, passing a `Child` class to it should not cause errors or unexpected results.
+
+### The Problem
+
+The classic example of violating LSP is the **Square-Rectangle Problem**. Mathematically, a Square *is a* Rectangle. However, in programming, inheriting `Square` from `Rectangle` can cause issues.
+
+**Violation Example:**
+
+1.  **The Rectangle Class:**
+    ```java Rectangle.java icon="java"
+    public class Rectangle {
+        protected int width;
+        protected int height;
+
+        public void setWidth(int width) { this.width = width; }
+        public void setHeight(int height) { this.height = height; }
+        public int getArea() { return width * height; }
+    }
+    ```
+
+2.  **The Square Class (The Violation):**
+    A Square must have equal sides. So, we force the setters to change both width and height.
+    ```java Square.java icon="java"
+    public class Square extends Rectangle {
+        @Override
+        public void setWidth(int width) {
+            super.setWidth(width);
+            super.setHeight(width); // Side effect!
+        }
+
+        @Override
+        public void setHeight(int height) {
+            super.setHeight(height);
+            super.setWidth(height); // Side effect!
+        }
+    }
+    ```
+
+3.  **The Code that Breaks:**
+    ```java
+    public void verifyArea(Rectangle r) {
+        r.setWidth(5);
+        r.setHeight(10);
+        // User expects area = 5 * 10 = 50.
+        // But if 'r' is a Square, area will be 10 * 10 = 100!
+        if(r.getArea() != 50) {
+            throw new RuntimeException("Bad Area!");
+        }
+    }
+    ```
+
+### Why is this Bad?
+1.  **Unexpected Behavior:** The client code (`verifyArea`) makes assumptions about `Rectangle` (that changing width doesn't change height). `Square` violates this assumption.
+2.  **Code Fragility:** You might have to add checks like `if (r instanceof Square)` everywhere, which violates the Open/Closed Principle.
+3.  **Inheritance Misuse:** Just because objects share properties doesn't mean they share *behavior*.
+
+### The Solution
+The solution is to avoid inheritance if the behavior doesn't match. Instead, use a common interface or separate classes.
+
+**Refactored Code:**
+Remove the inheritance link between Square and Rectangle. Make them siblings that implement a common `Shape` interface.
+
+```java Shape.java icon="java"
+public interface Shape {
+    int getArea();
+}
+```
+
+```java Rectangle.java icon="java"
+public class Rectangle implements Shape {
+    private int width;
+    private int height;
+
+    public Rectangle(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+    
+    public int getArea() { return width * height; }
+}
+```
+
+```java Square.java icon="java"
+public class Square implements Shape {
+    private int side;
+
+    public Square(int side) {
+        this.side = side;
+    }
+    
+    public int getArea() { return side * side; }
+}
+```
+
+Now, you cannot set width/height on a generic `Shape`, preventing the error entirely.
+
+### Real-World Analogy
+
+Think of a **Remote Control**:
+
+* You have a generic remote for "Device".
+* You replace the TV remote with a DVD remote.
+* You press "Power". Both turn on. (LSP Compliant).
+* Now imagine you replace it with a "Toy Remote" that looks identical but explodes when you press Power.
+* That Toy Remote **violates LSP**. It looked like a remote (Inheritance), but it broke the contract (Behavior).
+
+### When to Apply
+
+* **Designing Libraries:** When creating base classes that others will extend.
+* **Refactoring:** When you find yourself writing code like `if (obj instanceof SubClass)`.
+* **Testing:** If your unit tests for the Base Class fail when running against the Sub Class.
+
+### Key Characteristics
+
+* **Behavioral Subtyping:** Subtypes must behave like their parent types.
+* **Preconditions:** A subclass cannot require *more* strict input rules than the parent.
+* **Postconditions:** A subclass cannot deliver *less* strict output rules than the parent.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Reliability:** Code becomes predictable; replacing objects doesn't break things. | **Design Effort:** Requires careful thought about "is-a" relationships. |
+| **Reusability:** Components can be swapped easily. | **Complexity:** Sometimes requires more interfaces/classes to separate behaviors properly. |
+| **Polymorphism:** Ensures true polymorphism works correctly. |  |
+
+### Why It Matters
+
+LSP ensures that inheritance is used correctly. Without it, your class hierarchy becomes a mess of "special cases" where you constantly have to check *which* specific subclass you are holding to avoid bugs. It keeps the system clean and logical.
+
+### Conclusion
+
+The Liskov Substitution Principle reminds us that inheritance is about **behavior**, not just structure. If a subclass cannot perform the same duties as its parent without causing errors, it shouldn't be a subclass.
