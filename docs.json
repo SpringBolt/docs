@@ -29,7 +29,8 @@
             "group": "Core Java",
             "pages": [
               "docs/core-java/core-java",
-              "docs/core-java/oops-concepts/oops-concepts"
+              "docs/core-java/oops-concepts/oops-concepts",
+              "docs/core-java/solid-principles/solid-principles"
             ]
           },
           {
@@ -42,6 +43,16 @@
               "docs/core-java/oops-concepts/polymorphism/polymorphism",
               "docs/core-java/oops-concepts/abstraction/abstraction",
               "docs/core-java/oops-concepts/relationships/relationships"
+            ]
+          },
+          {
+            "group": "SOLID Principles",
+            "pages": [
+              "docs/core-java/solid-principles/single-responsibility/single-responsibility",
+              "docs/core-java/solid-principles/open-closed-principle/open-closed-principle",
+              "docs/core-java/solid-principles/liskov-substitution/liskov-substitution",
+              "docs/core-java/solid-principles/interface-segregation/interface-segregation",
+              "docs/core-java/solid-principles/dependency-inversion/dependency-inversion"
             ]
           }
         ]
