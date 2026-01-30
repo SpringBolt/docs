@@ -1,0 +1,131 @@
+---
+title: Open/Closed Principle
+parent: SOLID Principles
+---
+
+### Overview
+
+The **Open/Closed Principle (OCP)** is the second principle of SOLID. It states that **"Software entities (classes, modules, functions, etc.) should be open for extension, but closed for modification."**
+
+* **Open for Extension:** This means that the behavior of the module can be extended. As the requirements of the application change, we are able to extend the module with new behaviors that satisfy those changes.
+
+* **Closed for Modification:** This means that the source code of such a module is inviolate. No one is allowed to make source code changes to it.
+
+In simpler terms: You should be able to add new functionality without changing existing code.
+
+### The Problem
+
+Imagine you have a class `PaymentProcessor` that handles payments. Initially, it only supports **Credit Card** payments.
+
+```java PaymentProcessor..java icon="java"
+public class PaymentProcessor {
+    public void processPayment(String type) {
+        if (type.equals("CreditCard")) {
+            System.out.println("Processing Credit Card Payment...");
+        }
+    }
+}
+```
+
+Later, your boss asks you to add **PayPal** support. You modify the class:
+
+```java PaymentProcessor.java icon="java"
+public class PaymentProcessor {
+    public void processPayment(String type) {
+        if (type.equals("CreditCard")) {
+            System.out.println("Processing Credit Card Payment...");
+        } else if (type.equals("PayPal")) { // Modified existing code!
+            System.out.println("Processing PayPal Payment...");
+        }
+    }
+}
+```
+
+### Why is this Bad?
+
+1. **Risk of Bugs:** Every time you modify a tested class (like `PaymentProcessor`), you risk breaking existing functionality (Credit Card payments might stop working).
+2. **Testing Overhead:** You must re-test the entire class, including old functionality, every time you add a new feature.
+3. **Maintenance Nightmare:** If you have 10 payment methods, you will have a massive `if-else` block that is hard to read and maintain.
+
+### The Solution
+
+The solution is to use **Abstraction** (Interfaces or Abstract Classes). Instead of modifying the class, we create a common interface and extend it.
+
+**Refactored Code:**
+
+1. **Define the Interface (The Contract):**
+
+```java PaymentMethod.java icon="java"
+public interface PaymentMethod {
+    void pay();
+}
+```
+
+
+2. **Implement Extensions (The Flavors):**
+
+```java CreditCardPayment.java icon="java"
+public class CreditCardPayment implements PaymentMethod {
+    public void pay() {
+        System.out.println("Processing Credit Card Payment...");
+    }
+}
+```
+
+```java PayPalPayment.java icon="java"
+public class PayPalPayment implements PaymentMethod {
+    public void pay() {
+        System.out.println("Processing PayPal Payment...");
+    }
+}
+```
+
+
+3. **The Processor (Closed for Modification):**
+Now, this class *never* needs to change, no matter how many new payment methods you add.
+
+```java PaymentProcessor.java icon="java"
+public class PaymentProcessor {
+    public void processPayment(PaymentMethod method) {
+        method.pay();
+    }
+}
+```
+
+
+### Real-World Analogy
+
+Think of a **Smartphone**:
+
+* **Open for Extension:** You can add new features to your phone by installing **Apps**.
+* **Closed for Modification:** You do not need to open the back of the phone, solder new wires, or change the hardware to get a new feature.
+
+If you had to physically rebuild your phone just to add a calculator app, it would violate the Open/Closed Principle.
+
+### When to Apply
+
+* **Algorithms:** When you have multiple ways to perform a task (e.g., Sorting algorithms, Encryption types).
+* **Business Rules:** When rules change frequently (e.g., Calculation of tax for different countries).
+* **External Integrations:** When you support multiple third-party services (e.g., multiple Email providers, multiple Payment gateways).
+
+### Key Characteristics
+
+* **Polymorphism:** The client code interacts with an interface, not a concrete implementation.
+* **Strategy Pattern:** OCP is often implemented using the Strategy Design Pattern.
+* **Decoupling:** The high-level logic is decoupled from the low-level implementation details.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Stability:** Existing code remains untouched and bug-free when adding new features. | **Complexity:** Requires creating more classes and interfaces initially. |
+| **Scalability:** It is very easy to add the 50th payment method without making the code messy. | **Over-Engineering:** If a module never changes, applying OCP is unnecessary work. |
+| **Flexibility:** New implementations can be added at runtime (e.g., via plugins). |  |
+
+### Why It Matters
+
+The Open/Closed Principle prevents "Code Rot." In legacy systems, code often rots because developers keep hacking `if` statements into existing methods until they become unreadable and fragile. OCP keeps the system clean and allows it to grow organically.
+
+### Conclusion
+
+By adhering to the Open/Closed Principle, you build systems that are robust and flexible. You shift the focus from "changing old code" to "writing new code," which is safer, faster, and less prone to errors.
