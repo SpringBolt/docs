@@ -1,0 +1,146 @@
+---
+title: Sliding Window
+---
+
+### Introduction
+
+The **Sliding Window** pattern is used to perform operations on a specific window size of a given array or linked list, such as finding the longest subarray containing all 1s.
+
+Sliding Windows start from the 1st element and keep shifting right by one element and adjust the length of the window according to the problem that you are solving.
+
+In many problems, we want to calculate something among all contiguous subarrays of a certain size (or meeting a certain condition).
+* **Naive Approach:** Use nested loops to check every single subarray. This is usually $O(n^2)$ or $O(nk)$.
+* **Sliding Window:** Reuse the result from the previous window to calculate the current window in $O(1)$ time, leading to an overall **$O(n)$** complexity.
+
+### Intuition: "Don't Re-calculate"
+
+Imagine you have an array `[1, 2, 3, 4, 5]` and you want the sum of every subarray of size 3.
+1.  **First Window:** `[1, 2, 3]` $\rightarrow$ Sum = 6.
+2.  **Second Window:** `[2, 3, 4]` $\rightarrow$ Sum = 9.
+
+Notice that the second window shares two elements (`2` and `3`) with the first window.
+Instead of summing `2 + 3 + 4` from scratch, we can just:
+* **Subtract** the element leaving the window (`1`).
+* **Add** the element entering the window (`4`).
+* New Sum = Old Sum - `1` + `4` = 9.
+
+This "Add & Remove" logic is the heart of the Sliding Window.
+
+---
+
+### Core Variations
+
+There are two main types of sliding windows:
+
+#### 1. Fixed Window Size
+The window size $k$ is fixed. The window slides one step to the right at every iteration.
+* **Movement:** `right++` and `left++` happen together.
+* **Use Case:** "Find the maximum sum of any contiguous subarray of size $k$."
+
+#### 2. Variable Window Size (Dynamic)
+The window grows or shrinks based on a condition.
+* **Movement:** `right++` expands the window to find a valid solution. If the condition is broken (or we want to optimize), `left++` shrinks the window.
+* **Use Case:** "Find the smallest subarray with a sum greater than or equal to $S$."
+
+---
+
+### Implementation Examples
+
+#### Example A: Fixed Window (Max Sum Subarray of Size K)
+**Problem:** Given an array of integers and a number $k$, find the maximum sum of a subarray of size $k$.
+
+```java icon="code" title="Max Sum Subarray of Size K"
+public int maxSumSubarray(int[] arr, int k) {
+    int windowSum = 0;
+    int maxSum = 0;
+    int windowStart = 0;
+
+    for (int windowEnd = 0; windowEnd < arr.length; windowEnd++) {
+        // 1. Add the next element to the window
+        windowSum += arr[windowEnd]; 
+
+        // 2. Check if we have hit the window size 'k'
+        if (windowEnd >= k - 1) {
+            // Update the max sum
+            maxSum = Math.max(maxSum, windowSum);
+            
+            // 3. Slide the window ahead:
+            // Subtract the element going out
+            windowSum -= arr[windowStart]; 
+            // Move the start pointer
+            windowStart++; 
+        }
+    }
+    return maxSum;
+}
+```
+
+#### Example B: Variable Window (Smallest Subarray with Sum )
+
+**Problem:** Find the length of the smallest contiguous subarray whose sum is greater than or equal to .
+
+```java icon="code" title="Smallest Subarray with Sum >= target"
+public int minSubArrayLen(int target, int[] nums) {
+    int minLength = Integer.MAX_VALUE;
+    int windowSum = 0;
+    int windowStart = 0;
+
+    for (int windowEnd = 0; windowEnd < nums.length; windowEnd++) {
+        // 1. Expand the window
+        windowSum += nums[windowEnd]; 
+
+        // 2. Contract the window as long as condition is met
+        while (windowSum >= target) {
+            // Update minimum length found so far
+            minLength = Math.min(minLength, windowEnd - windowStart + 1);
+            
+            // Remove the start element to try and find a smaller window
+            windowSum -= nums[windowStart];
+            windowStart++; 
+        }
+    }
+    
+    return (minLength == Integer.MAX_VALUE) ? 0 : minLength;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of a **Panoramic Photo** on your phone.
+
+* The screen displays a fixed rectangular view (the window) of the landscape.
+* As you move your phone to the right, new scenery enters from the right edge, and old scenery disappears from the left edge.
+* The "picture" inside the frame is your **Fixed Sliding Window**.
+
+Think of a **Caterpillar** moving.
+
+* The caterpillar extends its head (right pointer) to eat (sum increases).
+* Once it is full, it pulls its tail (left pointer) forward (length decreases).
+* This expanding and contracting movement is your **Variable Sliding Window**.
+
+---
+
+### When to Use
+
+Look for these keywords in the problem statement:
+
+* **"Contiguous"**: The subarray or substring must be connected.
+* **"Subarray" or "Substring"**: Almost always implies sliding window.
+* **"Size K"**: Strong hint for Fixed Window.
+* **"Longest/Shortest/Min/Max"**: Strong hint for Variable Window optimization.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Performance:** Reduces  brute force to  linear time. | **Complexity:** Handling edge cases (empty arrays, window size > array size) can be tricky. |
+| **Streaming:** Works well with data streams where you don't have all data upfront. | **Non-Contiguous:** Cannot be used for "Subsequence" problems (where elements can be skipped). |
+
+### Summary Table
+
+| Type | Movement Strategy | Common Problems |
+| --- | --- | --- |
+| **Fixed** | Grow until size , then slide `left` and `right` simultaneously. | Max Sum Subarray of size K, Permutation in String. |
+| **Variable** | Grow `right` to satisfy condition, shrink `left` to optimize. | Longest Substring Without Repeating Characters, Min Size Subarray Sum. |
