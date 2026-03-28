@@ -1,0 +1,147 @@
+---
+title: Prefix Sum
+---
+
+### Introduction
+
+The **Prefix Sum** pattern is a precomputation technique where we store cumulative sums so that range-sum queries can be answered in constant time.
+
+Instead of recalculating the sum for every subarray repeatedly, we create a helper array where each index stores the sum from the beginning up to that point.
+
+In many problems, this transforms repeated work from **$O(n)$ per query** into **$O(1)$ per query** after an initial preprocessing step.
+
+### Intuition: "Store Partial Answers Once"
+
+Suppose we have an array `[2, 4, 1, 7, 3]`.
+
+Prefix sum array becomes:
+* `prefix[0] = 2`
+* `prefix[1] = 2 + 4 = 6`
+* `prefix[2] = 6 + 1 = 7`
+* `prefix[3] = 7 + 7 = 14`
+* `prefix[4] = 14 + 3 = 17`
+
+Now, sum from index `l` to `r` can be found as:
+* `prefix[r] - prefix[l - 1]` (if `l > 0`)
+* `prefix[r]` (if `l == 0`)
+
+So each query is computed instantly.
+
+---
+
+### Core Variations
+
+#### 1. 1D Prefix Sum
+Used for arrays where we answer many range-sum queries.
+
+* **Preprocess:** Build cumulative sum array once.
+* **Query:** Use subtraction of two prefix values.
+* **Use Case:** Range sum query, subarray sum equals K, equilibrium index.
+
+#### 2. In-Place Prefix Sum
+Overwrite the original array with cumulative sums.
+
+* **Preprocess:** `arr[i] += arr[i - 1]`
+* **Benefit:** No extra array.
+* **Tradeoff:** Original input is modified.
+
+#### 3. 2D Prefix Sum
+Used for matrices to compute rectangle sums quickly.
+
+* **Preprocess:** Each cell stores sum of rectangle from `(0,0)` to `(r,c)`.
+* **Query:** Inclusion-exclusion formula.
+* **Use Case:** Submatrix sum queries in grids.
+
+---
+
+### Implementation Examples
+
+#### Example A: 1D Prefix Sum (Range Sum Query)
+**Problem:** Given an integer array and many queries `[left, right]`, return the sum of elements in that range.
+
+```java icon="code" title="Prefix Sum - Range Sum Query"
+public class RangeSumQuery {
+    private int[] prefix;
+
+    public RangeSumQuery(int[] nums) {
+        prefix = new int[nums.length];
+        if (nums.length == 0) return;
+
+        prefix[0] = nums[0];
+        for (int i = 1; i < nums.length; i++) {
+            prefix[i] = prefix[i - 1] + nums[i];
+        }
+    }
+
+    public int sumRange(int left, int right) {
+        if (left == 0) {
+            return prefix[right];
+        }
+        return prefix[right] - prefix[left - 1];
+    }
+}
+```
+
+#### Example B: 1D Prefix Sum with HashMap (Subarray Sum Equals K)
+
+**Problem:** Count how many contiguous subarrays have sum exactly equal to `k`.
+
+```java icon="code" title="Prefix Sum - Subarray Sum Equals K"
+public int subarraySum(int[] nums, int k) {
+    Map<Integer, Integer> prefixCount = new HashMap<>();
+    prefixCount.put(0, 1);
+
+    int currentSum = 0;
+    int count = 0;
+
+    for (int num : nums) {
+        currentSum += num;
+
+        // If (currentSum - k) existed before, that many subarrays end here with sum k
+        count += prefixCount.getOrDefault(currentSum - k, 0);
+
+        prefixCount.put(currentSum, prefixCount.getOrDefault(currentSum, 0) + 1);
+    }
+
+    return count;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of a **bank statement running balance**.
+
+* Each row stores balance up to that transaction.
+* If you want total spend between two dates, you do not re-add every transaction.
+* You subtract earlier balance from later balance.
+
+That running balance is exactly a Prefix Sum idea.
+
+---
+
+### When to Use
+
+Look for these signals:
+
+* **"Range Sum"** or **"Sum between L and R"**.
+* **Many queries** on the same immutable array.
+* **Subarray count/sum** constraints (`sum == k`, `sum < k`, etc.)
+* Want to replace nested loops with precomputation.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Fast Queries:** After preprocessing, each range query is $O(1)$. | **Preprocessing Cost:** Initial setup is $O(n)$. |
+| **Simple Formula:** Clean and reliable subtraction logic. | **Static-Friendly:** Updates in mutable arrays need extra data structures (Fenwick/Segment Tree). |
+| **Extensible:** Works in 1D and 2D forms. | **Extra Space:** Needs $O(n)$ or $O(r*c)$ memory for prefix arrays. |
+
+### Summary Table
+
+| Variation | Build Time | Query Time | Common Problems |
+| --- | --- | --- | --- |
+| **1D Prefix Sum** | $O(n)$ | $O(1)$ | Range Sum Query, Subarray Sum Equals K |
+| **In-Place Prefix** | $O(n)$ | $O(1)$ | One-time cumulative computations |
+| **2D Prefix Sum** | $O(r*c)$ | $O(1)$ | Matrix Region Sum Query |

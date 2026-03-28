@@ -1,0 +1,136 @@
+---
+title: Fast and Slow Pointers
+---
+
+### Introduction
+
+The **Fast and Slow Pointers** pattern uses two pointers that move through a sequence at different speeds.
+
+Most commonly:
+* `slow` moves one step at a time.
+* `fast` moves two steps at a time.
+
+This controlled speed difference helps detect cycles, find middle elements, and solve linked-list problems in linear time with constant space.
+
+### Intuition: "Speed Difference Reveals Structure"
+
+Imagine two runners on a circular track:
+
+* If there is a loop, the faster runner will eventually catch the slower runner.
+* If the track is straight (no cycle), the faster runner exits first.
+
+This is exactly how cycle detection works in linked lists.
+
+For middle-node problems:
+* When `fast` reaches the end, `slow` is naturally at the middle.
+
+So a single pass gives us structural information without extra memory.
+
+---
+
+### Core Variations
+
+#### 1. Cycle Detection (Floyd's Tortoise and Hare)
+
+* **Setup:** `slow = head`, `fast = head`.
+* **Movement:** `slow = slow.next`, `fast = fast.next.next`.
+* **Condition:** If `slow == fast`, cycle exists.
+
+#### 2. Middle Node
+
+* **Setup:** `slow = head`, `fast = head`.
+* **Movement:** Same as above.
+* **Result:** When fast stops, slow points to middle.
+
+#### 3. Cycle Start Detection
+
+After cycle is detected:
+* Reset one pointer to `head`.
+* Move both one step at a time.
+* The meeting point is cycle entry.
+
+---
+
+### Implementation Examples
+
+#### Example A: Detect Cycle in Linked List
+
+**Problem:** Return `true` if a linked list contains a cycle, else `false`.
+
+```java icon="code" title="Fast & Slow Pointers - Detect Cycle"
+public boolean hasCycle(ListNode head) {
+    if (head == null || head.next == null) return false;
+
+    ListNode slow = head;
+    ListNode fast = head;
+
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+
+        if (slow == fast) {
+            return true;
+        }
+    }
+
+    return false;
+}
+```
+
+#### Example B: Find Middle of Linked List
+
+**Problem:** Return the middle node of a singly linked list. If there are two middle nodes, return the second one.
+
+```java icon="code" title="Fast & Slow Pointers - Middle Node"
+public ListNode middleNode(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+
+    return slow;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of two cars on a highway checkpoint system:
+
+* One car checks every checkpoint (`slow`).
+* Another jumps two checkpoints at a time (`fast`).
+
+If road segments loop back, both cars eventually appear at the same checkpoint at the same time.
+
+That meeting confirms a cycle in the route map.
+
+---
+
+### When to Use
+
+Look for these keywords:
+
+* **Linked List** (strongest signal).
+* **Cycle / Loop detection**.
+* **Find middle**, split list, reorder list.
+* Need **$O(1)$ space** without hash sets.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Space Efficient:** Uses constant extra space. | **Structure Specific:** Most useful in linked-list / pointer-traversal problems. |
+| **Single Pass:** Many problems solved in one traversal. | **Pointer Safety:** Requires careful null checks to avoid runtime errors. |
+| **Elegant Cycle Logic:** Avoids extra visited set. | **Less Intuitive Initially:** Meeting-point math can be non-obvious. |
+
+### Summary Table
+
+| Use Case | Pointer Speeds | Time | Space |
+| --- | --- | --- | --- |
+| **Cycle Detection** | `slow=1x`, `fast=2x` | $O(n)$ | $O(1)$ |
+| **Middle Node** | `slow=1x`, `fast=2x` | $O(n)$ | $O(1)$ |
+| **Cycle Start** | Phase 1: detect, Phase 2: 1x + 1x | $O(n)$ | $O(1)$ |
