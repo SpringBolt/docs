@@ -1,0 +1,149 @@
+---
+title: Breadth First Search
+---
+
+### Introduction
+
+The **Breadth First Search (BFS)** pattern explores nodes level by level.
+
+Instead of going deep first, BFS processes all neighbors at the current distance before moving to the next distance.
+
+This makes BFS ideal for shortest path in unweighted graphs and level-order traversal in trees.
+
+### Intuition: "Expand in Waves"
+
+Imagine dropping a stone in water:
+
+* Ripples spread outward one layer at a time.
+* Nodes reached in earlier waves are closer.
+
+BFS follows the same expansion model using a queue.
+
+---
+
+### Core Variations
+
+#### 1. Tree Level Order Traversal
+
+* Queue stores current level nodes.
+* Process level size to separate levels.
+
+#### 2. Shortest Path (Unweighted Graph)
+
+* First time a node is reached -> shortest distance.
+* Use visited set to avoid reprocessing.
+
+#### 3. Multi-Source BFS
+
+* Start queue with multiple initial nodes.
+* Useful in grid spread/rotting/orange style problems.
+
+---
+
+### Implementation Examples
+
+#### Example A: Binary Tree Level Order Traversal
+**Problem:** Return values level by level from top to bottom.
+
+```java icon="code" title="BFS - Level Order Traversal"
+public List<List<Integer>> levelOrder(TreeNode root) {
+    List<List<Integer>> result = new ArrayList<>();
+    if (root == null) return result;
+
+    Queue<TreeNode> queue = new LinkedList<>();
+    queue.offer(root);
+
+    while (!queue.isEmpty()) {
+        int levelSize = queue.size();
+        List<Integer> level = new ArrayList<>();
+
+        for (int i = 0; i < levelSize; i++) {
+            TreeNode node = queue.poll();
+            level.add(node.val);
+
+            if (node.left != null) queue.offer(node.left);
+            if (node.right != null) queue.offer(node.right);
+        }
+
+        result.add(level);
+    }
+
+    return result;
+}
+```
+
+#### Example B: Shortest Path in Unweighted Graph
+
+**Problem:** Return shortest distance from source node to target node.
+
+```java icon="code" title="BFS - Shortest Path (Unweighted Graph)"
+public int shortestPath(Map<Integer, List<Integer>> graph, int source, int target) {
+    Queue<Integer> queue = new LinkedList<>();
+    Set<Integer> visited = new HashSet<>();
+
+    queue.offer(source);
+    visited.add(source);
+    int distance = 0;
+
+    while (!queue.isEmpty()) {
+        int size = queue.size();
+
+        for (int i = 0; i < size; i++) {
+            int node = queue.poll();
+
+            if (node == target) {
+                return distance;
+            }
+
+            for (int neighbor : graph.getOrDefault(node, Collections.emptyList())) {
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.offer(neighbor);
+                }
+            }
+        }
+
+        distance++;
+    }
+
+    return -1;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of finding minimum stops in a metro network.
+
+* First, check stations one stop away.
+* Then two stops away.
+* Continue layer by layer.
+
+The first time you reach destination is guaranteed minimum stops.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* **Minimum steps / shortest path** in unweighted graph.
+* **Level order** or **distance by layers**.
+* Grid expansion problems.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Optimal for Unweighted Shortest Path:** First visit gives minimum distance. | **Memory Heavy:** Queue can grow large on wide graphs/trees. |
+| **Level Awareness:** Naturally processes by depth/distance. | **Not Ideal for Deep Path Logic:** DFS is often better for path constraints. |
+| **Predictable Traversal:** Easy to reason about progression. | **Requires Visited in Graphs:** Missing this causes repeats/loops. |
+
+### Summary Table
+
+| Variant | Data Structure | Time | Space |
+| --- | --- | --- | --- |
+| **Tree Level Order** | Queue | $O(n)$ | $O(w)$ |
+| **Graph Shortest Path** | Queue + visited | $O(V+E)$ | $O(V)$ |
+| **Multi-Source BFS** | Queue seeded with all sources | $O(V+E)$ | $O(V)$ |

@@ -1,0 +1,119 @@
+---
+title: Depth First Search
+---
+
+### Introduction
+
+The **Depth First Search (DFS)** pattern explores one path completely before backtracking.
+
+In tree and graph problems, DFS is useful when decisions depend on full path context (root-to-leaf, path sums, subtree processing, recursion states).
+
+DFS can be implemented recursively (most common) or iteratively using an explicit stack.
+
+### Intuition: "Go Deep, Then Backtrack"
+
+Starting from a node:
+1. Visit current node.
+2. Explore one child deeply.
+3. When blocked, return to previous node.
+4. Continue with the next child.
+
+This makes DFS naturally suited for recursive decomposition.
+
+---
+
+### Core Variations
+
+#### 1. Preorder / Inorder / Postorder (Trees)
+
+* Preorder: Node -> Left -> Right
+* Inorder: Left -> Node -> Right
+* Postorder: Left -> Right -> Node
+
+#### 2. Path DFS
+
+* Track path state during traversal.
+* Useful for path sum, root-to-leaf strings, combinations.
+
+#### 3. Graph DFS with Visited Set
+
+* Prevent revisits in cyclic graphs.
+* Useful for connected components and cycle detection.
+
+---
+
+### Implementation Examples
+
+#### Example A: Binary Tree Preorder DFS
+**Problem:** Return preorder traversal of a binary tree.
+
+```java icon="code" title="DFS - Preorder Traversal"
+public List<Integer> preorderTraversal(TreeNode root) {
+    List<Integer> result = new ArrayList<>();
+    dfs(root, result);
+    return result;
+}
+
+private void dfs(TreeNode node, List<Integer> result) {
+    if (node == null) return;
+
+    result.add(node.val);      // visit node
+    dfs(node.left, result);    // go left
+    dfs(node.right, result);   // go right
+}
+```
+
+#### Example B: Path Sum (Root to Leaf)
+
+**Problem:** Return true if there exists a root-to-leaf path with sum equal to target.
+
+```java icon="code" title="DFS - Path Sum"
+public boolean hasPathSum(TreeNode root, int targetSum) {
+    if (root == null) return false;
+
+    // leaf node
+    if (root.left == null && root.right == null) {
+        return targetSum == root.val;
+    }
+
+    int remaining = targetSum - root.val;
+    return hasPathSum(root.left, remaining) || hasPathSum(root.right, remaining);
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of exploring a maze by always taking one corridor until it ends.
+
+* If it is a dead end, you backtrack.
+* Then try the next unexplored corridor.
+
+This is exactly DFS traversal behavior.
+
+---
+
+### When to Use
+
+Look for these signs:
+
+* Need **path-based decisions**.
+* Need subtree aggregation (`height`, `diameter`, `sum`, `balance`).
+* Need exhaustive exploration (permutations/combinations with backtracking).
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Great for Path Context:** Natural recursion for tree/graph paths. | **Stack Depth Risk:** Deep recursion can overflow call stack. |
+| **Simple Recursive Code:** Clean and short solutions. | **Not Level-Aware:** Does not process by distance/level naturally. |
+| **Flexible:** Works for traversal + computation together. | **Needs Visited Handling in Graphs:** Otherwise infinite loops. |
+
+### Summary Table
+
+| Variant | Typical Structure | Time | Space |
+| --- | --- | --- | --- |
+| **Tree DFS** | Recursive preorder/inorder/postorder | $O(n)$ | $O(h)$ |
+| **Graph DFS** | Recursion + visited set | $O(V+E)$ | $O(V)$ |
+| **Backtracking DFS** | Recursion + undo choices | Problem-dependent | Problem-dependent |

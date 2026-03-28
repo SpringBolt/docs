@@ -1,0 +1,131 @@
+---
+title: Monotonic Stack
+---
+
+### Introduction
+
+The **Monotonic Stack** pattern is used to solve nearest greater/smaller element problems in linear time.
+
+A stack is maintained in sorted order (increasing or decreasing). When a new element breaks that order, we pop until the invariant is restored.
+
+This avoids nested-loop comparisons and often reduces **$O(n^2)$** to **$O(n)$**.
+
+### Intuition: "Keep Only Useful Candidates"
+
+For `Next Greater Element`, we keep a **decreasing stack** of indices.
+
+When current value is larger than stack top:
+* current value is the next greater for popped indices.
+* pop until stack is valid again.
+
+Each index is pushed once and popped once, so total operations are linear.
+
+---
+
+### Core Variations
+
+#### 1. Next Greater Element
+
+* Use decreasing stack.
+* Pop smaller values when larger value arrives.
+
+#### 2. Next Smaller Element
+
+* Use increasing stack.
+* Pop larger values when smaller value arrives.
+
+#### 3. Range Contribution Problems
+
+* Compute span left/right with monotonic stack.
+* Used in histogram area and sum of subarray minimums.
+
+---
+
+### Implementation Examples
+
+#### Example A: Next Greater Element (Right Side)
+**Problem:** For each element, find next greater element to its right; return `-1` if none.
+
+```java icon="code" title="Monotonic Stack - Next Greater Element"
+public int[] nextGreaterElements(int[] nums) {
+    int n = nums.length;
+    int[] result = new int[n];
+    Arrays.fill(result, -1);
+
+    Deque<Integer> stack = new ArrayDeque<>(); // stores indices, values are decreasing
+
+    for (int i = 0; i < n; i++) {
+        while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
+            int index = stack.pop();
+            result[index] = nums[i];
+        }
+        stack.push(i);
+    }
+
+    return result;
+}
+```
+
+#### Example B: Largest Rectangle in Histogram
+
+**Problem:** Given bar heights, find largest rectangle area.
+
+```java icon="code" title="Monotonic Stack - Largest Rectangle in Histogram"
+public int largestRectangleArea(int[] heights) {
+    Deque<Integer> stack = new ArrayDeque<>();
+    int maxArea = 0;
+
+    for (int i = 0; i <= heights.length; i++) {
+        int currentHeight = (i == heights.length) ? 0 : heights[i];
+
+        while (!stack.isEmpty() && currentHeight < heights[stack.peek()]) {
+            int h = heights[stack.pop()];
+            int rightBoundary = i;
+            int leftBoundary = stack.isEmpty() ? -1 : stack.peek();
+            int width = rightBoundary - leftBoundary - 1;
+            maxArea = Math.max(maxArea, h * width);
+        }
+
+        stack.push(i);
+    }
+
+    return maxArea;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of people standing in line by height where visibility matters.
+
+* Shorter person behind a taller person is blocked and less useful for future visibility checks.
+* When a taller person arrives, previously blocked shorter ones can be resolved.
+
+The stack keeps only candidates that still matter.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* **Next Greater/Smaller** element questions.
+* **Nearest larger/smaller to left/right**.
+* Histogram, temperature, stock span, subarray min/max contribution problems.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Linear Time:** Most tasks become $O(n)$. | **Pattern Heavy:** Hard to derive without practice. |
+| **Deterministic:** Each element pushed/popped once. | **Index Management:** Easy to make boundary mistakes. |
+| **Reusable Template:** Works for many variants. | **Less Intuitive than Two Pointers:** Conceptual overhead is higher. |
+
+### Summary Table
+
+| Variant | Stack Order | Time | Space |
+| --- | --- | --- | --- |
+| **Next Greater** | Decreasing | $O(n)$ | $O(n)$ |
+| **Next Smaller** | Increasing | $O(n)$ | $O(n)$ |
+| **Histogram Area** | Increasing indices by height | $O(n)$ | $O(n)$ |
