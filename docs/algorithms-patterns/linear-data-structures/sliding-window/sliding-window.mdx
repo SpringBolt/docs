@@ -1,146 +1,135 @@
 ---
 title: Sliding Window
+sidebarTitle: "Sliding Window"
 ---
 
 ### Introduction
 
-The **Sliding Window** pattern is used to perform operations on a specific window size of a given array or linked list, such as finding the longest subarray containing all 1s.
+The **Sliding Window** pattern processes contiguous portions of an array or string by maintaining a moving window `[left, right]`.
 
-Sliding Windows start from the 1st element and keep shifting right by one element and adjust the length of the window according to the problem that you are solving.
+Instead of recomputing every subarray/substring from scratch, we incrementally update the window as it moves.
 
-In many problems, we want to calculate something among all contiguous subarrays of a certain size (or meeting a certain condition).
-* **Naive Approach:** Use nested loops to check every single subarray. This is usually $O(n^2)$ or $O(nk)$.
-* **Sliding Window:** Reuse the result from the previous window to calculate the current window in $O(1)$ time, leading to an overall **$O(n)$** complexity.
+### Intuition
 
-### Intuition: "Don't Re-calculate"
+Brute force checks all contiguous ranges, which is expensive.
 
-Imagine you have an array `[1, 2, 3, 4, 5]` and you want the sum of every subarray of size 3.
-1.  **First Window:** `[1, 2, 3]` $\rightarrow$ Sum = 6.
-2.  **Second Window:** `[2, 3, 4]` $\rightarrow$ Sum = 9.
+```java icon="code" title="Brute Force Subarray Scan"
+// Brute Force: O(n^2)
+for (int start = 0; start < nums.length; start++) {
+    int sum = 0;
+    for (int end = start; end < nums.length; end++) {
+        sum += nums[end];
+        // Evaluate subarray nums[start..end]
+    }
+}
+```
 
-Notice that the second window shares two elements (`2` and `3`) with the first window.
-Instead of summing `2 + 3 + 4` from scratch, we can just:
-* **Subtract** the element leaving the window (`1`).
-* **Add** the element entering the window (`4`).
-* New Sum = Old Sum - `1` + `4` = 9.
+Sliding Window avoids repeated work:
 
-This "Add & Remove" logic is the heart of the Sliding Window.
+* Add the new right element.
+* Remove the old left element (when needed).
+* Keep rolling state (sum, frequency map, distinct count, etc.).
 
----
+### What are Predictable Dynamics?
 
-### Core Variations
+The key dynamic is **contiguity**. When window boundaries move by one step:
 
-There are two main types of sliding windows:
+* Only one element enters from the right.
+* Only one element leaves from the left.
+* Window state can be updated in O(1) or near O(1).
 
-#### 1. Fixed Window Size
-The window size $k$ is fixed. The window slides one step to the right at every iteration.
-* **Movement:** `right++` and `left++` happen together.
-* **Use Case:** "Find the maximum sum of any contiguous subarray of size $k$."
+This predictable “add/remove” behavior enables linear-time scans.
 
-#### 2. Variable Window Size (Dynamic)
-The window grows or shrinks based on a condition.
-* **Movement:** `right++` expands the window to find a valid solution. If the condition is broken (or we want to optimize), `left++` shrinks the window.
-* **Use Case:** "Find the smallest subarray with a sum greater than or equal to $S$."
+### Core Strategies
 
----
+#### 1. Fixed-Size Window
+
+* Window size `k` never changes.
+* Once size hits `k`, slide both pointers.
+* Use Cases: max sum of size `k`, average of size `k`.
+
+#### 2. Variable-Size Window (Expand/Shrink)
+
+* Expand right pointer to satisfy condition.
+* Shrink left pointer while condition remains valid.
+* Use Cases: smallest subarray with sum ≥ target.
+
+#### 3. Constraint-Tracking Window
+
+* Maintain counts/maps for characters or categories.
+* Shrink while violating constraints (duplicates, too many distinct chars).
+* Use Cases: longest substring without repeating chars.
 
 ### Implementation Examples
 
-#### Example A: Fixed Window (Max Sum Subarray of Size K)
-**Problem:** Given an array of integers and a number $k$, find the maximum sum of a subarray of size $k$.
+#### Example A: Prefix-Based Rolling Computation
 
-```java icon="code" title="Max Sum Subarray of Size K"
-public int maxSumSubarray(int[] arr, int k) {
-    int windowSum = 0;
-    int maxSum = 0;
-    int windowStart = 0;
+```java icon="code" title="Linear Data Structures - Prefix Running Sum"
+public int[] runningSum(int[] nums) {
+    int[] prefix = new int[nums.length];
+    int running = 0;
 
-    for (int windowEnd = 0; windowEnd < arr.length; windowEnd++) {
-        // 1. Add the next element to the window
-        windowSum += arr[windowEnd]; 
-
-        // 2. Check if we have hit the window size 'k'
-        if (windowEnd >= k - 1) {
-            // Update the max sum
-            maxSum = Math.max(maxSum, windowSum);
-            
-            // 3. Slide the window ahead:
-            // Subtract the element going out
-            windowSum -= arr[windowStart]; 
-            // Move the start pointer
-            windowStart++; 
-        }
+    for (int i = 0; i < nums.length; i++) {
+        running += nums[i];
+        prefix[i] = running;
     }
-    return maxSum;
+
+    return prefix;
 }
 ```
 
-#### Example B: Variable Window (Smallest Subarray with Sum )
+#### Example B: Sliding-Style Window Scan
 
-**Problem:** Find the length of the smallest contiguous subarray whose sum is greater than or equal to .
-
-```java icon="code" title="Smallest Subarray with Sum >= target"
-public int minSubArrayLen(int target, int[] nums) {
-    int minLength = Integer.MAX_VALUE;
+```java icon="code" title="Linear Data Structures - Window Template"
+public int maxSumWindow(int[] nums, int k) {
+    int left = 0;
     int windowSum = 0;
-    int windowStart = 0;
+    int best = Integer.MIN_VALUE;
 
-    for (int windowEnd = 0; windowEnd < nums.length; windowEnd++) {
-        // 1. Expand the window
-        windowSum += nums[windowEnd]; 
+    for (int right = 0; right < nums.length; right++) {
+        windowSum += nums[right];
 
-        // 2. Contract the window as long as condition is met
-        while (windowSum >= target) {
-            // Update minimum length found so far
-            minLength = Math.min(minLength, windowEnd - windowStart + 1);
-            
-            // Remove the start element to try and find a smaller window
-            windowSum -= nums[windowStart];
-            windowStart++; 
+        if (right >= k - 1) {
+            best = Math.max(best, windowSum);
+            windowSum -= nums[left];
+            left++;
         }
     }
-    
-    return (minLength == Integer.MAX_VALUE) ? 0 : minLength;
+
+    return best;
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Think of a **Panoramic Photo** on your phone.
+#### 1. Conceptual Analogy: Moving Flashlight
 
-* The screen displays a fixed rectangular view (the window) of the landscape.
-* As you move your phone to the right, new scenery enters from the right edge, and old scenery disappears from the left edge.
-* The "picture" inside the frame is your **Fixed Sliding Window**.
+Imagine scanning a wall with a flashlight. The illuminated region is your window. As you move right, new area enters the light while old area leaves.
 
-Think of a **Caterpillar** moving.
+#### 2. Technical Analogy: TCP Receive Buffer Monitoring
 
-* The caterpillar extends its head (right pointer) to eat (sum increases).
-* Once it is full, it pulls its tail (left pointer) forward (length decreases).
-* This expanding and contracting movement is your **Variable Sliding Window**.
+A network stack tracks a rolling region of incoming packets and acknowledgements. As packets are processed, the left boundary advances; new packets extend the right boundary.
 
----
+### When to Use (and How to Recognize It)
 
-### When to Use
-
-Look for these keywords in the problem statement:
-
-* **"Contiguous"**: The subarray or substring must be connected.
-* **"Subarray" or "Substring"**: Almost always implies sliding window.
-* **"Size K"**: Strong hint for Fixed Window.
-* **"Longest/Shortest/Min/Max"**: Strong hint for Variable Window optimization.
+* Keywords: **contiguous**, **subarray**, **substring**.
+* Need max/min/longest/shortest over contiguous ranges.
+* Brute force suggests nested loops over intervals.
+* A rolling metric can be maintained incrementally.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Performance:** Reduces  brute force to  linear time. | **Complexity:** Handling edge cases (empty arrays, window size > array size) can be tricky. |
-| **Streaming:** Works well with data streams where you don't have all data upfront. | **Non-Contiguous:** Cannot be used for "Subsequence" problems (where elements can be skipped). |
+| Converts many contiguous-range problems from **O(n^2)** to **O(n)**. | Less useful when data is non-contiguous (subsequence problems). |
+| Reuses previous computation efficiently. | Variable-window invariants can be tricky to debug. |
+| Works well for streams and online processing. | Some variants need hash maps with non-trivial edge handling. |
 
 ### Summary Table
 
-| Type | Movement Strategy | Common Problems |
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| **Fixed** | Grow until size , then slide `left` and `right` simultaneously. | Max Sum Subarray of size K, Permutation in String. |
-| **Variable** | Grow `right` to satisfy condition, shrink `left` to optimize. | Longest Substring Without Repeating Characters, Min Size Subarray Sum. |
+| Fixed Window | Keep size `k`, slide both ends together | Max Sum Subarray of Size K, Average of Subarrays |
+| Variable Window | Expand right, shrink left while valid | Min Size Subarray Sum, Longest Repeating Replacement |
+| Constraint Tracking | Maintain counts/frequencies in window | Longest Substring Without Repeating Characters |

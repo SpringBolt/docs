@@ -1,166 +1,141 @@
 ---
 title: Queue Using Two Stacks
+sidebarTitle: "Queue Using Two Stacks"
 ---
 
 ### Introduction
 
-The **Queue Using Two Stacks** pattern implements FIFO behavior using two LIFO stacks.
+The **Queue Using Two Stacks** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-It is a classic data-structure transformation problem that demonstrates amortized analysis.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-Even though individual operations may sometimes move many elements, average cost per operation remains constant.
+### Intuition
 
-### Intuition: "Reverse Twice to Restore FIFO"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-A stack reverses order.
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-If we push enqueue elements into `inStack`, newest stays on top.
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-When dequeue is needed:
+### What are Predictable Dynamics?
 
-* Move all elements from `inStack` to `outStack` (first reverse).
-* Top of `outStack` becomes the oldest element (FIFO order restored).
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-This transfer happens only when `outStack` is empty.
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
----
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-### Core Variations
+### Core Strategies
 
-#### 1. Lazy Transfer (Amortized O(1))
+#### 1. Canonical State Modeling
 
-* Transfer only when dequeue/peek requires it.
-* Best practical approach.
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-#### 2. Eager Transfer
+#### 2. Incremental Transition
 
-* Transfer on every enqueue.
-* Simpler dequeue but slower enqueue.
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
-#### 3. Queue Using Two Deques
+#### 3. Constraint-Driven Pruning
 
-* Similar logic with custom interfaces.
-* Useful in restricted API settings.
-
----
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Amortized O(1) Queue
-**Problem:** Implement queue with stacks supporting `push`, `pop`, `peek`, and `empty`.
+#### Example A: BFS Using Queue
 
-```java icon="code" title="Queue - Using Two Stacks"
-class MyQueue {
-    private Deque<Integer> inStack;
-    private Deque<Integer> outStack;
+```java icon="code" title="Queue - BFS Template"
+public List<Integer> bfsOrder(List<List<Integer>> graph, int source) {
+    Queue<Integer> queue = new LinkedList<>();
+    boolean[] visited = new boolean[graph.size()];
+    List<Integer> order = new ArrayList<>();
 
-    public MyQueue() {
-        inStack = new ArrayDeque<>();
-        outStack = new ArrayDeque<>();
-    }
+    queue.offer(source);
+    visited[source] = true;
 
-    public void push(int x) {
-        inStack.push(x);
-    }
+    while (!queue.isEmpty()) {
+        int node = queue.poll();
+        order.add(node);
 
-    public int pop() {
-        moveIfNeeded();
-        return outStack.pop();
-    }
-
-    public int peek() {
-        moveIfNeeded();
-        return outStack.peek();
-    }
-
-    public boolean empty() {
-        return inStack.isEmpty() && outStack.isEmpty();
-    }
-
-    private void moveIfNeeded() {
-        if (outStack.isEmpty()) {
-            while (!inStack.isEmpty()) {
-                outStack.push(inStack.pop());
+        for (int next : graph.get(node)) {
+            if (!visited[next]) {
+                visited[next] = true;
+                queue.offer(next);
             }
         }
     }
+
+    return order;
 }
 ```
 
-#### Example B: Eager Transfer Strategy
+#### Example B: Monotonic Queue for Sliding Maximum
 
-**Problem:** Keep front always ready by transferring during `push`.
+```java icon="code" title="Queue - Monotonic Deque"
+public int[] maxSlidingWindow(int[] nums, int k) {
+    Deque<Integer> deque = new ArrayDeque<>();
+    int[] answer = new int[nums.length - k + 1];
 
-```java icon="code" title="Queue - Two Stacks (Eager Transfer)"
-class MyQueue {
-    private Deque<Integer> main;
-    private Deque<Integer> helper;
-
-    public MyQueue() {
-        main = new ArrayDeque<>();
-        helper = new ArrayDeque<>();
-    }
-
-    public void push(int x) {
-        while (!main.isEmpty()) {
-            helper.push(main.pop());
+    for (int right = 0; right < nums.length; right++) {
+        while (!deque.isEmpty() && deque.peekFirst() <= right - k) {
+            deque.pollFirst();
         }
 
-        main.push(x);
+        while (!deque.isEmpty() && nums[deque.peekLast()] <= nums[right]) {
+            deque.pollLast();
+        }
 
-        while (!helper.isEmpty()) {
-            main.push(helper.pop());
+        deque.offerLast(right);
+        if (right >= k - 1) {
+            answer[right - k + 1] = nums[deque.peekFirst()];
         }
     }
 
-    public int pop() {
-        return main.pop();
-    }
-
-    public int peek() {
-        return main.peek();
-    }
-
-    public boolean empty() {
-        return main.isEmpty();
-    }
+    return answer;
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Imagine two stacks of trays:
+#### 1. Conceptual Analogy
 
-* New trays are stacked in storage stack.
-* When serving starts, trays are moved to serving stack.
-* Serving stack now gives oldest tray first.
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-You avoid repeated movement by transferring only when serving stack becomes empty.
+#### 2. Technical Analogy
 
----
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-### When to Use
+### When to Use (and How to Recognize It)
 
-Look for these clues:
-
-* Need queue behavior but only stack operations available.
-* Interview asks for API emulation between data structures.
-* Amortized complexity discussion is expected.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Elegant Transformation:** Demonstrates stack/queue duality. | **Worst-Case Single Operation:** One pop can trigger full transfer. |
-| **Amortized Efficiency:** Average `O(1)` for core operations. | **Extra Memory:** Uses two stacks. |
-| **Common Interview Pattern:** Frequently tested design exercise. | **Less Direct than Native Queue:** More helper logic required. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Strategy | Push | Pop/Peek | Space |
-| --- | --- | --- | --- |
-| **Lazy Transfer** | $O(1)$ | Amortized $O(1)$ | $O(n)$ |
-| **Eager Transfer** | $O(n)$ | $O(1)$ | $O(n)$ |
-| **Hybrid Variants** | Depends on transfer policy | Depends on policy | $O(n)$ |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

@@ -1,138 +1,139 @@
 ---
 title: Top K Elements
+sidebarTitle: "Top K Elements"
 ---
 
 ### Introduction
 
-The **Top K Elements** pattern uses a heap (priority queue) to efficiently keep track of the k largest or k smallest elements.
+The **Top K Elements** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-When we only need a small subset (`k`) from large data (`n`), sorting everything is often unnecessary.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-A heap keeps the best candidates dynamically with **$O(n \log k)$** performance.
+### Intuition
 
-### Intuition: "Keep Only K Best Candidates"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-To find k largest elements:
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-* Maintain a **min-heap** of size at most `k`.
-* Push each element.
-* If heap size exceeds `k`, pop smallest.
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-At the end, heap contains the k largest values.
+### What are Predictable Dynamics?
 
----
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-### Core Variations
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-#### 1. K Largest Elements
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-* Use min-heap of size `k`.
-* Remove smallest when size exceeds `k`.
+### Core Strategies
 
-#### 2. K Smallest Elements
+#### 1. Canonical State Modeling
 
-* Use max-heap of size `k`.
-* Remove largest when size exceeds `k`.
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-#### 3. Frequency-Based Top K
+#### 2. Incremental Transition
 
-* Count frequency with map.
-* Use heap over `(value, frequency)` pairs.
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
----
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: K Largest Elements
-**Problem:** Return k largest values from an array.
+#### Example A: Maintain Top-K with Min Heap
 
-```java icon="code" title="Top K Elements - K Largest Values"
-public int[] topKLargest(int[] nums, int k) {
+```java icon="code" title="Heap - Top K Largest"
+public int findKthLargest(int[] nums, int k) {
     PriorityQueue<Integer> minHeap = new PriorityQueue<>();
 
-    for (int num : nums) {
-        minHeap.offer(num);
-
+    for (int value : nums) {
+        minHeap.offer(value);
         if (minHeap.size() > k) {
             minHeap.poll();
         }
     }
 
-    int[] result = new int[minHeap.size()];
-    int index = 0;
-    for (int num : minHeap) {
-        result[index++] = num;
-    }
-
-    return result;
+    // Heap root is the k-th largest after maintaining size k.
+    return minHeap.peek();
 }
 ```
 
-#### Example B: Top K Frequent Elements
+#### Example B: Merge K Sorted Lists (Heap)
 
-**Problem:** Return `k` most frequent numbers in an array.
-
-```java icon="code" title="Top K Elements - Top K Frequent"
-public int[] topKFrequent(int[] nums, int k) {
-    Map<Integer, Integer> frequencyMap = new HashMap<>();
-    for (int num : nums) {
-        frequencyMap.put(num, frequencyMap.getOrDefault(num, 0) + 1);
+```java icon="code" title="Heap - Merge K Sorted Arrays"
+public List<Integer> mergeKSortedArrays(List<int[]> arrays) {
+    class Node {
+        int value, arrayIndex, elementIndex;
+        Node(int v, int ai, int ei) { value = v; arrayIndex = ai; elementIndex = ei; }
     }
 
-    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a[1], b[1]));
+    PriorityQueue<Node> minHeap = new PriorityQueue<>(Comparator.comparingInt(a -> a.value));
+    List<Integer> merged = new ArrayList<>();
 
-    for (Map.Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
-        minHeap.offer(new int[] {entry.getKey(), entry.getValue()});
-
-        if (minHeap.size() > k) {
-            minHeap.poll();
+    for (int i = 0; i < arrays.size(); i++) {
+        if (arrays.get(i).length > 0) {
+            minHeap.offer(new Node(arrays.get(i)[0], i, 0));
         }
     }
 
-    int[] result = new int[minHeap.size()];
-    int i = 0;
     while (!minHeap.isEmpty()) {
-        result[i++] = minHeap.poll()[0];
+        Node current = minHeap.poll();
+        merged.add(current.value);
+
+        int nextIndex = current.elementIndex + 1;
+        if (nextIndex < arrays.get(current.arrayIndex).length) {
+            int nextValue = arrays.get(current.arrayIndex)[nextIndex];
+            minHeap.offer(new Node(nextValue, current.arrayIndex, nextIndex));
+        }
     }
 
-    return result;
+    return merged;
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Think of maintaining a live leaderboard of top `k` scores.
+#### 1. Conceptual Analogy
 
-* New scores keep arriving.
-* You do not sort all historical scores again.
-* You keep only top contenders and remove low performers immediately.
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-That is exactly heap-based Top K processing.
+#### 2. Technical Analogy
 
----
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-### When to Use
+### When to Use (and How to Recognize It)
 
-Look for these clues:
-
-* **Top K / K largest / K smallest / K frequent**.
-* Need partial ranking, not full sorting.
-* Streaming or continuously arriving data.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Efficient for Small K:** Better than full sort when `k << n`. | **Heap Overhead:** Constant factors higher than simple scans. |
-| **Streaming Friendly:** Works with online data input. | **Ordering:** Heap output is not fully sorted unless processed further. |
-| **Flexible:** Works with custom comparators (frequency, distance, score). | **Comparator Bugs:** Easy to invert min/max logic incorrectly. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Heap Type | Time | Space |
-| --- | --- | --- | --- |
-| **K Largest** | Min-heap size `k` | $O(n \log k)$ | $O(k)$ |
-| **K Smallest** | Max-heap size `k` | $O(n \log k)$ | $O(k)$ |
-| **Top K Frequent** | Min-heap on frequency | $O(n \log k)$ | $O(n)$ |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

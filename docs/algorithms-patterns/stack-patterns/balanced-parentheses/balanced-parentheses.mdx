@@ -1,67 +1,70 @@
 ---
 title: Balanced Parentheses
+sidebarTitle: "Balanced Parentheses"
 ---
 
 ### Introduction
 
-The **Balanced Parentheses** stack pattern is used to validate nested structures.
+The **Balanced Parentheses** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-When we see an opening bracket, we push it. When we see a closing bracket, we check whether it matches the latest opening bracket on top of the stack.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-This **Last-In, First-Out (LIFO)** behavior is exactly why stack is the right data structure here.
+### Intuition
 
-### Intuition: "Close What Opened Last"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-Consider the string `([{}])`.
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-* `(` opens first.
-* `[` opens second.
-* `{` opens third.
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-Now the first closing bracket must close `{`, not `(`.
+### What are Predictable Dynamics?
 
-So the latest opening symbol must be closed first. That is stack order.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
----
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-### Core Variations
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-#### 1. Basic Valid Parentheses
+### Core Strategies
 
-* Validate only `()[]{}`.
-* Return true/false.
+#### 1. Canonical State Modeling
 
-#### 2. Minimum Removal to Make Valid
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-* Track invalid indices.
-* Remove unmatched brackets.
+#### 2. Incremental Transition
 
-#### 3. Longest Valid Parentheses
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
-* Stack stores indices, not characters.
-* Compute max valid span length.
+#### 3. Constraint-Driven Pruning
 
----
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Valid Parentheses
-**Problem:** Return `true` if all opening brackets are closed in correct order.
+#### Example A: Balanced Parentheses
 
-```java icon="code" title="Stack - Valid Parentheses"
+```java icon="code" title="Stack - Balanced Parentheses"
 public boolean isValid(String s) {
+    Map<Character, Character> pairs = Map.of(')', '(', ']', '[', '}', '{');
     Deque<Character> stack = new ArrayDeque<>();
 
     for (char ch : s.toCharArray()) {
-        if (ch == '(' || ch == '[' || ch == '{') {
+        if (pairs.containsValue(ch)) {
             stack.push(ch);
-        } else {
-            if (stack.isEmpty()) return false;
-
-            char top = stack.pop();
-            if ((ch == ')' && top != '(') ||
-                (ch == ']' && top != '[') ||
-                (ch == '}' && top != '{')) {
+        } else if (pairs.containsKey(ch)) {
+            if (stack.isEmpty() || stack.pop() != pairs.get(ch)) {
                 return false;
             }
         }
@@ -71,70 +74,56 @@ public boolean isValid(String s) {
 }
 ```
 
-#### Example B: Longest Valid Parentheses
+#### Example B: Monotonic Stack for Next Greater Element
 
-**Problem:** Return length of the longest valid parentheses substring.
+```java icon="code" title="Stack - Next Greater Element"
+public int[] nextGreaterElements(int[] nums) {
+    int[] answer = new int[nums.length];
+    Arrays.fill(answer, -1);
+    Deque<Integer> stack = new ArrayDeque<>(); // stores indices
 
-```java icon="code" title="Stack - Longest Valid Parentheses"
-public int longestValidParentheses(String s) {
-    Deque<Integer> stack = new ArrayDeque<>();
-    stack.push(-1); // base index for valid length calculation
-
-    int maxLength = 0;
-
-    for (int i = 0; i < s.length(); i++) {
-        char ch = s.charAt(i);
-
-        if (ch == '(') {
-            stack.push(i);
-        } else {
-            stack.pop();
-
-            if (stack.isEmpty()) {
-                stack.push(i); // reset base
-            } else {
-                maxLength = Math.max(maxLength, i - stack.peek());
-            }
+    for (int i = 0; i < nums.length; i++) {
+        while (!stack.isEmpty() && nums[stack.peek()] < nums[i]) {
+            int index = stack.pop();
+            answer[index] = nums[i];
         }
+        stack.push(i);
     }
 
-    return maxLength;
+    return answer;
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Think of opening and closing folders in a UI:
+#### 1. Conceptual Analogy
 
-* You open Folder A, then B, then C.
-* To return correctly, you close C first, then B, then A.
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-That reverse closing order is exactly stack behavior.
+#### 2. Technical Analogy
 
----
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-### When to Use
+### When to Use (and How to Recognize It)
 
-Look for these clues:
-
-* Nested symbols or expressions.
-* "Valid parentheses" style constraints.
-* Need to match opening and closing tokens with ordering.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Natural Fit for Nesting:** Models nested order directly. | **Character Mapping Errors:** Easy to mismatch bracket conditions. |
-| **Linear Time:** One pass for validation. | **Only Order Checks:** Does not evaluate expression value itself. |
-| **Simple to Implement:** Small and reusable template. | **Edge Cases:** Empty and single-char strings need care. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Stack Content | Time | Space |
-| --- | --- | --- | --- |
-| **Valid Parentheses** | Opening characters | $O(n)$ | $O(n)$ |
-| **Longest Valid Parentheses** | Indices | $O(n)$ | $O(n)$ |
-| **Minimum Removal** | Indices/characters | $O(n)$ | $O(n)$ |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

@@ -1,131 +1,129 @@
 ---
 title: Monotonic Stack
+sidebarTitle: "Monotonic Stack"
 ---
 
 ### Introduction
 
-The **Monotonic Stack** pattern is used to solve nearest greater/smaller element problems in linear time.
+The **Monotonic Stack** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-A stack is maintained in sorted order (increasing or decreasing). When a new element breaks that order, we pop until the invariant is restored.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-This avoids nested-loop comparisons and often reduces **$O(n^2)$** to **$O(n)$**.
+### Intuition
 
-### Intuition: "Keep Only Useful Candidates"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-For `Next Greater Element`, we keep a **decreasing stack** of indices.
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-When current value is larger than stack top:
-* current value is the next greater for popped indices.
-* pop until stack is valid again.
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-Each index is pushed once and popped once, so total operations are linear.
+### What are Predictable Dynamics?
 
----
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-### Core Variations
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-#### 1. Next Greater Element
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-* Use decreasing stack.
-* Pop smaller values when larger value arrives.
+### Core Strategies
 
-#### 2. Next Smaller Element
+#### 1. Canonical State Modeling
 
-* Use increasing stack.
-* Pop larger values when smaller value arrives.
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-#### 3. Range Contribution Problems
+#### 2. Incremental Transition
 
-* Compute span left/right with monotonic stack.
-* Used in histogram area and sum of subarray minimums.
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
----
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Next Greater Element (Right Side)
-**Problem:** For each element, find next greater element to its right; return `-1` if none.
+#### Example A: Balanced Parentheses
 
-```java icon="code" title="Monotonic Stack - Next Greater Element"
+```java icon="code" title="Stack - Balanced Parentheses"
+public boolean isValid(String s) {
+    Map<Character, Character> pairs = Map.of(')', '(', ']', '[', '}', '{');
+    Deque<Character> stack = new ArrayDeque<>();
+
+    for (char ch : s.toCharArray()) {
+        if (pairs.containsValue(ch)) {
+            stack.push(ch);
+        } else if (pairs.containsKey(ch)) {
+            if (stack.isEmpty() || stack.pop() != pairs.get(ch)) {
+                return false;
+            }
+        }
+    }
+
+    return stack.isEmpty();
+}
+```
+
+#### Example B: Monotonic Stack for Next Greater Element
+
+```java icon="code" title="Stack - Next Greater Element"
 public int[] nextGreaterElements(int[] nums) {
-    int n = nums.length;
-    int[] result = new int[n];
-    Arrays.fill(result, -1);
+    int[] answer = new int[nums.length];
+    Arrays.fill(answer, -1);
+    Deque<Integer> stack = new ArrayDeque<>(); // stores indices
 
-    Deque<Integer> stack = new ArrayDeque<>(); // stores indices, values are decreasing
-
-    for (int i = 0; i < n; i++) {
-        while (!stack.isEmpty() && nums[i] > nums[stack.peek()]) {
+    for (int i = 0; i < nums.length; i++) {
+        while (!stack.isEmpty() && nums[stack.peek()] < nums[i]) {
             int index = stack.pop();
-            result[index] = nums[i];
+            answer[index] = nums[i];
         }
         stack.push(i);
     }
 
-    return result;
+    return answer;
 }
 ```
 
-#### Example B: Largest Rectangle in Histogram
 
-**Problem:** Given bar heights, find largest rectangle area.
+### Real-World Analogies
 
-```java icon="code" title="Monotonic Stack - Largest Rectangle in Histogram"
-public int largestRectangleArea(int[] heights) {
-    Deque<Integer> stack = new ArrayDeque<>();
-    int maxArea = 0;
+#### 1. Conceptual Analogy
 
-    for (int i = 0; i <= heights.length; i++) {
-        int currentHeight = (i == heights.length) ? 0 : heights[i];
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-        while (!stack.isEmpty() && currentHeight < heights[stack.peek()]) {
-            int h = heights[stack.pop()];
-            int rightBoundary = i;
-            int leftBoundary = stack.isEmpty() ? -1 : stack.peek();
-            int width = rightBoundary - leftBoundary - 1;
-            maxArea = Math.max(maxArea, h * width);
-        }
+#### 2. Technical Analogy
 
-        stack.push(i);
-    }
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-    return maxArea;
-}
-```
+### When to Use (and How to Recognize It)
 
----
-
-### Real-World Analogy
-
-Think of people standing in line by height where visibility matters.
-
-* Shorter person behind a taller person is blocked and less useful for future visibility checks.
-* When a taller person arrives, previously blocked shorter ones can be resolved.
-
-The stack keeps only candidates that still matter.
-
----
-
-### When to Use
-
-Look for these clues:
-
-* **Next Greater/Smaller** element questions.
-* **Nearest larger/smaller to left/right**.
-* Histogram, temperature, stock span, subarray min/max contribution problems.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Linear Time:** Most tasks become $O(n)$. | **Pattern Heavy:** Hard to derive without practice. |
-| **Deterministic:** Each element pushed/popped once. | **Index Management:** Easy to make boundary mistakes. |
-| **Reusable Template:** Works for many variants. | **Less Intuitive than Two Pointers:** Conceptual overhead is higher. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Stack Order | Time | Space |
-| --- | --- | --- | --- |
-| **Next Greater** | Decreasing | $O(n)$ | $O(n)$ |
-| **Next Smaller** | Increasing | $O(n)$ | $O(n)$ |
-| **Histogram Area** | Increasing indices by height | $O(n)$ | $O(n)$ |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

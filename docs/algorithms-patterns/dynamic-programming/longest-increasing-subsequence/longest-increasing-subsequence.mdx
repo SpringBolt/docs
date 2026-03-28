@@ -1,98 +1,127 @@
 ---
 title: Dynamic Programming - Longest Increasing Subsequence
+sidebarTitle: "Longest Increasing Subsequence"
 ---
 
 ### Introduction
 
-The **LIS Pattern** finds the longest strictly increasing subsequence in an array.
+The **Dynamic Programming - Longest Increasing Subsequence** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-Classic DP defines `dp[i]` = LIS ending at index `i`.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
 ### Intuition
 
-For each index `i`, look back at all `j < i`.
-If `nums[j] < nums[i]`, we can extend subsequence from `j` to `i`.
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
----
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-### Core Variations
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-#### 1. O(n^2) DP LIS
+### What are Predictable Dynamics?
 
-#### 2. O(n log n) Binary Search LIS
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-#### 3. Number of LIS / Mountain Array variants
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
----
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
+
+### Core Strategies
+
+#### 1. Canonical State Modeling
+
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
+
+#### 2. Incremental Transition
+
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: O(n^2) DP LIS
+#### Example A: Top-Down DP (Memoization)
 
-```java icon="code" title="DP LIS - O(n^2)"
-public int lengthOfLIS(int[] nums) {
-    int n = nums.length;
-    int[] dp = new int[n];
-    Arrays.fill(dp, 1);
+```java icon="code" title="DP - Top Down Memoization"
+public int climbStairs(int n) {
+    int[] memo = new int[n + 1];
+    Arrays.fill(memo, -1);
+    return solve(n, memo);
+}
 
-    int answer = 1;
+private int solve(int n, int[] memo) {
+    if (n <= 2) return n;
+    if (memo[n] != -1) return memo[n];
 
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < i; j++) {
-            if (nums[j] < nums[i]) {
-                dp[i] = Math.max(dp[i], dp[j] + 1);
-            }
-        }
-        answer = Math.max(answer, dp[i]);
-    }
-
-    return answer;
+    // Transition: f(n) = f(n-1) + f(n-2)
+    memo[n] = solve(n - 1, memo) + solve(n - 2, memo);
+    return memo[n];
 }
 ```
 
-#### Example B: O(n log n) Patience Style
+#### Example B: Bottom-Up DP (Tabulation)
 
-```java icon="code" title="DP LIS - O(n log n)"
-public int lengthOfLISFast(int[] nums) {
-    List<Integer> tails = new ArrayList<>();
+```java icon="code" title="DP - Bottom Up Tabulation"
+public int minCostClimbingStairs(int[] cost) {
+    int n = cost.length;
+    int[] dp = new int[n + 1];
 
-    for (int num : nums) {
-        int left = 0;
-        int right = tails.size();
+    dp[0] = 0;
+    dp[1] = 0;
 
-        while (left < right) {
-            int mid = left + (right - left) / 2;
-            if (tails.get(mid) < num) left = mid + 1;
-            else right = mid;
-        }
-
-        if (left == tails.size()) tails.add(num);
-        else tails.set(left, num);
+    for (int i = 2; i <= n; i++) {
+        int oneStep = dp[i - 1] + cost[i - 1];
+        int twoStep = dp[i - 2] + cost[i - 2];
+        dp[i] = Math.min(oneStep, twoStep);
     }
 
-    return tails.size();
+    return dp[n];
 }
 ```
 
----
 
-### When to Use
+### Real-World Analogies
 
-* "Longest increasing/decreasing subsequence".
-* Ordering problems with non-contiguous picks.
-* Need optimization over previous indices.
+#### 1. Conceptual Analogy
+
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
+
+#### 2. Technical Analogy
+
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| Classic DP with clear transition. | O(n^2) can be slow for large n. |
-| Fast O(n log n) variant available. | Fast variant is harder to reason about. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Time | Space |
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| DP LIS | $O(n^2)$ | $O(n)$ |
-| Binary Search LIS | $O(n \log n)$ | $O(n)$ |
-| Number of LIS | $O(n^2)$ | $O(n)$ |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

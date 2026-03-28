@@ -1,154 +1,129 @@
 ---
 title: Min Stack
+sidebarTitle: "Min Stack"
 ---
 
 ### Introduction
 
-The **Min Stack** pattern supports normal stack operations and also returns the current minimum in constant time.
+The **Min Stack** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-A naive approach scans the entire stack to find minimum after every pop, which is expensive.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-The optimized pattern maintains extra state so both `push` and `getMin` stay **$O(1)$**.
+### Intuition
 
-### Intuition: "Track Minimum Along the Way"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-When pushing values, keep a second stack that stores the minimum at each depth.
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-If current value is smaller than or equal to current minimum, push it into `minStack`.
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-When popping, if popped value equals top of `minStack`, pop from `minStack` too.
+### What are Predictable Dynamics?
 
-This keeps minimum synchronized with the main stack state.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
----
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-### Core Variations
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-#### 1. Two-Stack Implementation
+### Core Strategies
 
-* Main stack stores all values.
-* Min stack stores current minimum history.
+#### 1. Canonical State Modeling
 
-#### 2. Pair-Based Implementation
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-* Each node stores `(value, minSoFar)`.
-* No separate min stack needed.
+#### 2. Incremental Transition
 
-#### 3. Max Stack Extension
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
-* Track both min and max for range queries.
-* Useful in custom data stream designs.
+#### 3. Constraint-Driven Pruning
 
----
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Classic Two-Stack Min Stack
-**Problem:** Design a stack with `push`, `pop`, `top`, and `getMin` in constant time.
+#### Example A: Balanced Parentheses
 
-```java icon="code" title="Stack - Min Stack (Two Stacks)"
-class MinStack {
-    private Deque<Integer> stack;
-    private Deque<Integer> minStack;
+```java icon="code" title="Stack - Balanced Parentheses"
+public boolean isValid(String s) {
+    Map<Character, Character> pairs = Map.of(')', '(', ']', '[', '}', '{');
+    Deque<Character> stack = new ArrayDeque<>();
 
-    public MinStack() {
-        stack = new ArrayDeque<>();
-        minStack = new ArrayDeque<>();
-    }
-
-    public void push(int val) {
-        stack.push(val);
-
-        if (minStack.isEmpty() || val <= minStack.peek()) {
-            minStack.push(val);
+    for (char ch : s.toCharArray()) {
+        if (pairs.containsValue(ch)) {
+            stack.push(ch);
+        } else if (pairs.containsKey(ch)) {
+            if (stack.isEmpty() || stack.pop() != pairs.get(ch)) {
+                return false;
+            }
         }
     }
 
-    public void pop() {
-        if (stack.isEmpty()) return;
-
-        int removed = stack.pop();
-        if (!minStack.isEmpty() && removed == minStack.peek()) {
-            minStack.pop();
-        }
-    }
-
-    public int top() {
-        return stack.peek();
-    }
-
-    public int getMin() {
-        return minStack.peek();
-    }
+    return stack.isEmpty();
 }
 ```
 
-#### Example B: Pair-Based Min Stack
+#### Example B: Monotonic Stack for Next Greater Element
 
-**Problem:** Store value and minimum-so-far together in a single stack.
+```java icon="code" title="Stack - Next Greater Element"
+public int[] nextGreaterElements(int[] nums) {
+    int[] answer = new int[nums.length];
+    Arrays.fill(answer, -1);
+    Deque<Integer> stack = new ArrayDeque<>(); // stores indices
 
-```java icon="code" title="Stack - Min Stack (Single Stack Pairs)"
-class MinStack {
-    private Deque<int[]> stack;
-
-    public MinStack() {
-        stack = new ArrayDeque<>();
-    }
-
-    public void push(int val) {
-        int currentMin = stack.isEmpty() ? val : Math.min(val, stack.peek()[1]);
-        stack.push(new int[] { val, currentMin });
-    }
-
-    public void pop() {
-        if (!stack.isEmpty()) {
-            stack.pop();
+    for (int i = 0; i < nums.length; i++) {
+        while (!stack.isEmpty() && nums[stack.peek()] < nums[i]) {
+            int index = stack.pop();
+            answer[index] = nums[i];
         }
+        stack.push(i);
     }
 
-    public int top() {
-        return stack.peek()[0];
-    }
-
-    public int getMin() {
-        return stack.peek()[1];
-    }
+    return answer;
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Imagine stacking books while also keeping a sticky note of the lightest book seen so far.
+#### 1. Conceptual Analogy
 
-* Every time you place a book, you update the note if needed.
-* When removing books, if the removed one was the lightest, you restore the previous note.
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-You always know the lightest book instantly.
+#### 2. Technical Analogy
 
----
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-### When to Use
+### When to Use (and How to Recognize It)
 
-Look for these clues:
-
-* Stack with frequent minimum/maximum queries.
-* Requirement says `getMin()` must be **$O(1)$**.
-* Online stream with push/pop and aggregate state.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Constant-Time Minimum Query:** Efficient for repeated min lookups. | **Extra Space:** Requires additional storage for min tracking. |
-| **Simple Logic:** Easy extension over regular stack. | **Implementation Detail:** Duplicate minimum handling is critical. |
-| **Interview Favorite:** Common design pattern question. | **Limited Query Type:** Supports top-based updates only. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Structure | Push/Pop | getMin | Space |
-| --- | --- | --- | --- | --- |
-| **Two Stacks** | `stack + minStack` | $O(1)$ | $O(1)$ | $O(n)$ |
-| **Pair Stack** | `(value, minSoFar)` | $O(1)$ | $O(1)$ | $O(n)$ |
-| **Min + Max Stack** | Extra trackers | $O(1)$ | $O(1)$ | $O(n)$ |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

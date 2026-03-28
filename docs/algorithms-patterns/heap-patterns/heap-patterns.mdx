@@ -1,46 +1,139 @@
 ---
 title: Heap Patterns
+sidebarTitle: "Heap"
 ---
 
 ### Introduction
 
-Heap-based patterns solve problems where we repeatedly need the **smallest** or **largest** element under changing data.
+The **Heap Patterns** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-A heap gives efficient insert/remove-top operations:
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-* insert: $O(\log n)$
-* remove top: $O(\log n)$
-* peek top: $O(1)$
+### Intuition
 
-This makes heaps a natural fit for dynamic ranking, scheduling, and multi-source merge tasks.
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
----
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-### Standard Heap Patterns
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-1. **Heap and Heapify**
-   * Build heap from array and maintain heap order.
+### What are Predictable Dynamics?
 
-2. **Top K Elements**
-   * Keep only best `k` candidates using bounded heap.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-3. **K-Way Merge**
-   * Merge multiple sorted streams/lists using min-heap.
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-4. **Two Heaps**
-   * Maintain lower and upper halves (e.g., running median).
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-5. **Priority Scheduling**
-   * Always execute next best/earliest priority task.
+### Core Strategies
 
----
+#### 1. Canonical State Modeling
 
-### Pattern Selection Quick Guide
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-| Goal | Recommended Pattern |
+#### 2. Incremental Transition
+
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
+
+### Implementation Examples
+
+#### Example A: Maintain Top-K with Min Heap
+
+```java icon="code" title="Heap - Top K Largest"
+public int findKthLargest(int[] nums, int k) {
+    PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+
+    for (int value : nums) {
+        minHeap.offer(value);
+        if (minHeap.size() > k) {
+            minHeap.poll();
+        }
+    }
+
+    // Heap root is the k-th largest after maintaining size k.
+    return minHeap.peek();
+}
+```
+
+#### Example B: Merge K Sorted Lists (Heap)
+
+```java icon="code" title="Heap - Merge K Sorted Arrays"
+public List<Integer> mergeKSortedArrays(List<int[]> arrays) {
+    class Node {
+        int value, arrayIndex, elementIndex;
+        Node(int v, int ai, int ei) { value = v; arrayIndex = ai; elementIndex = ei; }
+    }
+
+    PriorityQueue<Node> minHeap = new PriorityQueue<>(Comparator.comparingInt(a -> a.value));
+    List<Integer> merged = new ArrayList<>();
+
+    for (int i = 0; i < arrays.size(); i++) {
+        if (arrays.get(i).length > 0) {
+            minHeap.offer(new Node(arrays.get(i)[0], i, 0));
+        }
+    }
+
+    while (!minHeap.isEmpty()) {
+        Node current = minHeap.poll();
+        merged.add(current.value);
+
+        int nextIndex = current.elementIndex + 1;
+        if (nextIndex < arrays.get(current.arrayIndex).length) {
+            int nextValue = arrays.get(current.arrayIndex)[nextIndex];
+            minHeap.offer(new Node(nextValue, current.arrayIndex, nextIndex));
+        }
+    }
+
+    return merged;
+}
+```
+
+
+### Real-World Analogies
+
+#### 1. Conceptual Analogy
+
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
+
+#### 2. Technical Analogy
+
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
+
+### Pros & Cons
+
+| Pros | Cons |
 | --- | --- |
-| Repeated min/max extraction | Heap and Heapify |
-| K largest / K smallest / top K frequent | Top K Elements |
-| Merge k sorted arrays/lists/iterators | K-Way Merge |
-| Online median / balanced halves | Two Heaps |
-| Dynamic next-task selection | Priority Scheduling |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
+
+### Summary Table
+
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

@@ -1,97 +1,147 @@
 ---
 title: Quick Sort
+sidebarTitle: "Quick Sort"
 ---
 
 ### Introduction
 
-**Quick Sort** is a divide-and-conquer algorithm that sorts by partitioning around a pivot.
+The **Quick Sort** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-Elements less than pivot move left, greater elements move right, then both sides are sorted recursively.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-It is one of the fastest practical general-purpose sorting algorithms for arrays.
+### Intuition
 
-### Intuition: "Place Pivot in Final Position"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-1. Choose a pivot.
-2. Partition array so pivot lands in correct index.
-3. Recursively sort left and right partitions.
-
-Good pivot choice keeps partitions balanced and gives near **$O(n \log n)$** performance.
-
----
-
-### Implementation Example
-
-```java icon="code" title="Quick Sort (Lomuto Partition)"
-public void quickSort(int[] nums) {
-    if (nums == null || nums.length <= 1) {
-        return;
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
     }
-    quickSort(nums, 0, nums.length - 1);
-}
-
-private void quickSort(int[] nums, int low, int high) {
-    if (low >= high) {
-        return;
-    }
-
-    int pivotIndex = partition(nums, low, high);
-    quickSort(nums, low, pivotIndex - 1);
-    quickSort(nums, pivotIndex + 1, high);
-}
-
-private int partition(int[] nums, int low, int high) {
-    int pivot = nums[high];
-    int i = low;
-
-    for (int j = low; j < high; j++) {
-        if (nums[j] <= pivot) {
-            int temp = nums[i];
-            nums[i] = nums[j];
-            nums[j] = temp;
-            i++;
-        }
-    }
-
-    int temp = nums[i];
-    nums[i] = nums[high];
-    nums[high] = temp;
-
-    return i;
 }
 ```
 
----
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-### Real-World Analogy
+### What are Predictable Dynamics?
 
-Like choosing a reference value and grouping smaller values to one side and larger values to the other, then repeating within each group.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
----
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-### When to Use
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-* Fast in-memory array sorting.
-* Average-case performance is prioritized.
-* Extra memory should stay low.
+### Core Strategies
 
-### Important Note
+#### 1. Canonical State Modeling
 
-* Worst-case is **$O(n^2)$** (for poor pivots like sorted input with fixed-end pivot).
-* Randomized pivot or median-of-three helps avoid bad cases.
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
+
+#### 2. Incremental Transition
+
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
+
+### Implementation Examples
+
+#### Example A: Merge Sort
+
+```java icon="code" title="Sorting - Merge Sort"
+public void mergeSort(int[] nums, int left, int right) {
+    if (left >= right) return;
+
+    int mid = left + (right - left) / 2;
+    mergeSort(nums, left, mid);
+    mergeSort(nums, mid + 1, right);
+    merge(nums, left, mid, right);
+}
+
+private void merge(int[] nums, int left, int mid, int right) {
+    int[] temp = new int[right - left + 1];
+    int i = left, j = mid + 1, k = 0;
+
+    while (i <= mid && j <= right) {
+        temp[k++] = (nums[i] <= nums[j]) ? nums[i++] : nums[j++];
+    }
+    while (i <= mid) temp[k++] = nums[i++];
+    while (j <= right) temp[k++] = nums[j++];
+
+    for (int t = 0; t < temp.length; t++) {
+        nums[left + t] = temp[t];
+    }
+}
+```
+
+#### Example B: Quick Sort (Lomuto Partition)
+
+```java icon="code" title="Sorting - Quick Sort"
+public void quickSort(int[] nums, int left, int right) {
+    if (left >= right) return;
+
+    int pivotIndex = partition(nums, left, right);
+    quickSort(nums, left, pivotIndex - 1);
+    quickSort(nums, pivotIndex + 1, right);
+}
+
+private int partition(int[] nums, int left, int right) {
+    int pivot = nums[right];
+    int storeIndex = left;
+
+    for (int i = left; i < right; i++) {
+        if (nums[i] <= pivot) {
+            int temp = nums[i];
+            nums[i] = nums[storeIndex];
+            nums[storeIndex] = temp;
+            storeIndex++;
+        }
+    }
+
+    int temp = nums[storeIndex];
+    nums[storeIndex] = nums[right];
+    nums[right] = temp;
+    return storeIndex;
+}
+```
+
+
+### Real-World Analogies
+
+#### 1. Conceptual Analogy
+
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
+
+#### 2. Technical Analogy
+
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| Very fast in practice with good cache behavior. | Worst-case $O(n^2)$ possible. |
-| In-place (small extra stack space). | Not stable by default. |
-| Widely used and optimized in many systems. | Partition logic is error-prone. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
-### Complexity Analysis
+### Summary Table
 
-| Case | Time | Space |
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| Best | $O(n \log n)$ | $O(\log n)$ |
-| Average | $O(n \log n)$ | $O(\log n)$ |
-| Worst | $O(n^2)$ | $O(n)$ |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

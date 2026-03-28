@@ -1,86 +1,147 @@
 ---
 title: Bubble Sort
+sidebarTitle: "Bubble Sort"
 ---
 
 ### Introduction
 
-**Bubble Sort** repeatedly compares adjacent elements and swaps them if they are in the wrong order.
+The **Bubble Sort** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-After each full pass, the largest unsorted element "bubbles" to its correct position at the end.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-It is simple but inefficient for large data.
+### Intuition
 
-### Intuition: "Push Heavy Elements to the End"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-Scan left to right:
-
-* if `arr[j] > arr[j + 1]`, swap,
-* continue until pass ends,
-* repeat for remaining unsorted prefix.
-
-Use an early-stop flag to finish quickly if array becomes sorted.
-
----
-
-### Implementation Example
-
-```java icon="code" title="Bubble Sort"
-public void bubbleSort(int[] nums) {
-    int n = nums.length;
-
-    for (int i = 0; i < n - 1; i++) {
-        boolean swapped = false;
-
-        for (int j = 0; j < n - 1 - i; j++) {
-            if (nums[j] > nums[j + 1]) {
-                int temp = nums[j];
-                nums[j] = nums[j + 1];
-                nums[j + 1] = temp;
-                swapped = true;
-            }
-        }
-
-        if (!swapped) {
-            break;
-        }
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
     }
 }
 ```
 
----
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-### Real-World Analogy
+### What are Predictable Dynamics?
 
-Imagine heavier bubbles rising in reverse:
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-* each comparison lets a larger value move one step right,
-* repeated passes move all large values to their final positions.
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
----
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-### When to Use
+### Core Strategies
 
-* Teaching sorting fundamentals.
-* Very small input sizes.
-* Cases where early-stop on nearly sorted input is acceptable.
+#### 1. Canonical State Modeling
 
-### Why to Avoid in Most Production Cases
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-* Worst-case and average-case are **$O(n^2)$**.
-* Too many comparisons for medium/large arrays.
+#### 2. Incremental Transition
+
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
+
+### Implementation Examples
+
+#### Example A: Merge Sort
+
+```java icon="code" title="Sorting - Merge Sort"
+public void mergeSort(int[] nums, int left, int right) {
+    if (left >= right) return;
+
+    int mid = left + (right - left) / 2;
+    mergeSort(nums, left, mid);
+    mergeSort(nums, mid + 1, right);
+    merge(nums, left, mid, right);
+}
+
+private void merge(int[] nums, int left, int mid, int right) {
+    int[] temp = new int[right - left + 1];
+    int i = left, j = mid + 1, k = 0;
+
+    while (i <= mid && j <= right) {
+        temp[k++] = (nums[i] <= nums[j]) ? nums[i++] : nums[j++];
+    }
+    while (i <= mid) temp[k++] = nums[i++];
+    while (j <= right) temp[k++] = nums[j++];
+
+    for (int t = 0; t < temp.length; t++) {
+        nums[left + t] = temp[t];
+    }
+}
+```
+
+#### Example B: Quick Sort (Lomuto Partition)
+
+```java icon="code" title="Sorting - Quick Sort"
+public void quickSort(int[] nums, int left, int right) {
+    if (left >= right) return;
+
+    int pivotIndex = partition(nums, left, right);
+    quickSort(nums, left, pivotIndex - 1);
+    quickSort(nums, pivotIndex + 1, right);
+}
+
+private int partition(int[] nums, int left, int right) {
+    int pivot = nums[right];
+    int storeIndex = left;
+
+    for (int i = left; i < right; i++) {
+        if (nums[i] <= pivot) {
+            int temp = nums[i];
+            nums[i] = nums[storeIndex];
+            nums[storeIndex] = temp;
+            storeIndex++;
+        }
+    }
+
+    int temp = nums[storeIndex];
+    nums[storeIndex] = nums[right];
+    nums[right] = temp;
+    return storeIndex;
+}
+```
+
+
+### Real-World Analogies
+
+#### 1. Conceptual Analogy
+
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
+
+#### 2. Technical Analogy
+
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| Very easy to implement and debug. | Slow for large datasets. |
-| In-place and stable. | Performs many unnecessary passes. |
-| Early exit helps nearly sorted data. | Rarely the best practical choice. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
-### Complexity Analysis
+### Summary Table
 
-| Case | Time | Space |
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| Best (already sorted with flag) | $O(n)$ | $O(1)$ |
-| Average | $O(n^2)$ | $O(1)$ |
-| Worst | $O(n^2)$ | $O(1)$ |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

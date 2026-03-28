@@ -1,145 +1,167 @@
 ---
 title: K-Way Merge
+sidebarTitle: "K Way Merge"
 ---
 
 ### Introduction
 
-The **K-Way Merge** pattern merges `k` sorted lists efficiently using a min-heap.
+The **K-Way Merge** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-Instead of repeatedly scanning heads of all lists, we keep only current minimum candidates in a heap.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-This is common in merging sorted arrays/lists, external sorting, and smallest-range problems.
+### Intuition
 
-### Intuition: "Always Extract Global Minimum"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-For `k` sorted lists:
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-1. Insert first element of each list into min-heap.
-2. Pop smallest element, append to answer.
-3. Push next element from the same list.
-4. Repeat until heap is empty.
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-Heap size stays at most `k`, so each operation is `O(log k)`.
+### What are Predictable Dynamics?
 
----
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-### Core Variations
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-#### 1. Merge K Sorted Lists
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-* Standard linked-list or array merge.
-* Output fully merged sorted sequence.
+### Core Strategies
 
-#### 2. Kth Smallest in M Sorted Lists
+#### 1. Canonical State Modeling
 
-* Pop from min-heap `k` times.
-* Last popped value is answer.
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-#### 3. Smallest Range Covering Elements from K Lists
+#### 2. Incremental Transition
 
-* Track current max while popping min.
-* Optimize `[min, max]` window.
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
----
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Merge K Sorted Arrays
-**Problem:** Merge k sorted integer arrays into a single sorted list.
+#### Example A: K-Way Merge with Min Heap
 
-```java icon="code" title="K-Way Merge - Merge K Sorted Arrays"
-public List<Integer> mergeKSortedArrays(List<int[]> arrays) {
-    List<Integer> result = new ArrayList<>();
+```java icon="code" title="K-Way Merge - Merge Sorted Lists"
+public List<Integer> mergeKLists(List<List<Integer>> lists) {
+    class Entry {
+        int value, listIndex, valueIndex;
+        Entry(int value, int listIndex, int valueIndex) {
+            this.value = value;
+            this.listIndex = listIndex;
+            this.valueIndex = valueIndex;
+        }
+    }
 
-    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a[0], b[0]));
-    // heap entry: [value, arrayIndex, elementIndex]
+    PriorityQueue<Entry> minHeap = new PriorityQueue<>(Comparator.comparingInt(a -> a.value));
+    List<Integer> merged = new ArrayList<>();
 
-    for (int i = 0; i < arrays.size(); i++) {
-        if (arrays.get(i).length > 0) {
-            minHeap.offer(new int[] {arrays.get(i)[0], i, 0});
+    for (int i = 0; i < lists.size(); i++) {
+        if (!lists.get(i).isEmpty()) {
+            minHeap.offer(new Entry(lists.get(i).get(0), i, 0));
         }
     }
 
     while (!minHeap.isEmpty()) {
-        int[] top = minHeap.poll();
-        int value = top[0];
-        int arrayIndex = top[1];
-        int elementIndex = top[2];
+        Entry current = minHeap.poll();
+        merged.add(current.value);
 
-        result.add(value);
-
-        int nextIndex = elementIndex + 1;
-        if (nextIndex < arrays.get(arrayIndex).length) {
-            minHeap.offer(new int[] {arrays.get(arrayIndex)[nextIndex], arrayIndex, nextIndex});
+        int nextIndex = current.valueIndex + 1;
+        if (nextIndex < lists.get(current.listIndex).size()) {
+            int nextValue = lists.get(current.listIndex).get(nextIndex);
+            minHeap.offer(new Entry(nextValue, current.listIndex, nextIndex));
         }
     }
 
-    return result;
+    return merged;
 }
 ```
 
-#### Example B: Kth Smallest from Sorted Matrix (Rows Sorted)
+#### Example B: Smallest Range Across K Lists
 
-**Problem:** Return kth smallest element from matrix where each row is sorted.
-
-```java icon="code" title="K-Way Merge - Kth Smallest"
-public int kthSmallest(int[][] matrix, int k) {
-    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a[0], b[0]));
-    // [value, row, col]
-
-    for (int row = 0; row < Math.min(matrix.length, k); row++) {
-        minHeap.offer(new int[] {matrix[row][0], row, 0});
-    }
-
-    int number = -1;
-    for (int i = 0; i < k; i++) {
-        int[] top = minHeap.poll();
-        number = top[0];
-        int row = top[1];
-        int col = top[2];
-
-        if (col + 1 < matrix[row].length) {
-            minHeap.offer(new int[] {matrix[row][col + 1], row, col + 1});
+```java icon="code" title="K-Way Merge - Smallest Range"
+public int[] smallestRange(List<List<Integer>> nums) {
+    class Entry {
+        int value, listIndex, valueIndex;
+        Entry(int value, int listIndex, int valueIndex) {
+            this.value = value;
+            this.listIndex = listIndex;
+            this.valueIndex = valueIndex;
         }
     }
 
-    return number;
+    PriorityQueue<Entry> minHeap = new PriorityQueue<>(Comparator.comparingInt(a -> a.value));
+    int currentMax = Integer.MIN_VALUE;
+    int rangeStart = 0, rangeEnd = Integer.MAX_VALUE;
+
+    for (int i = 0; i < nums.size(); i++) {
+        int first = nums.get(i).get(0);
+        minHeap.offer(new Entry(first, i, 0));
+        currentMax = Math.max(currentMax, first);
+    }
+
+    while (minHeap.size() == nums.size()) {
+        Entry min = minHeap.poll();
+        if (currentMax - min.value < rangeEnd - rangeStart) {
+            rangeStart = min.value;
+            rangeEnd = currentMax;
+        }
+
+        int nextIndex = min.valueIndex + 1;
+        if (nextIndex < nums.get(min.listIndex).size()) {
+            int nextValue = nums.get(min.listIndex).get(nextIndex);
+            minHeap.offer(new Entry(nextValue, min.listIndex, nextIndex));
+            currentMax = Math.max(currentMax, nextValue);
+        }
+    }
+
+    return new int[] { rangeStart, rangeEnd };
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Think of merging headlines from multiple already-sorted news feeds.
+#### 1. Conceptual Analogy
 
-* You only compare current top headline from each feed.
-* Pick earliest one, then pull next from that feed.
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-This avoids rescanning all feed history repeatedly.
+#### 2. Technical Analogy
 
----
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-### When to Use
+### When to Use (and How to Recognize It)
 
-Look for these clues:
-
-* Multiple **already sorted** lists/streams.
-* Need global minimum/maximum across k sources.
-* Need kth element while preserving sorted order logic.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Efficient:** Better than flatten+sort for many cases. | **Heap Dependency:** Requires comparator and tuple bookkeeping. |
-| **Scales with K:** Cost depends on `log k`, not `log n`. | **Extra Space:** Heap stores one candidate per list. |
-| **Streaming-Friendly:** Can merge iterators/lazy sources. | **Implementation Noise:** Index tracking can be verbose. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Time | Space | Notes |
-| --- | --- | --- | --- |
-| **Merge K Lists** | $O(N \log k)$ | $O(k)$ | `N` = total elements |
-| **Kth Smallest** | $O(k \log k)$ | $O(k)$ | Pop `k` times |
-| **Smallest Range** | $O(N \log k)$ | $O(k)$ | Maintain running max |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

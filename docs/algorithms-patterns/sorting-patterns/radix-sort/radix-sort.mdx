@@ -1,100 +1,147 @@
 ---
 title: Radix Sort
+sidebarTitle: "Radix Sort"
 ---
 
 ### Introduction
 
-**Radix Sort** sorts numbers digit by digit using a stable intermediate sort (usually Counting Sort).
+The **Radix Sort** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-It avoids direct element comparisons and can achieve near-linear performance for fixed-width integers.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-### Intuition: "Sort by Least Significant Digit to Most Significant Digit"
+### Intuition
 
-For base 10 integers:
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-1. Sort by units digit.
-2. Sort by tens digit (stable).
-3. Sort by hundreds digit (stable).
-4. Continue until highest digit.
-
-Stability ensures previous digit ordering is preserved.
-
----
-
-### Implementation Example
-
-```java icon="code" title="Radix Sort (Non-Negative Integers)"
-public void radixSort(int[] nums) {
-    if (nums == null || nums.length <= 1) {
-        return;
-    }
-
-    int max = nums[0];
-    for (int num : nums) {
-        max = Math.max(max, num);
-    }
-
-    for (int exp = 1; max / exp > 0; exp *= 10) {
-        countingSortByDigit(nums, exp);
-    }
-}
-
-private void countingSortByDigit(int[] nums, int exp) {
-    int n = nums.length;
-    int[] output = new int[n];
-    int[] count = new int[10];
-
-    for (int num : nums) {
-        int digit = (num / exp) % 10;
-        count[digit]++;
-    }
-
-    for (int i = 1; i < 10; i++) {
-        count[i] += count[i - 1];
-    }
-
-    for (int i = n - 1; i >= 0; i--) {
-        int digit = (nums[i] / exp) % 10;
-        output[count[digit] - 1] = nums[i];
-        count[digit]--;
-    }
-
-    for (int i = 0; i < n; i++) {
-        nums[i] = output[i];
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
     }
 }
 ```
 
----
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-### Real-World Analogy
+### What are Predictable Dynamics?
 
-Like sorting files first by last character, then second last, then third last, while preserving earlier grouping each round.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
----
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-### When to Use
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-* Fixed-length integers or strings.
-* Value comparison is expensive but digit extraction is easy.
-* Need high performance on large numeric datasets.
+### Core Strategies
 
-### Key Requirement
+#### 1. Canonical State Modeling
 
-* Per-digit sort must be **stable**.
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
+
+#### 2. Incremental Transition
+
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
+
+### Implementation Examples
+
+#### Example A: Merge Sort
+
+```java icon="code" title="Sorting - Merge Sort"
+public void mergeSort(int[] nums, int left, int right) {
+    if (left >= right) return;
+
+    int mid = left + (right - left) / 2;
+    mergeSort(nums, left, mid);
+    mergeSort(nums, mid + 1, right);
+    merge(nums, left, mid, right);
+}
+
+private void merge(int[] nums, int left, int mid, int right) {
+    int[] temp = new int[right - left + 1];
+    int i = left, j = mid + 1, k = 0;
+
+    while (i <= mid && j <= right) {
+        temp[k++] = (nums[i] <= nums[j]) ? nums[i++] : nums[j++];
+    }
+    while (i <= mid) temp[k++] = nums[i++];
+    while (j <= right) temp[k++] = nums[j++];
+
+    for (int t = 0; t < temp.length; t++) {
+        nums[left + t] = temp[t];
+    }
+}
+```
+
+#### Example B: Quick Sort (Lomuto Partition)
+
+```java icon="code" title="Sorting - Quick Sort"
+public void quickSort(int[] nums, int left, int right) {
+    if (left >= right) return;
+
+    int pivotIndex = partition(nums, left, right);
+    quickSort(nums, left, pivotIndex - 1);
+    quickSort(nums, pivotIndex + 1, right);
+}
+
+private int partition(int[] nums, int left, int right) {
+    int pivot = nums[right];
+    int storeIndex = left;
+
+    for (int i = left; i < right; i++) {
+        if (nums[i] <= pivot) {
+            int temp = nums[i];
+            nums[i] = nums[storeIndex];
+            nums[storeIndex] = temp;
+            storeIndex++;
+        }
+    }
+
+    int temp = nums[storeIndex];
+    nums[storeIndex] = nums[right];
+    nums[right] = temp;
+    return storeIndex;
+}
+```
+
+
+### Real-World Analogies
+
+#### 1. Conceptual Analogy
+
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
+
+#### 2. Technical Analogy
+
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| Can outperform comparison sorts for suitable data. | Limited to structured keys (digits/characters). |
-| Deterministic multi-pass process. | Extra memory for each pass. |
-| Works well with Counting Sort internally. | Complexity depends on number of digits. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
-### Complexity Analysis
+### Summary Table
 
-Let `n` be elements, `d` be digits, `b` be base (10 here).
-
-| Case | Time | Space |
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| All cases | $O(d(n + b))$ | $O(n + b)$ |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |
