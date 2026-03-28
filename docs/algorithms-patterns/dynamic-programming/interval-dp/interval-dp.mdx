@@ -1,0 +1,97 @@
+---
+title: Dynamic Programming - Interval DP
+---
+
+### Introduction
+
+The **Interval DP** pattern solves problems over subarray/substring ranges.
+
+State usually looks like `dp[left][right]` and answer is built from smaller intervals.
+
+### Intuition
+
+Solve short intervals first, then use them to solve longer ones.
+
+Common transitions split interval at `k` or expand inward.
+
+---
+
+### Core Variations
+
+#### 1. Partition by Split Point
+
+#### 2. Palindrome Interval DP
+
+#### 3. Burst Balloons / Matrix Chain Multiplication
+
+---
+
+### Implementation Examples
+
+#### Example A: Longest Palindromic Subsequence
+
+```java icon="code" title="Interval DP - Longest Palindromic Subsequence"
+public int longestPalindromeSubseq(String s) {
+    int n = s.length();
+    int[][] dp = new int[n][n];
+
+    for (int i = n - 1; i >= 0; i--) {
+        dp[i][i] = 1;
+        for (int j = i + 1; j < n; j++) {
+            if (s.charAt(i) == s.charAt(j)) {
+                dp[i][j] = 2 + dp[i + 1][j - 1];
+            } else {
+                dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+
+    return dp[0][n - 1];
+}
+```
+
+#### Example B: Matrix Chain Multiplication (Min Cost)
+
+```java icon="code" title="Interval DP - Matrix Chain Multiplication"
+public int matrixChainOrder(int[] dims) {
+    int n = dims.length - 1;
+    int[][] dp = new int[n][n];
+
+    for (int len = 2; len <= n; len++) {
+        for (int i = 0; i + len - 1 < n; i++) {
+            int j = i + len - 1;
+            dp[i][j] = Integer.MAX_VALUE;
+
+            for (int k = i; k < j; k++) {
+                int cost = dp[i][k] + dp[k + 1][j] + dims[i] * dims[k + 1] * dims[j + 1];
+                dp[i][j] = Math.min(dp[i][j], cost);
+            }
+        }
+    }
+
+    return dp[0][n - 1];
+}
+```
+
+---
+
+### When to Use
+
+* Subarray/subsequence range states.
+* "Minimum cost to merge/split".
+* Palindrome range optimization.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Handles complex interval relations elegantly. | Usually O(n^3) transitions for split problems. |
+| Systematic by increasing interval length. | 2D tables use significant memory. |
+
+### Summary Table
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| Palindrome Interval DP | $O(n^2)$ | $O(n^2)$ |
+| Matrix Chain / Burst Balloons | $O(n^3)$ | $O(n^2)$ |
+| Merge Stones (k-way variants) | $O(n^3)$ or higher | $O(n^2)$ |

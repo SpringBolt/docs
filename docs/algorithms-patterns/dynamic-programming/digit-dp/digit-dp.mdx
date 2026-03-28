@@ -1,0 +1,102 @@
+---
+title: Dynamic Programming - Digit DP
+---
+
+### Introduction
+
+**Digit DP** solves counting problems over number ranges `[0, N]` using digit-by-digit state transitions.
+
+It is useful when brute forcing every number is too expensive.
+
+### Intuition
+
+Build number from most significant digit to least significant digit while tracking constraints:
+
+* `pos`: current digit index
+* `tight`: are we still equal to prefix of N?
+* additional state (sum, count, mask, previous digit)
+
+Memoize these states.
+
+---
+
+### Core Variations
+
+#### 1. Count numbers with digit-sum constraints
+
+#### 2. Count numbers avoiding/including certain digits
+
+#### 3. Count numbers with no adjacent equal digits
+
+---
+
+### Implementation Examples
+
+#### Example A: Count Numbers with Digit Sum <= S (0..N)
+
+```java icon="code" title="Digit DP - Count by Digit Sum"
+public class DigitDP {
+    private Integer[][][] memo;
+    private char[] digits;
+    private int maxSum;
+
+    public int countWithSumAtMost(String n, int maxSum) {
+        this.digits = n.toCharArray();
+        this.maxSum = maxSum;
+        this.memo = new Integer[digits.length][2][maxSum + 1];
+        return dfs(0, 1, 0);
+    }
+
+    private int dfs(int pos, int tight, int sum) {
+        if (sum > maxSum) return 0;
+        if (pos == digits.length) return 1;
+
+        if (memo[pos][tight][sum] != null) return memo[pos][tight][sum];
+
+        int limit = (tight == 1) ? digits[pos] - '0' : 9;
+        int ways = 0;
+
+        for (int d = 0; d <= limit; d++) {
+            int nextTight = (tight == 1 && d == limit) ? 1 : 0;
+            ways += dfs(pos + 1, nextTight, sum + d);
+        }
+
+        memo[pos][tight][sum] = ways;
+        return ways;
+    }
+}
+```
+
+#### Example B: Count in Range [L, R]
+
+```java icon="code" title="Digit DP - Range Query"
+public int countInRange(String left, String right, int maxSum) {
+    int rightCount = new DigitDP().countWithSumAtMost(right, maxSum);
+    String leftMinusOne = subtractOne(left);
+    int leftCount = leftMinusOne.equals("-1") ? 0 : new DigitDP().countWithSumAtMost(leftMinusOne, maxSum);
+    return rightCount - leftCount;
+}
+```
+
+---
+
+### When to Use
+
+* Counting numbers in huge ranges.
+* Constraints are based on digits/properties of representation.
+* Need answer faster than iterating through all values.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Handles massive range constraints efficiently. | State design can be tricky. |
+| Reusable framework for many digit-based constraints. | Easy to make tight-state bugs. |
+
+### Summary Table
+
+| Pattern | Typical State | Time |
+| --- | --- | --- |
+| Basic Digit DP | `(pos, tight, extraState)` | `O(digits * states * 10)` |
+| Range Query | `F(R) - F(L-1)` | 2x single-bound run |
+| Bitmask Digit DP | add `mask` | higher state count |

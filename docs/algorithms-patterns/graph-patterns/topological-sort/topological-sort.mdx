@@ -1,0 +1,132 @@
+---
+title: Topological Sort
+---
+
+### Introduction
+
+The **Topological Sort** pattern produces a linear ordering of nodes in a **Directed Acyclic Graph (DAG)** such that every directed edge `u -> v` places `u` before `v`.
+
+It is widely used for dependency resolution (courses, build systems, task scheduling).
+
+### Intuition: "Process What Has No Unmet Dependencies"
+
+If a node has in-degree `0`, no dependency blocks it.
+
+Kahn's Algorithm:
+1. Put all in-degree `0` nodes in queue.
+2. Remove one, append to order.
+3. Decrease in-degree of neighbors.
+4. If neighbor becomes `0`, enqueue it.
+
+If all nodes are processed, ordering exists. Otherwise, graph has cycle.
+
+---
+
+### Core Variations
+
+#### 1. Kahn's Algorithm (BFS)
+
+* Uses in-degree + queue.
+* Easy cycle detection via processed node count.
+
+#### 2. DFS Topological Sort
+
+* Postorder stack/reverse finishing times.
+* Also detects cycles with recursion-state tracking.
+
+#### 3. Lexicographically Smallest Order
+
+* Replace queue with min-heap.
+* Picks smallest available node first.
+
+---
+
+### Implementation Examples
+
+#### Example A: Kahn's Algorithm
+**Problem:** Return a valid topological order for `numCourses` and prerequisite edges.
+
+```java icon="code" title="Topological Sort - Kahn's Algorithm"
+public int[] findOrder(int numCourses, int[][] prerequisites) {
+    List<List<Integer>> graph = new ArrayList<>();
+    for (int i = 0; i < numCourses; i++) graph.add(new ArrayList<>());
+
+    int[] indegree = new int[numCourses];
+
+    for (int[] edge : prerequisites) {
+        int course = edge[0];
+        int pre = edge[1];
+        graph.get(pre).add(course);
+        indegree[course]++;
+    }
+
+    Queue<Integer> queue = new LinkedList<>();
+    for (int i = 0; i < numCourses; i++) {
+        if (indegree[i] == 0) queue.offer(i);
+    }
+
+    int[] order = new int[numCourses];
+    int index = 0;
+
+    while (!queue.isEmpty()) {
+        int node = queue.poll();
+        order[index++] = node;
+
+        for (int neighbor : graph.get(node)) {
+            indegree[neighbor]--;
+            if (indegree[neighbor] == 0) {
+                queue.offer(neighbor);
+            }
+        }
+    }
+
+    return (index == numCourses) ? order : new int[0];
+}
+```
+
+#### Example B: Can Finish Courses (Cycle Check)
+
+**Problem:** Return true if all courses can be finished.
+
+```java icon="code" title="Topological Sort - Cycle Check"
+public boolean canFinish(int numCourses, int[][] prerequisites) {
+    return findOrder(numCourses, prerequisites).length == numCourses;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of course planning in college.
+
+* You can take a course only after completing its prerequisites.
+* Courses with no prerequisites can be taken first.
+
+Topological order is one valid semester progression.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Directed dependencies (`A before B`).
+* Task scheduling with prerequisites.
+* Need cycle detection in directed dependency graph.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Dependency-Friendly:** Natural model for prerequisite problems. | **DAG Requirement:** Cycles invalidate ordering. |
+| **Cycle Detection Included:** Failed full processing implies cycle. | **Multiple Valid Orders:** Result may not be unique. |
+| **Linear Complexity:** Efficient on sparse/large graphs. | **Graph Build Overhead:** Need adjacency + indegree structures. |
+
+### Summary Table
+
+| Approach | Time | Space | Output |
+| --- | --- | --- | --- |
+| **Kahn's (BFS)** | $O(V+E)$ | $O(V+E)$ | One valid topological order |
+| **DFS Postorder** | $O(V+E)$ | $O(V+E)$ | Reverse postorder on DAG |
+| **Min-Heap Kahn** | $O((V+E)\log V)$ | $O(V+E)$ | Lexicographically smallest order |

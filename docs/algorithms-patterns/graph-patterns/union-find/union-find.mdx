@@ -1,0 +1,146 @@
+---
+title: Union Find (Disjoint Set Union)
+---
+
+### Introduction
+
+The **Union Find** (Disjoint Set Union - DSU) pattern tracks partitioned groups and supports fast:
+
+* `find(x)` -> representative (parent) of x's set
+* `union(a, b)` -> merge sets
+
+It is widely used for connectivity and component counting.
+
+### Intuition: "Group by Leaders"
+
+Each group has a leader (root parent).
+
+* Two nodes are connected if their leaders are same.
+* `union` links two leaders.
+* Path compression makes future `find` operations faster.
+
+With union-by-rank/size + path compression, operations are almost constant time.
+
+---
+
+### Core Variations
+
+#### 1. Connectivity Queries
+
+* Are `u` and `v` in same component?
+* Dynamic edge additions.
+
+#### 2. Cycle Detection in Undirected Graph
+
+* If edge connects two already-connected nodes, cycle exists.
+
+#### 3. Minimum Spanning Tree (Kruskal)
+
+* Add edges by weight if they connect different components.
+
+---
+
+### Implementation Examples
+
+#### Example A: DSU with Path Compression + Rank
+
+```java icon="code" title="Union Find - DSU Template"
+class DSU {
+    private int[] parent;
+    private int[] rank;
+
+    public DSU(int n) {
+        parent = new int[n];
+        rank = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;
+            rank[i] = 0;
+        }
+    }
+
+    public int find(int x) {
+        if (parent[x] != x) {
+            parent[x] = find(parent[x]); // path compression
+        }
+        return parent[x];
+    }
+
+    public boolean union(int a, int b) {
+        int rootA = find(a);
+        int rootB = find(b);
+
+        if (rootA == rootB) return false;
+
+        if (rank[rootA] < rank[rootB]) {
+            parent[rootA] = rootB;
+        } else if (rank[rootA] > rank[rootB]) {
+            parent[rootB] = rootA;
+        } else {
+            parent[rootB] = rootA;
+            rank[rootA]++;
+        }
+
+        return true;
+    }
+}
+```
+
+#### Example B: Detect Cycle in Undirected Graph
+
+**Problem:** Return true if undirected edge list contains a cycle.
+
+```java icon="code" title="Union Find - Cycle Detection"
+public boolean hasCycle(int n, int[][] edges) {
+    DSU dsu = new DSU(n);
+
+    for (int[] edge : edges) {
+        int u = edge[0];
+        int v = edge[1];
+
+        if (!dsu.union(u, v)) {
+            return true; // same set already => cycle
+        }
+    }
+
+    return false;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of social groups where each group has a representative.
+
+* Merging two groups means choosing one representative hierarchy.
+* Checking if two people are in same group means checking representative.
+
+That is DSU connectivity logic.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Repeated **connect / query connectivity** operations.
+* Undirected cycle detection.
+* Component counting after batch unions.
+* Kruskal-like edge processing.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Very Fast Operations:** Near constant amortized time. | **Limited Query Type:** Not suitable for shortest path/traversal logic. |
+| **Simple Connectivity Model:** Great for component merging. | **Directed Graph Constraints:** Standard DSU is mainly for undirected connectivity. |
+| **Industry Standard for Kruskal:** Essential MST building block. | **No Native Split Support:** DSU handles merges, not dynamic splits. |
+
+### Summary Table
+
+| Operation | Amortized Time | Notes |
+| --- | --- | --- |
+| **find** | $O(\alpha(n))$ | With path compression |
+| **union** | $O(\alpha(n))$ | With rank/size heuristic |
+| **Connectivity Query** | $O(\alpha(n))$ | Compare roots |

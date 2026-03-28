@@ -1,0 +1,80 @@
+---
+title: Dynamic Programming - Bitmask DP
+---
+
+### Introduction
+
+**Bitmask DP** represents subsets using bits and runs DP over masks.
+
+It is useful when `n` is small (typically `n <= 20`) and subset state transitions are needed.
+
+### Intuition
+
+A mask stores which elements are chosen.
+
+`dp[mask]` = best answer for that subset.
+
+Transition by adding/removing one bit.
+
+---
+
+### Core Variations
+
+#### 1. Traveling Salesman DP
+
+#### 2. Assignment / Matching DP
+
+#### 3. Subset Cost Optimization
+
+---
+
+### Implementation Example
+
+#### Example A: Minimum Assignment Cost
+
+```java icon="code" title="Bitmask DP - Assignment Problem"
+public int minAssignmentCost(int[][] cost) {
+    int n = cost.length;
+    int totalMasks = 1 << n;
+    int[] dp = new int[totalMasks];
+    Arrays.fill(dp, Integer.MAX_VALUE / 2);
+    dp[0] = 0;
+
+    for (int mask = 0; mask < totalMasks; mask++) {
+        int person = Integer.bitCount(mask);
+        if (person >= n) continue;
+
+        for (int task = 0; task < n; task++) {
+            if ((mask & (1 << task)) == 0) {
+                int nextMask = mask | (1 << task);
+                dp[nextMask] = Math.min(dp[nextMask], dp[mask] + cost[person][task]);
+            }
+        }
+    }
+
+    return dp[totalMasks - 1];
+}
+```
+
+---
+
+### When to Use
+
+* "Choose subset/order from small n".
+* Need state over selected/unselected items.
+* Permutation-like optimization with constraints.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Powerful for subset-state optimization. | Exponential in n (`2^n`). |
+| Compact representation of sets. | Limited to small n only. |
+
+### Summary Table
+
+| Problem Type | Time | Space |
+| --- | --- | --- |
+| Assignment DP | $O(n^2 * 2^n)$ | $O(2^n)$ |
+| TSP DP | $O(n^2 * 2^n)$ | $O(n * 2^n)$ |
+| Subset Optimization | Usually $O(poly(n) * 2^n)$ | $O(2^n)$ |

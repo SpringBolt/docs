@@ -1,0 +1,89 @@
+---
+title: Dynamic Programming - Unbounded Knapsack
+---
+
+### Introduction
+
+The **Unbounded Knapsack** pattern is used when each item can be chosen **multiple times**.
+
+This differs from 0/1 knapsack where each item is used at most once.
+
+### Intuition
+
+At each item, you can:
+* Skip item.
+* Pick item and stay on same item index (reuse allowed).
+
+This reuse property defines the transition order.
+
+---
+
+### Core Variations
+
+#### 1. Unbounded Knapsack Value Maximization
+
+#### 2. Coin Change (Minimum Coins)
+
+#### 3. Coin Change (Number of Ways)
+
+---
+
+### Implementation Examples
+
+#### Example A: Coin Change (Min Coins)
+
+```java icon="code" title="DP Unbounded Knapsack - Coin Change Min Coins"
+public int coinChange(int[] coins, int amount) {
+    int[] dp = new int[amount + 1];
+    Arrays.fill(dp, amount + 1);
+    dp[0] = 0;
+
+    for (int coin : coins) {
+        for (int a = coin; a <= amount; a++) {
+            dp[a] = Math.min(dp[a], 1 + dp[a - coin]);
+        }
+    }
+
+    return dp[amount] > amount ? -1 : dp[amount];
+}
+```
+
+#### Example B: Coin Change 2 (Ways)
+
+```java icon="code" title="DP Unbounded Knapsack - Coin Change Ways"
+public int change(int amount, int[] coins) {
+    int[] dp = new int[amount + 1];
+    dp[0] = 1;
+
+    for (int coin : coins) {
+        for (int a = coin; a <= amount; a++) {
+            dp[a] += dp[a - coin];
+        }
+    }
+
+    return dp[amount];
+}
+```
+
+---
+
+### When to Use
+
+* "Unlimited use" of each item.
+* Minimum coins / number of combinations.
+* Rod cutting and repeated-piece optimization.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Handles repeated-choice optimization cleanly. | Transition direction bugs are common. |
+| 1D DP often sufficient. | Can still be pseudo-polynomial. |
+
+### Summary Table
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| Min Coins | $O(n*amount)$ | $O(amount)$ |
+| Ways to Make Amount | $O(n*amount)$ | $O(amount)$ |
+| Unbounded Value DP | $O(n*W)$ | $O(W)$ |
