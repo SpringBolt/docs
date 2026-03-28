@@ -1,136 +1,137 @@
 ---
 title: Fast and Slow Pointers
+sidebarTitle: "Fast and Slow Pointers"
 ---
 
 ### Introduction
 
-The **Fast and Slow Pointers** pattern uses two pointers that move through a sequence at different speeds.
+The **Fast and Slow Pointers** pattern uses two pointers moving at different speeds in a linked structure.
 
-Most commonly:
-* `slow` moves one step at a time.
-* `fast` moves two steps at a time.
+Common setup:
 
-This controlled speed difference helps detect cycles, find middle elements, and solve linked-list problems in linear time with constant space.
+* `slow` moves one step.
+* `fast` moves two steps.
 
-### Intuition: "Speed Difference Reveals Structure"
+This speed gap reveals hidden structure such as cycles, middle points, and cycle entry nodes.
 
-Imagine two runners on a circular track:
+### Intuition
 
-* If there is a loop, the faster runner will eventually catch the slower runner.
-* If the track is straight (no cycle), the faster runner exits first.
+A brute-force cycle check often uses extra memory:
 
-This is exactly how cycle detection works in linked lists.
-
-For middle-node problems:
-* When `fast` reaches the end, `slow` is naturally at the middle.
-
-So a single pass gives us structural information without extra memory.
-
----
-
-### Core Variations
-
-#### 1. Cycle Detection (Floyd's Tortoise and Hare)
-
-* **Setup:** `slow = head`, `fast = head`.
-* **Movement:** `slow = slow.next`, `fast = fast.next.next`.
-* **Condition:** If `slow == fast`, cycle exists.
-
-#### 2. Middle Node
-
-* **Setup:** `slow = head`, `fast = head`.
-* **Movement:** Same as above.
-* **Result:** When fast stops, slow points to middle.
-
-#### 3. Cycle Start Detection
-
-After cycle is detected:
-* Reset one pointer to `head`.
-* Move both one step at a time.
-* The meeting point is cycle entry.
-
----
-
-### Implementation Examples
-
-#### Example A: Detect Cycle in Linked List
-
-**Problem:** Return `true` if a linked list contains a cycle, else `false`.
-
-```java icon="code" title="Fast & Slow Pointers - Detect Cycle"
+```java icon="code" title="Brute Force with Visited Set"
 public boolean hasCycle(ListNode head) {
-    if (head == null || head.next == null) return false;
+    Set<ListNode> visited = new HashSet<>();
+    ListNode current = head;
 
-    ListNode slow = head;
-    ListNode fast = head;
-
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-
-        if (slow == fast) {
+    while (current != null) {
+        if (visited.contains(current)) {
             return true;
         }
+        visited.add(current);
+        current = current.next;
     }
 
     return false;
 }
 ```
 
-#### Example B: Find Middle of Linked List
+Fast & Slow gets the same result in **O(1)** extra space.
 
-**Problem:** Return the middle node of a singly linked list. If there are two middle nodes, return the second one.
+### What are Predictable Dynamics?
 
-```java icon="code" title="Fast & Slow Pointers - Middle Node"
-public ListNode middleNode(ListNode head) {
-    ListNode slow = head;
-    ListNode fast = head;
+If a cycle exists, `fast` gains one node per step relative to `slow` (2 vs 1). In a loop, this relative gain guarantees eventual meeting.
 
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
+If no cycle exists, `fast` reaches `null` first.
+
+For middle finding, every two steps of `fast` correspond to one step of `slow`, so when `fast` ends, `slow` is centered.
+
+### Core Strategies
+
+#### 1. Cycle Detection (Floyd’s Tortoise and Hare)
+
+* Run two pointers at 1x and 2x speed.
+* Meeting implies cycle.
+
+#### 2. Middle Node Detection
+
+* Same movement rule.
+* When `fast` finishes, `slow` points to middle.
+
+#### 3. Cycle Entry Detection
+
+* After meeting, reset one pointer to head.
+* Move both one step; next meeting is cycle start.
+
+### Implementation Examples
+
+#### Example A: Prefix-Based Rolling Computation
+
+```java icon="code" title="Linear Data Structures - Prefix Running Sum"
+public int[] runningSum(int[] nums) {
+    int[] prefix = new int[nums.length];
+    int running = 0;
+
+    for (int i = 0; i < nums.length; i++) {
+        running += nums[i];
+        prefix[i] = running;
     }
 
-    return slow;
+    return prefix;
 }
 ```
 
----
+#### Example B: Sliding-Style Window Scan
 
-### Real-World Analogy
+```java icon="code" title="Linear Data Structures - Window Template"
+public int maxSumWindow(int[] nums, int k) {
+    int left = 0;
+    int windowSum = 0;
+    int best = Integer.MIN_VALUE;
 
-Think of two cars on a highway checkpoint system:
+    for (int right = 0; right < nums.length; right++) {
+        windowSum += nums[right];
 
-* One car checks every checkpoint (`slow`).
-* Another jumps two checkpoints at a time (`fast`).
+        if (right >= k - 1) {
+            best = Math.max(best, windowSum);
+            windowSum -= nums[left];
+            left++;
+        }
+    }
 
-If road segments loop back, both cars eventually appear at the same checkpoint at the same time.
+    return best;
+}
+```
 
-That meeting confirms a cycle in the route map.
 
----
+### Real-World Analogies
 
-### When to Use
+#### 1. Conceptual Analogy: Two Runners on a Circular Track
 
-Look for these keywords:
+A faster runner eventually laps and meets a slower runner if the track loops. If the track is straight, they never meet again.
 
-* **Linked List** (strongest signal).
-* **Cycle / Loop detection**.
-* **Find middle**, split list, reorder list.
-* Need **$O(1)$ space** without hash sets.
+#### 2. Technical Analogy: Ring Buffer Pointer Monitoring
+
+In circular buffering, producer and consumer pointers move at different rates. Their relative movement reveals wrap-around behavior and buffer state boundaries.
+
+### When to Use (and How to Recognize It)
+
+* Linked list traversal with constant-memory constraint.
+* Need to detect loop/cycle without hash set.
+* Need middle node in one pass.
+* Need cycle entry or list splitting pivot.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Space Efficient:** Uses constant extra space. | **Structure Specific:** Most useful in linked-list / pointer-traversal problems. |
-| **Single Pass:** Many problems solved in one traversal. | **Pointer Safety:** Requires careful null checks to avoid runtime errors. |
-| **Elegant Cycle Logic:** Avoids extra visited set. | **Less Intuitive Initially:** Meeting-point math can be non-obvious. |
+| Solves cycle and middle-node tasks in **O(n)** time, **O(1)** space. | Primarily effective on pointer-based linear structures. |
+| No hash structures required. | Requires careful null checks (`fast` and `fast.next`). |
+| Elegant one-pass behavior for multiple tasks. | Mathematical reasoning for cycle-entry may be non-obvious initially. |
 
 ### Summary Table
 
-| Use Case | Pointer Speeds | Time | Space |
-| --- | --- | --- | --- |
-| **Cycle Detection** | `slow=1x`, `fast=2x` | $O(n)$ | $O(1)$ |
-| **Middle Node** | `slow=1x`, `fast=2x` | $O(n)$ | $O(1)$ |
-| **Cycle Start** | Phase 1: detect, Phase 2: 1x + 1x | $O(n)$ | $O(1)$ |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Cycle Detection | 1x/2x pointers, check meeting | Linked List Cycle |
+| Middle Node | Stop when `fast` cannot continue | Middle of the Linked List |
+| Cycle Entry | Reset one pointer after meeting | Linked List Cycle II |

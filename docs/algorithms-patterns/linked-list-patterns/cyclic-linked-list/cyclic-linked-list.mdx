@@ -1,89 +1,129 @@
 ---
 title: Cyclic Linked List Pattern
+sidebarTitle: "Cyclic Linked List"
 ---
 
 ### Introduction
 
-The **Cyclic Linked List** pattern applies fast/slow pointer dynamics to detect loops and identify cycle entry.
+The **Cyclic Linked List Pattern** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-It solves cycle tasks in linear time and constant extra space.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-### Intuition: "Relative Speed Guarantees Meeting"
+### Intuition
 
-If a cycle exists, a fast pointer moving two steps eventually catches a slow pointer moving one step.
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-After the first meeting, resetting one pointer to `head` and moving both by one reveals cycle start.
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
----
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-### Core Variations
+### What are Predictable Dynamics?
 
-#### 1. Detect Cycle
-* Return boolean if pointers meet.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-#### 2. Find Cycle Entry
-* Detect meeting first.
-* Reset one pointer to head.
-* Advance both by one to entry.
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-#### 3. Cycle Length
-* From meeting point, loop once and count steps.
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
----
+### Core Strategies
+
+#### 1. Canonical State Modeling
+
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
+
+#### 2. Incremental Transition
+
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Detect Cycle
+#### Example A: Reverse Linked List (Pointer Rewiring)
 
-**Problem:** Return `true` if linked list contains a cycle.
+```java icon="code" title="Linked List - Reverse"
+public ListNode reverseList(ListNode head) {
+    ListNode previous = null;
+    ListNode current = head;
 
-```java icon="code" title="Cycle Pattern - Detect Cycle"
-public boolean hasCycle(ListNode head) {
-    ListNode slow = head;
-    ListNode fast = head;
-
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-        if (slow == fast) return true;
+    while (current != null) {
+        ListNode nextNode = current.next;
+        current.next = previous;
+        previous = current;
+        current = nextNode;
     }
 
-    return false;
+    return previous;
 }
 ```
 
-#### Example B: Detect Cycle Start
+#### Example B: Merge Two Sorted Lists
 
-**Problem:** Return node where cycle begins, or `null`.
+```java icon="code" title="Linked List - Merge Two Sorted"
+public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+    ListNode dummy = new ListNode(-1);
+    ListNode tail = dummy;
 
-```java icon="code" title="Cycle Pattern - Detect Cycle Start"
-public ListNode detectCycle(ListNode head) {
-    ListNode slow = head;
-    ListNode fast = head;
-
-    while (fast != null && fast.next != null) {
-        slow = slow.next;
-        fast = fast.next.next;
-
-        if (slow == fast) {
-            ListNode entry = head;
-            while (entry != slow) {
-                entry = entry.next;
-                slow = slow.next;
-            }
-            return entry;
+    while (list1 != null && list2 != null) {
+        if (list1.val <= list2.val) {
+            tail.next = list1;
+            list1 = list1.next;
+        } else {
+            tail.next = list2;
+            list2 = list2.next;
         }
+        tail = tail.next;
     }
 
-    return null;
+    tail.next = (list1 != null) ? list1 : list2;
+    return dummy.next;
 }
 ```
 
----
 
-### Complexity Analysis
+### Real-World Analogies
 
-| Variant | Time | Space |
+#### 1. Conceptual Analogy
+
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
+
+#### 2. Technical Analogy
+
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
+
+### Summary Table
+
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| **Cycle Detection** | $O(n)$ | $O(1)$ |
-| **Cycle Entry** | $O(n)$ | $O(1)$ |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

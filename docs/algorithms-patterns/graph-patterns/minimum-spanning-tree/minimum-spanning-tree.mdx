@@ -1,147 +1,130 @@
 ---
 title: Minimum Spanning Tree
+sidebarTitle: "Minimum Spanning Tree"
 ---
 
 ### Introduction
 
-The **Minimum Spanning Tree (MST)** pattern connects all vertices in a weighted undirected graph with minimum total edge weight and without cycles.
+The **Minimum Spanning Tree** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-MST is foundational in network design, clustering, and cost-optimized infrastructure planning.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-### Intuition: "Connect Everything at Minimum Cost Without Cycles"
+### Intuition
 
-A spanning tree over `V` nodes always has exactly `V - 1` edges.
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-To minimize cost:
-
-* Prefer cheaper edges.
-* Avoid cycle-forming edges.
-
-Two standard methods:
-
-* **Kruskal:** Sort edges, add if components are different (DSU).
-* **Prim:** Grow tree from any start node using min-edge frontier.
-
----
-
-### Core Variations
-
-#### 1. Kruskal's Algorithm
-
-* Sort all edges by weight.
-* Use DSU to skip cycle-forming edges.
-
-#### 2. Prim's Algorithm (Min-Heap)
-
-* Start from one node.
-* Repeatedly add cheapest edge connecting tree to outside node.
-
-#### 3. Maximum Spanning Tree
-
-* Same structure, reverse comparison (pick larger weights first).
-
----
-
-### Implementation Examples
-
-#### Example A: Kruskal + DSU
-**Problem:** Return total MST cost, or `-1` if graph is disconnected.
-
-```java icon="code" title="MST - Kruskal"
-public int kruskalMST(int n, int[][] edges) {
-    Arrays.sort(edges, (a, b) -> Integer.compare(a[2], b[2]));
-
-    DSU dsu = new DSU(n);
-    int used = 0;
-    int totalCost = 0;
-
-    for (int[] edge : edges) {
-        int u = edge[0];
-        int v = edge[1];
-        int w = edge[2];
-
-        if (dsu.union(u, v)) {
-            totalCost += w;
-            used++;
-            if (used == n - 1) break;
-        }
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
     }
-
-    return used == n - 1 ? totalCost : -1;
 }
 ```
 
-#### Example B: Prim (Adjacency List + Min-Heap)
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-**Problem:** Return MST cost from node `0`, or `-1` if not all nodes are reachable.
+### What are Predictable Dynamics?
 
-```java icon="code" title="MST - Prim"
-public int primMST(int n, List<int[]>[] graph) {
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
+
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
+
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
+
+### Core Strategies
+
+#### 1. Canonical State Modeling
+
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
+
+#### 2. Incremental Transition
+
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
+
+### Implementation Examples
+
+#### Example A: BFS Traversal on Graph
+
+```java icon="code" title="Graph - BFS Traversal"
+public List<Integer> bfs(int n, List<List<Integer>> graph, int source) {
     boolean[] visited = new boolean[n];
-    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a[1], b[1]));
+    Queue<Integer> queue = new LinkedList<>();
+    List<Integer> order = new ArrayList<>();
 
-    minHeap.offer(new int[] {0, 0}); // node, edgeCost
-    int totalCost = 0;
-    int visitedCount = 0;
+    queue.offer(source);
+    visited[source] = true;
 
-    while (!minHeap.isEmpty()) {
-        int[] current = minHeap.poll();
-        int node = current[0];
-        int cost = current[1];
+    while (!queue.isEmpty()) {
+        int node = queue.poll();
+        order.add(node);
 
-        if (visited[node]) continue;
-
-        visited[node] = true;
-        visitedCount++;
-        totalCost += cost;
-
-        for (int[] edge : graph[node]) {
-            int neighbor = edge[0];
-            int weight = edge[1];
+        for (int neighbor : graph.get(node)) {
             if (!visited[neighbor]) {
-                minHeap.offer(new int[] {neighbor, weight});
+                visited[neighbor] = true;
+                queue.offer(neighbor);
             }
         }
     }
 
-    return visitedCount == n ? totalCost : -1;
+    return order;
 }
 ```
 
----
+#### Example B: DFS Traversal with Recursion
 
-### Real-World Analogy
+```java icon="code" title="Graph - DFS Traversal"
+public void dfs(int node, List<List<Integer>> graph, boolean[] visited, List<Integer> order) {
+    visited[node] = true;
+    order.add(node);
 
-Think of connecting cities with fiber cables.
+    for (int neighbor : graph.get(node)) {
+        if (!visited[neighbor]) {
+            dfs(neighbor, graph, visited, order);
+        }
+    }
+}
+```
 
-* Every city must be connected.
-* Total cable cost should be minimum.
-* Redundant loops are unnecessary for basic connectivity.
 
-That is the MST objective.
+### Real-World Analogies
 
----
+#### 1. Conceptual Analogy
 
-### When to Use
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-Look for these clues:
+#### 2. Technical Analogy
 
-* Weighted **undirected** graph.
-* Need minimum total connection cost.
-* No requirement for redundant paths.
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Global Cost Optimization:** Finds cheapest full connectivity. | **Undirected Assumption:** Standard MST does not apply directly to directed graphs. |
-| **Two Strong Templates:** Kruskal and Prim cover most settings. | **Disconnected Graph Handling Needed:** May fail to connect all nodes. |
-| **Practical Importance:** Core for network and clustering tasks. | **Not a Shortest-Path Tree:** Different objective than source shortest paths. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Approach | Time | Space | Best Use |
-| --- | --- | --- | --- |
-| **Kruskal + DSU** | $O(E \log E)$ | $O(V)$ | Edge-list input, sparse graphs |
-| **Prim + Min-Heap** | $O((V+E) \log V)$ | $O(V+E)$ | Adjacency-list input |
-| **Prim + Matrix** | $O(V^2)$ | $O(V^2)$ | Dense graphs |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

@@ -1,161 +1,167 @@
 ---
 title: Top K Smallest Pairs
+sidebarTitle: "Top K Smallest Pairs"
 ---
 
 ### Introduction
 
-The **Top K Smallest Pairs** pattern is a K-way merge style problem where we generate pair sums in sorted order without enumerating all combinations.
+The **Top K Smallest Pairs** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-Given two sorted arrays `nums1` and `nums2`, we need `k` pairs `(u, v)` with smallest sums.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-Brute force creates all `n * m` pairs and sorts them, which is expensive.
+### Intuition
 
-A min-heap lets us generate only the next best candidates.
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
----
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-### Intuition: "Expand from the Current Best Pair"
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-If arrays are sorted, then for fixed `i`:
+### What are Predictable Dynamics?
 
-* `(i, 0)` has smallest partner in second array.
-* Next candidate from same row is `(i, 1)`, then `(i, 2)`.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-So we can:
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-1. Initialize heap with first pair from each relevant row `(i, 0)`.
-2. Pop smallest sum pair.
-3. Push next pair from same row `(i, j + 1)`.
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-This behaves like merging `k` sorted lists of pair sums.
+### Core Strategies
 
----
+#### 1. Canonical State Modeling
 
-### Core Variations
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-#### 1. Two Sorted Arrays
+#### 2. Incremental Transition
 
-* Most common version.
-* Heap entry tracks indices `(i, j)`.
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
-#### 2. K Largest Pairs
+#### 3. Constraint-Driven Pruning
 
-* Use max-heap on bounded size or reverse ordering.
-
-#### 3. Multiple Arrays (Generalized)
-
-* Extend tuple state and visited set for higher dimensions.
-
----
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Top K Smallest Sum Pairs
+#### Example A: K-Way Merge with Min Heap
 
-**Problem:** Return `k` pairs with smallest sums from two sorted arrays.
-
-```java icon="code" title="Top K Merge - K Smallest Pairs"
-public List<int[]> kSmallestPairs(int[] nums1, int[] nums2, int k) {
-    List<int[]> result = new ArrayList<>();
-
-    if (nums1.length == 0 || nums2.length == 0 || k == 0) {
-        return result;
-    }
-
-    PriorityQueue<int[]> minHeap = new PriorityQueue<>(
-        (a, b) -> Integer.compare(a[0], b[0])
-    );
-    // heap entry: [sum, i, j]
-
-    int rows = Math.min(nums1.length, k);
-    for (int i = 0; i < rows; i++) {
-        minHeap.offer(new int[] {nums1[i] + nums2[0], i, 0});
-    }
-
-    while (!minHeap.isEmpty() && result.size() < k) {
-        int[] top = minHeap.poll();
-        int i = top[1];
-        int j = top[2];
-
-        result.add(new int[] {nums1[i], nums2[j]});
-
-        if (j + 1 < nums2.length) {
-            minHeap.offer(new int[] {nums1[i] + nums2[j + 1], i, j + 1});
+```java icon="code" title="K-Way Merge - Merge Sorted Lists"
+public List<Integer> mergeKLists(List<List<Integer>> lists) {
+    class Entry {
+        int value, listIndex, valueIndex;
+        Entry(int value, int listIndex, int valueIndex) {
+            this.value = value;
+            this.listIndex = listIndex;
+            this.valueIndex = valueIndex;
         }
     }
 
-    return result;
-}
-```
+    PriorityQueue<Entry> minHeap = new PriorityQueue<>(Comparator.comparingInt(a -> a.value));
+    List<Integer> merged = new ArrayList<>();
 
-#### Example B: Kth Smallest Pair Sum
-
-**Problem:** Return the kth smallest pair sum from two sorted arrays.
-
-```java icon="code" title="Top K Merge - Kth Smallest Pair Sum"
-public int kthSmallestPairSum(int[] nums1, int[] nums2, int k) {
-    if (nums1.length == 0 || nums2.length == 0 || k <= 0) {
-        return -1;
-    }
-
-    PriorityQueue<int[]> minHeap = new PriorityQueue<>(
-        (a, b) -> Integer.compare(a[0], b[0])
-    );
-
-    int rows = Math.min(nums1.length, k);
-    for (int i = 0; i < rows; i++) {
-        minHeap.offer(new int[] {nums1[i] + nums2[0], i, 0});
-    }
-
-    int answer = -1;
-    for (int count = 0; count < k && !minHeap.isEmpty(); count++) {
-        int[] top = minHeap.poll();
-        answer = top[0];
-
-        int i = top[1];
-        int j = top[2];
-
-        if (j + 1 < nums2.length) {
-            minHeap.offer(new int[] {nums1[i] + nums2[j + 1], i, j + 1});
+    for (int i = 0; i < lists.size(); i++) {
+        if (!lists.get(i).isEmpty()) {
+            minHeap.offer(new Entry(lists.get(i).get(0), i, 0));
         }
     }
 
-    return answer;
+    while (!minHeap.isEmpty()) {
+        Entry current = minHeap.poll();
+        merged.add(current.value);
+
+        int nextIndex = current.valueIndex + 1;
+        if (nextIndex < lists.get(current.listIndex).size()) {
+            int nextValue = lists.get(current.listIndex).get(nextIndex);
+            minHeap.offer(new Entry(nextValue, current.listIndex, nextIndex));
+        }
+    }
+
+    return merged;
 }
 ```
 
----
+#### Example B: Smallest Range Across K Lists
 
-### Real-World Analogy
+```java icon="code" title="K-Way Merge - Smallest Range"
+public int[] smallestRange(List<List<Integer>> nums) {
+    class Entry {
+        int value, listIndex, valueIndex;
+        Entry(int value, int listIndex, int valueIndex) {
+            this.value = value;
+            this.listIndex = listIndex;
+            this.valueIndex = valueIndex;
+        }
+    }
 
-Imagine combining flight prices from two sorted fare lists:
+    PriorityQueue<Entry> minHeap = new PriorityQueue<>(Comparator.comparingInt(a -> a.value));
+    int currentMax = Integer.MIN_VALUE;
+    int rangeStart = 0, rangeEnd = Integer.MAX_VALUE;
 
-* List A: base fares
-* List B: add-on fees
+    for (int i = 0; i < nums.size(); i++) {
+        int first = nums.get(i).get(0);
+        minHeap.offer(new Entry(first, i, 0));
+        currentMax = Math.max(currentMax, first);
+    }
 
-Instead of computing every possible total fare, you always expand the next cheapest combination first.
+    while (minHeap.size() == nums.size()) {
+        Entry min = minHeap.poll();
+        if (currentMax - min.value < rangeEnd - rangeStart) {
+            rangeStart = min.value;
+            rangeEnd = currentMax;
+        }
 
----
+        int nextIndex = min.valueIndex + 1;
+        if (nextIndex < nums.get(min.listIndex).size()) {
+            int nextValue = nums.get(min.listIndex).get(nextIndex);
+            minHeap.offer(new Entry(nextValue, min.listIndex, nextIndex));
+            currentMax = Math.max(currentMax, nextValue);
+        }
+    }
 
-### When to Use
+    return new int[] { rangeStart, rangeEnd };
+}
+```
 
-Look for these clues:
 
-* Two or more sorted sources.
-* Need only top/bottom `k` combinations.
-* Full Cartesian product is too expensive.
+### Real-World Analogies
+
+#### 1. Conceptual Analogy
+
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
+
+#### 2. Technical Analogy
+
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Efficient:** Avoids generating all pair combinations. | **Sorted Dependency:** Input arrays should be sorted. |
-| **K-Driven Cost:** Runtime depends on `k`, not `n * m` fully. | **Tuple Bookkeeping:** Need index tracking per heap node. |
-| **Natural K-Way View:** Reuses merge intuition. | **Edge Cases:** Empty arrays and small `k` need guards. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Time | Space |
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| **Top K Smallest Pairs** | $O(k \log \min(n, k))$ | $O(\min(n, k))$ |
-| **Kth Smallest Pair Sum** | $O(k \log \min(n, k))$ | $O(\min(n, k))$ |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

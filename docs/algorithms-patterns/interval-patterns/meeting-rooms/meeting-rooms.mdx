@@ -1,135 +1,131 @@
 ---
 title: Meeting Rooms
+sidebarTitle: "Meeting Rooms"
 ---
 
 ### Introduction
 
-The **Meeting Rooms** interval pattern determines resource requirements under overlapping time ranges.
+The **Meeting Rooms** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-Typical questions:
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-* Can one person attend all meetings?
-* Minimum number of rooms needed?
+### Intuition
 
-This pattern combines interval sorting with either greedy scanning or min-heap.
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
----
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-### Intuition: "Overlaps Define Concurrent Resource Usage"
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-If a meeting starts before previous one ends, they overlap and need separate rooms.
+### What are Predictable Dynamics?
 
-For minimum rooms:
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-1. Sort meetings by start time.
-2. Keep min-heap of end times for active meetings.
-3. If earliest ending meeting ends before current start, reuse that room.
-4. Otherwise allocate new room.
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-Heap size at any moment equals rooms currently needed.
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
----
+### Core Strategies
 
-### Core Variations
+#### 1. Canonical State Modeling
 
-#### 1. Meeting Rooms I (Feasibility)
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-* Check if any overlap exists.
-* Return boolean.
+#### 2. Incremental Transition
 
-#### 2. Meeting Rooms II (Minimum Rooms)
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
-* Count maximum concurrent overlaps.
-* Use min-heap on end times.
+#### 3. Constraint-Driven Pruning
 
-#### 3. Maximum Non-Overlapping Meetings
-
-* Greedy by earliest finish time.
-
----
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Can Attend All Meetings
+#### Example A: Merge Overlapping Intervals
 
-**Problem:** Return true if no meetings overlap.
-
-```java icon="code" title="Interval Patterns - Meeting Rooms I"
-public boolean canAttendMeetings(int[][] intervals) {
+```java icon="code" title="Intervals - Merge"
+public int[][] merge(int[][] intervals) {
     Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
+    List<int[]> merged = new ArrayList<>();
 
-    for (int i = 1; i < intervals.length; i++) {
-        if (intervals[i][0] < intervals[i - 1][1]) {
-            return false;
+    for (int[] interval : intervals) {
+        if (merged.isEmpty() || merged.get(merged.size() - 1)[1] < interval[0]) {
+            merged.add(new int[] { interval[0], interval[1] });
+        } else {
+            int[] last = merged.get(merged.size() - 1);
+            last[1] = Math.max(last[1], interval[1]);
         }
     }
 
-    return true;
+    return merged.toArray(new int[merged.size()][]);
 }
 ```
 
-#### Example B: Minimum Meeting Rooms Required
+#### Example B: Interval Intersection (Two Pointers)
 
-**Problem:** Return minimum number of rooms needed to host all meetings.
+```java icon="code" title="Intervals - Intersection"
+public int[][] intervalIntersection(int[][] first, int[][] second) {
+    List<int[]> result = new ArrayList<>();
+    int i = 0, j = 0;
 
-```java icon="code" title="Interval Patterns - Meeting Rooms II"
-public int minMeetingRooms(int[][] intervals) {
-    if (intervals == null || intervals.length == 0) {
-        return 0;
-    }
+    while (i < first.length && j < second.length) {
+        int start = Math.max(first[i][0], second[j][0]);
+        int end = Math.min(first[i][1], second[j][1]);
 
-    Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
-
-    PriorityQueue<Integer> minHeap = new PriorityQueue<>();
-    minHeap.offer(intervals[0][1]);
-
-    for (int i = 1; i < intervals.length; i++) {
-        int start = intervals[i][0];
-        int end = intervals[i][1];
-
-        if (start >= minHeap.peek()) {
-            minHeap.poll();
+        if (start <= end) {
+            result.add(new int[] { start, end });
         }
 
-        minHeap.offer(end);
+        if (first[i][1] < second[j][1]) i++;
+        else j++;
     }
 
-    return minHeap.size();
+    return result.toArray(new int[result.size()][]);
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Think of conference rooms in an office:
+#### 1. Conceptual Analogy
 
-* Each meeting occupies one room for `[start, end]`.
-* Overlapping meetings cannot share room.
-* Reusing a room is possible as soon as previous meeting ends.
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
----
+#### 2. Technical Analogy
 
-### When to Use
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-Look for these clues:
+### When to Use (and How to Recognize It)
 
-* Time intervals with shared resources.
-* Need overlap count or conflict detection.
-* Keywords like **rooms, servers, channels, booking conflicts**.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Clear Overlap Model:** Converts scheduling to interval logic. | **Sort Required:** Usually starts with `O(n \log n)` sorting. |
-| **Scalable Counting:** Min-heap tracks active meetings efficiently. | **Endpoint Semantics:** Inclusive/exclusive end-time handling matters. |
-| **Reusable for Resources:** Same approach works for many allocation tasks. | **Heap Overhead:** Slight constant-factor cost for priority queue. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Time | Space |
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| **Can Attend All Meetings** | $O(n \log n)$ | $O(1)$ auxiliary |
-| **Minimum Rooms** | $O(n \log n)$ | $O(n)$ |
-| **Max Non-Overlapping Meetings** | $O(n \log n)$ | $O(1)$ auxiliary |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

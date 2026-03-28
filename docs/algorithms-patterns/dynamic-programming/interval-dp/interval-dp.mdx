@@ -1,97 +1,127 @@
 ---
 title: Dynamic Programming - Interval DP
+sidebarTitle: "Interval DP"
 ---
 
 ### Introduction
 
-The **Interval DP** pattern solves problems over subarray/substring ranges.
+The **Dynamic Programming - Interval DP** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-State usually looks like `dp[left][right]` and answer is built from smaller intervals.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
 ### Intuition
 
-Solve short intervals first, then use them to solve longer ones.
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-Common transitions split interval at `k` or expand inward.
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
----
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-### Core Variations
+### What are Predictable Dynamics?
 
-#### 1. Partition by Split Point
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-#### 2. Palindrome Interval DP
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-#### 3. Burst Balloons / Matrix Chain Multiplication
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
----
+### Core Strategies
+
+#### 1. Canonical State Modeling
+
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
+
+#### 2. Incremental Transition
+
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Longest Palindromic Subsequence
+#### Example A: Top-Down DP (Memoization)
 
-```java icon="code" title="Interval DP - Longest Palindromic Subsequence"
-public int longestPalindromeSubseq(String s) {
-    int n = s.length();
-    int[][] dp = new int[n][n];
+```java icon="code" title="DP - Top Down Memoization"
+public int climbStairs(int n) {
+    int[] memo = new int[n + 1];
+    Arrays.fill(memo, -1);
+    return solve(n, memo);
+}
 
-    for (int i = n - 1; i >= 0; i--) {
-        dp[i][i] = 1;
-        for (int j = i + 1; j < n; j++) {
-            if (s.charAt(i) == s.charAt(j)) {
-                dp[i][j] = 2 + dp[i + 1][j - 1];
-            } else {
-                dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
-            }
-        }
-    }
+private int solve(int n, int[] memo) {
+    if (n <= 2) return n;
+    if (memo[n] != -1) return memo[n];
 
-    return dp[0][n - 1];
+    // Transition: f(n) = f(n-1) + f(n-2)
+    memo[n] = solve(n - 1, memo) + solve(n - 2, memo);
+    return memo[n];
 }
 ```
 
-#### Example B: Matrix Chain Multiplication (Min Cost)
+#### Example B: Bottom-Up DP (Tabulation)
 
-```java icon="code" title="Interval DP - Matrix Chain Multiplication"
-public int matrixChainOrder(int[] dims) {
-    int n = dims.length - 1;
-    int[][] dp = new int[n][n];
+```java icon="code" title="DP - Bottom Up Tabulation"
+public int minCostClimbingStairs(int[] cost) {
+    int n = cost.length;
+    int[] dp = new int[n + 1];
 
-    for (int len = 2; len <= n; len++) {
-        for (int i = 0; i + len - 1 < n; i++) {
-            int j = i + len - 1;
-            dp[i][j] = Integer.MAX_VALUE;
+    dp[0] = 0;
+    dp[1] = 0;
 
-            for (int k = i; k < j; k++) {
-                int cost = dp[i][k] + dp[k + 1][j] + dims[i] * dims[k + 1] * dims[j + 1];
-                dp[i][j] = Math.min(dp[i][j], cost);
-            }
-        }
+    for (int i = 2; i <= n; i++) {
+        int oneStep = dp[i - 1] + cost[i - 1];
+        int twoStep = dp[i - 2] + cost[i - 2];
+        dp[i] = Math.min(oneStep, twoStep);
     }
 
-    return dp[0][n - 1];
+    return dp[n];
 }
 ```
 
----
 
-### When to Use
+### Real-World Analogies
 
-* Subarray/subsequence range states.
-* "Minimum cost to merge/split".
-* Palindrome range optimization.
+#### 1. Conceptual Analogy
+
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
+
+#### 2. Technical Analogy
+
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| Handles complex interval relations elegantly. | Usually O(n^3) transitions for split problems. |
-| Systematic by increasing interval length. | 2D tables use significant memory. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Time | Space |
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| Palindrome Interval DP | $O(n^2)$ | $O(n^2)$ |
-| Matrix Chain / Burst Balloons | $O(n^3)$ | $O(n^2)$ |
-| Merge Stones (k-way variants) | $O(n^3)$ or higher | $O(n^2)$ |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |
