@@ -1,0 +1,100 @@
+---
+title: Radix Sort
+---
+
+### Introduction
+
+**Radix Sort** sorts numbers digit by digit using a stable intermediate sort (usually Counting Sort).
+
+It avoids direct element comparisons and can achieve near-linear performance for fixed-width integers.
+
+### Intuition: "Sort by Least Significant Digit to Most Significant Digit"
+
+For base 10 integers:
+
+1. Sort by units digit.
+2. Sort by tens digit (stable).
+3. Sort by hundreds digit (stable).
+4. Continue until highest digit.
+
+Stability ensures previous digit ordering is preserved.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Radix Sort (Non-Negative Integers)"
+public void radixSort(int[] nums) {
+    if (nums == null || nums.length <= 1) {
+        return;
+    }
+
+    int max = nums[0];
+    for (int num : nums) {
+        max = Math.max(max, num);
+    }
+
+    for (int exp = 1; max / exp > 0; exp *= 10) {
+        countingSortByDigit(nums, exp);
+    }
+}
+
+private void countingSortByDigit(int[] nums, int exp) {
+    int n = nums.length;
+    int[] output = new int[n];
+    int[] count = new int[10];
+
+    for (int num : nums) {
+        int digit = (num / exp) % 10;
+        count[digit]++;
+    }
+
+    for (int i = 1; i < 10; i++) {
+        count[i] += count[i - 1];
+    }
+
+    for (int i = n - 1; i >= 0; i--) {
+        int digit = (nums[i] / exp) % 10;
+        output[count[digit] - 1] = nums[i];
+        count[digit]--;
+    }
+
+    for (int i = 0; i < n; i++) {
+        nums[i] = output[i];
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Like sorting files first by last character, then second last, then third last, while preserving earlier grouping each round.
+
+---
+
+### When to Use
+
+* Fixed-length integers or strings.
+* Value comparison is expensive but digit extraction is easy.
+* Need high performance on large numeric datasets.
+
+### Key Requirement
+
+* Per-digit sort must be **stable**.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Can outperform comparison sorts for suitable data. | Limited to structured keys (digits/characters). |
+| Deterministic multi-pass process. | Extra memory for each pass. |
+| Works well with Counting Sort internally. | Complexity depends on number of digits. |
+
+### Complexity Analysis
+
+Let `n` be elements, `d` be digits, `b` be base (10 here).
+
+| Case | Time | Space |
+| --- | --- | --- |
+| All cases | $O(d(n + b))$ | $O(n + b)$ |

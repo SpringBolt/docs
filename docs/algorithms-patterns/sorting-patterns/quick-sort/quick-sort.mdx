@@ -1,0 +1,97 @@
+---
+title: Quick Sort
+---
+
+### Introduction
+
+**Quick Sort** is a divide-and-conquer algorithm that sorts by partitioning around a pivot.
+
+Elements less than pivot move left, greater elements move right, then both sides are sorted recursively.
+
+It is one of the fastest practical general-purpose sorting algorithms for arrays.
+
+### Intuition: "Place Pivot in Final Position"
+
+1. Choose a pivot.
+2. Partition array so pivot lands in correct index.
+3. Recursively sort left and right partitions.
+
+Good pivot choice keeps partitions balanced and gives near **$O(n \log n)$** performance.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Quick Sort (Lomuto Partition)"
+public void quickSort(int[] nums) {
+    if (nums == null || nums.length <= 1) {
+        return;
+    }
+    quickSort(nums, 0, nums.length - 1);
+}
+
+private void quickSort(int[] nums, int low, int high) {
+    if (low >= high) {
+        return;
+    }
+
+    int pivotIndex = partition(nums, low, high);
+    quickSort(nums, low, pivotIndex - 1);
+    quickSort(nums, pivotIndex + 1, high);
+}
+
+private int partition(int[] nums, int low, int high) {
+    int pivot = nums[high];
+    int i = low;
+
+    for (int j = low; j < high; j++) {
+        if (nums[j] <= pivot) {
+            int temp = nums[i];
+            nums[i] = nums[j];
+            nums[j] = temp;
+            i++;
+        }
+    }
+
+    int temp = nums[i];
+    nums[i] = nums[high];
+    nums[high] = temp;
+
+    return i;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Like choosing a reference value and grouping smaller values to one side and larger values to the other, then repeating within each group.
+
+---
+
+### When to Use
+
+* Fast in-memory array sorting.
+* Average-case performance is prioritized.
+* Extra memory should stay low.
+
+### Important Note
+
+* Worst-case is **$O(n^2)$** (for poor pivots like sorted input with fixed-end pivot).
+* Randomized pivot or median-of-three helps avoid bad cases.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Very fast in practice with good cache behavior. | Worst-case $O(n^2)$ possible. |
+| In-place (small extra stack space). | Not stable by default. |
+| Widely used and optimized in many systems. | Partition logic is error-prone. |
+
+### Complexity Analysis
+
+| Case | Time | Space |
+| --- | --- | --- |
+| Best | $O(n \log n)$ | $O(\log n)$ |
+| Average | $O(n \log n)$ | $O(\log n)$ |
+| Worst | $O(n^2)$ | $O(n)$ |

@@ -1,0 +1,80 @@
+---
+title: Selection Sort
+---
+
+### Introduction
+
+**Selection Sort** repeatedly selects the minimum element from the unsorted region and places it at the current index.
+
+It reduces writes/swaps compared to Bubble Sort, but still needs quadratic comparisons.
+
+### Intuition: "Pick the Minimum and Place It"
+
+At position `i`:
+
+1. Find index of smallest element in `i..n-1`.
+2. Swap it with index `i`.
+3. Move to next position.
+
+The left side becomes sorted one element at a time.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Selection Sort"
+public void selectionSort(int[] nums) {
+    int n = nums.length;
+
+    for (int i = 0; i < n - 1; i++) {
+        int minIndex = i;
+
+        for (int j = i + 1; j < n; j++) {
+            if (nums[j] < nums[minIndex]) {
+                minIndex = j;
+            }
+        }
+
+        if (minIndex != i) {
+            int temp = nums[i];
+            nums[i] = nums[minIndex];
+            nums[minIndex] = temp;
+        }
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Like arranging playing cards by repeatedly taking the smallest remaining card and placing it in the next left position.
+
+---
+
+### When to Use
+
+* Very small arrays.
+* Environments where swap operations are expensive and should be minimized.
+* Educational settings for understanding in-place sorting.
+
+### Why to Avoid in Most Production Cases
+
+* Always **$O(n^2)$** comparisons, even if already sorted.
+* Not stable in standard form.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Simple and in-place. | Quadratic time in all cases. |
+| Fewer swaps than Bubble Sort. | Not stable by default. |
+| Predictable behavior. | Poor scalability. |
+
+### Complexity Analysis
+
+| Case | Time | Space |
+| --- | --- | --- |
+| Best | $O(n^2)$ | $O(1)$ |
+| Average | $O(n^2)$ | $O(1)$ |
+| Worst | $O(n^2)$ | $O(1)$ |

@@ -1,0 +1,86 @@
+---
+title: Bubble Sort
+---
+
+### Introduction
+
+**Bubble Sort** repeatedly compares adjacent elements and swaps them if they are in the wrong order.
+
+After each full pass, the largest unsorted element "bubbles" to its correct position at the end.
+
+It is simple but inefficient for large data.
+
+### Intuition: "Push Heavy Elements to the End"
+
+Scan left to right:
+
+* if `arr[j] > arr[j + 1]`, swap,
+* continue until pass ends,
+* repeat for remaining unsorted prefix.
+
+Use an early-stop flag to finish quickly if array becomes sorted.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Bubble Sort"
+public void bubbleSort(int[] nums) {
+    int n = nums.length;
+
+    for (int i = 0; i < n - 1; i++) {
+        boolean swapped = false;
+
+        for (int j = 0; j < n - 1 - i; j++) {
+            if (nums[j] > nums[j + 1]) {
+                int temp = nums[j];
+                nums[j] = nums[j + 1];
+                nums[j + 1] = temp;
+                swapped = true;
+            }
+        }
+
+        if (!swapped) {
+            break;
+        }
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Imagine heavier bubbles rising in reverse:
+
+* each comparison lets a larger value move one step right,
+* repeated passes move all large values to their final positions.
+
+---
+
+### When to Use
+
+* Teaching sorting fundamentals.
+* Very small input sizes.
+* Cases where early-stop on nearly sorted input is acceptable.
+
+### Why to Avoid in Most Production Cases
+
+* Worst-case and average-case are **$O(n^2)$**.
+* Too many comparisons for medium/large arrays.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Very easy to implement and debug. | Slow for large datasets. |
+| In-place and stable. | Performs many unnecessary passes. |
+| Early exit helps nearly sorted data. | Rarely the best practical choice. |
+
+### Complexity Analysis
+
+| Case | Time | Space |
+| --- | --- | --- |
+| Best (already sorted with flag) | $O(n)$ | $O(1)$ |
+| Average | $O(n^2)$ | $O(1)$ |
+| Worst | $O(n^2)$ | $O(1)$ |

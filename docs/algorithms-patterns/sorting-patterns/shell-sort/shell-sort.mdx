@@ -1,0 +1,77 @@
+---
+title: Shell Sort
+---
+
+### Introduction
+
+**Shell Sort** is a generalized version of Insertion Sort that first compares far-apart elements using a gap sequence.
+
+As the gap shrinks, the array becomes more ordered, making final insertion passes very efficient.
+
+### Intuition: "Pre-Sort with Gaps, Then Finish"
+
+1. Choose an initial large gap.
+2. Perform gapped insertion sort.
+3. Reduce gap and repeat.
+4. End with gap `1` (normal insertion sort on nearly sorted array).
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Shell Sort (Gap = n/2 to 1)"
+public void shellSort(int[] nums) {
+    int n = nums.length;
+
+    for (int gap = n / 2; gap > 0; gap /= 2) {
+        for (int i = gap; i < n; i++) {
+            int current = nums[i];
+            int j = i;
+
+            while (j >= gap && nums[j - gap] > current) {
+                nums[j] = nums[j - gap];
+                j -= gap;
+            }
+
+            nums[j] = current;
+        }
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Like roughly organizing books by stepping through shelves with big jumps first, then refining with smaller jumps until fully sorted.
+
+---
+
+### When to Use
+
+* Need an in-place algorithm better than plain Insertion Sort for medium data.
+* Memory is tight.
+* Full $O(n \log n)$ algorithms are unnecessary for dataset size.
+
+### Notes on Gap Sequence
+
+* Performance strongly depends on gap sequence.
+* Common simple sequence: `n/2, n/4, ..., 1`.
+* Advanced sequences can improve practical runtime.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| In-place and easy to implement. | Time complexity depends on chosen gaps. |
+| Often faster than Insertion Sort in practice. | Not stable. |
+| Low memory overhead. | Less predictable than Merge/Heap/Quick Sort. |
+
+### Complexity Analysis
+
+Exact complexity depends on gap sequence.
+
+| Case | Time | Space |
+| --- | --- | --- |
+| Typical practical behavior | Around $O(n^{1.3})$ to $O(n^{1.5})$ | $O(1)$ |
+| Worst (some sequences) | $O(n^2)$ | $O(1)$ |
