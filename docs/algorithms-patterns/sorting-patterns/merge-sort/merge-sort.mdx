@@ -1,0 +1,106 @@
+---
+title: Merge Sort
+---
+
+### Introduction
+
+**Merge Sort** is a divide-and-conquer sorting algorithm.
+
+It recursively splits the array into halves, sorts each half, and merges sorted halves into one sorted array.
+
+It guarantees **$O(n \log n)$** time in all cases.
+
+### Intuition: "Divide, Sort, Merge"
+
+1. Split array into two halves.
+2. Sort each half recursively.
+3. Merge two sorted halves using two pointers.
+
+The merge step is linear, and recursion depth is logarithmic.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Merge Sort"
+public void mergeSort(int[] nums) {
+    if (nums == null || nums.length <= 1) {
+        return;
+    }
+    mergeSort(nums, 0, nums.length - 1);
+}
+
+private void mergeSort(int[] nums, int left, int right) {
+    if (left >= right) {
+        return;
+    }
+
+    int mid = left + (right - left) / 2;
+    mergeSort(nums, left, mid);
+    mergeSort(nums, mid + 1, right);
+    merge(nums, left, mid, right);
+}
+
+private void merge(int[] nums, int left, int mid, int right) {
+    int[] temp = new int[right - left + 1];
+    int i = left;
+    int j = mid + 1;
+    int k = 0;
+
+    while (i <= mid && j <= right) {
+        if (nums[i] <= nums[j]) {
+            temp[k++] = nums[i++];
+        } else {
+            temp[k++] = nums[j++];
+        }
+    }
+
+    while (i <= mid) {
+        temp[k++] = nums[i++];
+    }
+
+    while (j <= right) {
+        temp[k++] = nums[j++];
+    }
+
+    for (int p = 0; p < temp.length; p++) {
+        nums[left + p] = temp[p];
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Imagine sorting two already sorted stacks of papers by repeatedly picking the smaller top page from either stack.
+
+---
+
+### When to Use
+
+* Need guaranteed **$O(n \log n)$** worst-case time.
+* Need stable sorting.
+* Linked-list sorting (Merge Sort works very well there).
+* External sorting when data does not fit in memory.
+
+### Trade-Off
+
+* Excellent time guarantee.
+* Requires extra memory for merging on arrays.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Predictable $O(n \log n)$ in all cases. | Needs additional $O(n)$ space on arrays. |
+| Stable sorting. | Recursive overhead. |
+| Good for large datasets and linked lists. | Not in-place in standard array implementation. |
+
+### Complexity Analysis
+
+| Case | Time | Space |
+| --- | --- | --- |
+| Best | $O(n \log n)$ | $O(n)$ |
+| Average | $O(n \log n)$ | $O(n)$ |
+| Worst | $O(n \log n)$ | $O(n)$ |
