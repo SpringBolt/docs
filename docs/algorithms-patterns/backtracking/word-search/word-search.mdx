@@ -1,0 +1,74 @@
+---
+title: Backtracking - Word Search Pattern
+---
+
+### Introduction
+
+The **Grid Backtracking Pattern** searches paths in a matrix while respecting visited constraints.
+
+In **Word Search**, adjacent cells (up/down/left/right) must match characters in order.
+
+---
+
+### Intuition
+
+For each cell as potential start:
+
+1. check current character match,
+2. mark cell visited,
+3. recurse to four neighbors for next character,
+4. unmark on return.
+
+Immediate mismatch gives strong pruning.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Backtracking - Word Search"
+public boolean exist(char[][] board, String word) {
+    int rows = board.length;
+    int cols = board[0].length;
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (dfs(r, c, 0, board, word)) return true;
+        }
+    }
+    return false;
+}
+
+private boolean dfs(int r, int c, int index, char[][] board, String word) {
+    if (index == word.length()) return true;
+
+    if (r < 0 || c < 0 || r >= board.length || c >= board[0].length) return false;
+    if (board[r][c] != word.charAt(index)) return false;
+
+    char saved = board[r][c];
+    board[r][c] = '#';
+
+    boolean found = dfs(r + 1, c, index + 1, board, word)
+            || dfs(r - 1, c, index + 1, board, word)
+            || dfs(r, c + 1, index + 1, board, word)
+            || dfs(r, c - 1, index + 1, board, word);
+
+    board[r][c] = saved;
+    return found;
+}
+```
+
+---
+
+### When to Use
+
+* Path existence in grid with no repeated cell usage in same path.
+* Local step constraints with global visited state.
+
+### Complexity Analysis
+
+| Metric | Complexity |
+| --- | --- |
+| Time | $O(R * C * 4^L)$ worst case |
+| Space | $O(L)$ recursion depth |
+
+`R*C` starts, branching up to `4`, depth `L` = word length.

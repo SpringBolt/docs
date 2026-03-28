@@ -1,0 +1,88 @@
+---
+title: Backtracking Patterns
+---
+
+### Introduction
+
+The **Backtracking** pattern explores a search space by making a choice, recursing, and undoing that choice.
+
+Core workflow:
+
+1. **Choose** a candidate.
+2. **Explore** deeper recursively.
+3. **Unchoose** (rollback state).
+
+Backtracking is DFS over a decision tree with explicit state rollback.
+
+---
+
+### Standard Backtracking Pattern Families
+
+1. **Subset / Include-Exclude Pattern**
+   * Binary decision at each index (take or skip).
+   * Typical problems: Subsets, Subsequences.
+
+2. **Permutation Pattern**
+   * Build ordered arrangement of all elements.
+   * Typical problems: Permutations, Unique Permutations.
+
+3. **Combination Pattern (Bounded / Unbounded)**
+   * Select elements under constraints (sum, size, uniqueness).
+   * Typical problems: Combination Sum, Combination Sum II.
+
+4. **String Partition Pattern**
+   * Split string into valid segments.
+   * Typical problems: Palindrome Partitioning, Restore IP Address.
+
+5. **Grid Path Search Pattern**
+   * Explore neighbors in 2D grid with visited marking.
+   * Typical problems: Word Search, Rat in Maze.
+
+6. **Constraint Placement Pattern**
+   * Place objects with global validity constraints.
+   * Typical problems: N-Queens, Sudoku Solver.
+
+---
+
+### Shared Template
+
+```java icon="code" title="Backtracking - Generic Template"
+public void backtrack(State state, List<Result> output) {
+    if (isComplete(state)) {
+        output.add(buildAnswer(state));
+        return;
+    }
+
+    for (Choice choice : getChoices(state)) {
+        if (!isValid(choice, state)) continue;
+
+        apply(choice, state);       // choose
+        backtrack(state, output);   // explore
+        rollback(choice, state);    // unchoose
+    }
+}
+```
+
+---
+
+### Pattern Selection Guide
+
+| Problem Signal | Recommended Pattern |
+| --- | --- |
+| "return all subsets / subsequences" | Include-Exclude |
+| "return all orderings" | Permutation |
+| "sum to target" | Combination |
+| "partition string into valid pieces" | String Partition |
+| "find path/word in matrix" | Grid DFS Backtracking |
+| "place items without conflict" | Constraint Placement |
+
+### Complexity Notes
+
+Backtracking is usually exponential because it enumerates choices.
+
+General estimate:
+
+* **Time:** `O(branchingFactor ^ depth)`
+* **Space:** `O(depth)` recursion stack + visited/state storage
+
+Pruning quality heavily determines practical runtime.

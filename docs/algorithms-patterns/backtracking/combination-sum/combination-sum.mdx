@@ -1,0 +1,73 @@
+---
+title: Backtracking - Combination Sum Pattern
+---
+
+### Introduction
+
+The **Combination Sum Pattern** builds combinations that satisfy a numeric constraint (usually exact target sum).
+
+Order does **not** matter, so recursion uses `start` index to avoid permutation duplicates.
+
+---
+
+### Intuition
+
+For each candidate at position `i`:
+
+1. take it,
+2. reduce target,
+3. recurse from `i` again if reuse is allowed,
+4. backtrack.
+
+Prune branch immediately when remaining target becomes negative.
+
+---
+
+### Implementation Example
+
+#### Example A: Combination Sum (Reuse Allowed)
+
+```java icon="code" title="Backtracking - Combination Sum"
+public List<List<Integer>> combinationSum(int[] candidates, int target) {
+    List<List<Integer>> result = new ArrayList<>();
+    dfs(0, target, candidates, new ArrayList<>(), result);
+    return result;
+}
+
+private void dfs(int start, int remain, int[] candidates, List<Integer> path, List<List<Integer>> result) {
+    if (remain == 0) {
+        result.add(new ArrayList<>(path));
+        return;
+    }
+
+    if (remain < 0) return;
+
+    for (int i = start; i < candidates.length; i++) {
+        path.add(candidates[i]);
+        dfs(i, remain - candidates[i], candidates, path, result); // i => reuse allowed
+        path.remove(path.size() - 1);
+    }
+}
+```
+
+---
+
+### Pruning Upgrades
+
+* Sort array and stop loop when `candidates[i] > remain`.
+* Optional memoization by `(start, remain)` for feasibility checks.
+
+### When to Use
+
+* Need all combinations that match target.
+* Elements can be reused.
+* Output requires actual lists, not only count.
+
+### Complexity Analysis
+
+| Metric | Complexity |
+| --- | --- |
+| Time | Exponential (input dependent, pruning sensitive) |
+| Space | $O(target)$ path depth in worst case + output |
+
+Exact runtime depends on candidate distribution and pruning effectiveness.

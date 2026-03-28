@@ -1,0 +1,81 @@
+---
+title: Backtracking - Sudoku Solver Pattern
+---
+
+### Introduction
+
+**Sudoku Solver** is a high-constraint backtracking problem.
+
+Goal: fill empty cells so each row, column, and `3x3` box contains digits `1..9` exactly once.
+
+---
+
+### Intuition
+
+Traverse cells left-to-right, top-to-bottom.
+
+For an empty cell:
+
+* try digits `1..9`,
+* place a valid digit,
+* recurse to next cell,
+* rollback if branch fails.
+
+The search stops as soon as a full valid board is found.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Backtracking - Sudoku Solver"
+public void solveSudoku(char[][] board) {
+    solve(board);
+}
+
+private boolean solve(char[][] board) {
+    for (int r = 0; r < 9; r++) {
+        for (int c = 0; c < 9; c++) {
+            if (board[r][c] != '.') continue;
+
+            for (char digit = '1'; digit <= '9'; digit++) {
+                if (!isValid(board, r, c, digit)) continue;
+
+                board[r][c] = digit;
+                if (solve(board)) return true;
+                board[r][c] = '.';
+            }
+
+            return false; // no valid digit for this cell
+        }
+    }
+    return true; // solved
+}
+
+private boolean isValid(char[][] board, int row, int col, char digit) {
+    for (int i = 0; i < 9; i++) {
+        if (board[row][i] == digit) return false;
+        if (board[i][col] == digit) return false;
+
+        int subRow = 3 * (row / 3) + i / 3;
+        int subCol = 3 * (col / 3) + i % 3;
+        if (board[subRow][subCol] == digit) return false;
+    }
+    return true;
+}
+```
+
+---
+
+### Optimization
+
+* Track row/col/box usage with bitmasks.
+* Choose next empty cell with minimum candidates (MRV heuristic).
+
+### Complexity Analysis
+
+| Metric | Complexity |
+| --- | --- |
+| Time | Exponential (worst-case very large, often approximated as $O(9^E)$) |
+| Space | $O(E)$ recursion depth |
+
+`E` is number of empty cells.

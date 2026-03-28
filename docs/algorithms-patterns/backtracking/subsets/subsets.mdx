@@ -6,18 +6,25 @@ title: Backtracking (Subsets Pattern)
 
 The **Backtracking** pattern explores all valid choices by building partial solutions, recursing, and undoing the choice.
 
-The **Subsets Pattern** is one of the most common forms: at each position, choose to include or exclude an element.
+The **Subsets Pattern** is the canonical include-exclude tree:
+
+* include current element,
+* recurse,
+* exclude current element,
+* recurse.
+
+---
 
 ### Intuition: "Choose, Explore, Unchoose"
 
-For each number:
+For each index `i`:
 
-1. Include it in current subset.
-2. Recurse to next index.
-3. Remove it (backtrack).
-4. Explore branch where it is excluded.
+1. Add `nums[i]` to current subset.
+2. Explore deeper.
+3. Remove `nums[i]` (rollback).
+4. Explore branch without it.
 
-This forms a decision tree with exhaustive yet structured traversal.
+This produces complete power set in structured DFS order.
 
 ---
 
@@ -25,25 +32,24 @@ This forms a decision tree with exhaustive yet structured traversal.
 
 #### 1. Subsets / Power Set
 
+* Distinct input values.
 * Include-exclude recursion.
-* Output all subsets.
 
-#### 2. Combination Sum
+#### 2. Subsets with Duplicates
 
-* Build candidates under target constraint.
-* Prune when sum exceeds target.
+* Sort input.
+* Skip equal values at same recursion depth.
 
-#### 3. Permutations
+#### 3. Fixed-Size Subsets (Combinations)
 
-* Pick unused element each step.
-* Use `used[]` array or swapping.
+* Continue recursion only while `path.size() <= k`.
+* Record result only when `path.size() == k`.
 
 ---
 
 ### Implementation Examples
 
-#### Example A: Generate All Subsets
-**Problem:** Return power set of distinct integers.
+#### Example A: Generate All Subsets (Distinct)
 
 ```java icon="code" title="Backtracking - Subsets"
 public List<List<Integer>> subsets(int[] nums) {
@@ -68,43 +74,38 @@ private void backtrack(int index, int[] nums, List<Integer> current, List<List<I
 }
 ```
 
-#### Example B: Combination Sum
+#### Example B: Iterative Expansion Variant
 
-**Problem:** Find all combinations where candidate numbers sum to target (reuse allowed).
-
-```java icon="code" title="Backtracking - Combination Sum"
-public List<List<Integer>> combinationSum(int[] candidates, int target) {
+```java icon="code" title="Backtracking Idea - Iterative Subset Expansion"
+public List<List<Integer>> subsetsIterative(int[] nums) {
     List<List<Integer>> result = new ArrayList<>();
-    dfs(0, target, candidates, new ArrayList<>(), result);
+    result.add(new ArrayList<>());
+
+    for (int num : nums) {
+        int size = result.size();
+        for (int i = 0; i < size; i++) {
+            List<Integer> next = new ArrayList<>(result.get(i));
+            next.add(num);
+            result.add(next);
+        }
+    }
     return result;
-}
-
-private void dfs(int start, int target, int[] candidates, List<Integer> path, List<List<Integer>> result) {
-    if (target == 0) {
-        result.add(new ArrayList<>(path));
-        return;
-    }
-    if (target < 0) return;
-
-    for (int i = start; i < candidates.length; i++) {
-        path.add(candidates[i]);
-        dfs(i, target - candidates[i], candidates, path, result); // i, because reuse allowed
-        path.remove(path.size() - 1);
-    }
 }
 ```
 
 ---
 
-### Real-World Analogy
+### Dry Run (nums = [1, 2])
 
-Think of trying all outfit combinations from a wardrobe.
+* Start `[]`
+* Include `1` -> `[1]`
+  * Include `2` -> `[1,2]` (record)
+  * Exclude `2` -> `[1]` (record)
+* Exclude `1` -> `[]`
+  * Include `2` -> `[2]` (record)
+  * Exclude `2` -> `[]` (record)
 
-* Pick one item option.
-* Try all possibilities with that choice.
-* Undo and try the next option.
-
-This is exactly recursive backtracking.
+Output: `[[1,2], [1], [2], []]` (order may vary by traversal).
 
 ---
 
@@ -112,22 +113,23 @@ This is exactly recursive backtracking.
 
 Look for these clues:
 
-* Need **all combinations/permutations/subsets**.
-* Constraints where partial path can be pruned.
-* Keyword: "return all possible..."
+* Need **all subsets/subsequences/combinations**.
+* Binary decision at each element.
+* Phrase: "return all possible selections."
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Exhaustive:** Finds all valid solutions. | **Exponential Growth:** Can be slow on large inputs. |
-| **Prunable:** Early stopping can reduce search heavily. | **State Management:** Must carefully undo mutations. |
-| **Reusable Template:** Same skeleton across many problems. | **Stack Depth:** Deep recursion may hit limits. |
+| Exhaustive and guaranteed complete. | Exponential output growth. |
+| Simple recursive skeleton. | Requires careful rollback of mutable state. |
+| Supports pruning extensions. | Deep recursion for large `n`. |
 
-### Summary Table
+### Complexity Analysis
 
-| Variant | Time | Space | Notes |
-| --- | --- | --- | --- |
-| **Subsets** | $O(n * 2^n)$ | $O(n)$ recursion + output | Include/exclude tree |
-| **Permutations** | $O(n * n!)$ | $O(n)$ recursion + output | Pick unused each level |
-| **Combination Sum** | Exponential (pruned) | $O(target)$ path depth | Pruning by remaining target |
+| Variant | Time | Space |
+| --- | --- | --- |
+| Recursive include-exclude | $O(n * 2^n)$ | $O(n)$ recursion + output |
+| Iterative expansion | $O(n * 2^n)$ | $O(1)$ extra (excluding output) |
+
+`2^n` subsets exist, and copying each subset contributes the `n` factor.

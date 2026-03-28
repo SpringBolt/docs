@@ -1,0 +1,68 @@
+---
+title: Backtracking - Combination Sum II Pattern
+---
+
+### Introduction
+
+**Combination Sum II** is a bounded-choice variation:
+
+* each index can be used at most once,
+* input may contain duplicates,
+* output combinations must be unique.
+
+---
+
+### Intuition
+
+Sort first, then skip duplicate values **at the same recursion level**.
+
+Key skip rule:
+
+* if `i > start` and `nums[i] == nums[i - 1]`, continue.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Backtracking - Combination Sum II"
+public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+    Arrays.sort(candidates);
+    List<List<Integer>> result = new ArrayList<>();
+    backtrack(0, target, candidates, new ArrayList<>(), result);
+    return result;
+}
+
+private void backtrack(int start, int remain, int[] candidates, List<Integer> path, List<List<Integer>> result) {
+    if (remain == 0) {
+        result.add(new ArrayList<>(path));
+        return;
+    }
+
+    for (int i = start; i < candidates.length; i++) {
+        if (i > start && candidates[i] == candidates[i - 1]) continue;
+
+        if (candidates[i] > remain) break;
+
+        path.add(candidates[i]);
+        backtrack(i + 1, remain - candidates[i], candidates, path, result); // i+1 => single use
+        path.remove(path.size() - 1);
+    }
+}
+```
+
+---
+
+### When to Use
+
+* Combination target with duplicates in input.
+* Each value occurrence is usable once.
+* Need unique combination sets.
+
+### Complexity Analysis
+
+| Metric | Complexity |
+| --- | --- |
+| Time | Exponential in number of candidates |
+| Space | $O(n)$ recursion depth + output |
+
+Sorting enables both pruning and duplicate control.
