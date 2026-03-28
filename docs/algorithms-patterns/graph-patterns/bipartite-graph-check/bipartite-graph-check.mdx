@@ -1,142 +1,130 @@
 ---
 title: Bipartite Graph Check
+sidebarTitle: "Bipartite Graph Check"
 ---
 
 ### Introduction
 
-The **Bipartite Graph Check** pattern verifies whether graph nodes can be split into two sets such that every edge connects one set to the other.
+The **Bipartite Graph Check** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-This pattern appears in team partitioning, scheduling constraints, and odd-cycle detection.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-### Intuition: "Two-Color the Graph"
+### Intuition
 
-If a graph is bipartite, we can color each node with one of two colors (`0` or `1`) so adjacent nodes always have opposite colors.
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-If we ever find an edge connecting two same-colored nodes, graph is not bipartite.
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-Both BFS and DFS coloring work.
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
----
+### What are Predictable Dynamics?
 
-### Core Variations
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-#### 1. BFS Two-Coloring
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-* Level-style coloring with queue.
-* Good iterative template.
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-#### 2. DFS Two-Coloring
+### Core Strategies
 
-* Recursive coloring and conflict checking.
-* Compact and clean.
+#### 1. Canonical State Modeling
 
-#### 3. Odd Cycle Detection
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-* Undirected graph is bipartite iff it has no odd-length cycle.
+#### 2. Incremental Transition
 
----
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: BFS Bipartite Check
-**Problem:** Return true if undirected graph is bipartite.
+#### Example A: BFS Traversal on Graph
 
-```java icon="code" title="Bipartite - BFS Coloring"
-public boolean isBipartiteBFS(List<List<Integer>> graph) {
-    int n = graph.size();
-    int[] color = new int[n];
-    Arrays.fill(color, -1); // -1 = uncolored
+```java icon="code" title="Graph - BFS Traversal"
+public List<Integer> bfs(int n, List<List<Integer>> graph, int source) {
+    boolean[] visited = new boolean[n];
+    Queue<Integer> queue = new LinkedList<>();
+    List<Integer> order = new ArrayList<>();
 
-    for (int start = 0; start < n; start++) {
-        if (color[start] != -1) continue;
+    queue.offer(source);
+    visited[source] = true;
 
-        Queue<Integer> queue = new LinkedList<>();
-        queue.offer(start);
-        color[start] = 0;
+    while (!queue.isEmpty()) {
+        int node = queue.poll();
+        order.add(node);
 
-        while (!queue.isEmpty()) {
-            int node = queue.poll();
-
-            for (int neighbor : graph.get(node)) {
-                if (color[neighbor] == -1) {
-                    color[neighbor] = 1 - color[node];
-                    queue.offer(neighbor);
-                } else if (color[neighbor] == color[node]) {
-                    return false;
-                }
+        for (int neighbor : graph.get(node)) {
+            if (!visited[neighbor]) {
+                visited[neighbor] = true;
+                queue.offer(neighbor);
             }
         }
     }
 
-    return true;
+    return order;
 }
 ```
 
-#### Example B: DFS Bipartite Check
+#### Example B: DFS Traversal with Recursion
 
-**Problem:** Return true if graph is bipartite using DFS.
-
-```java icon="code" title="Bipartite - DFS Coloring"
-public boolean isBipartiteDFS(List<List<Integer>> graph) {
-    int n = graph.size();
-    int[] color = new int[n];
-    Arrays.fill(color, -1);
-
-    for (int i = 0; i < n; i++) {
-        if (color[i] == -1 && !dfsColor(i, 0, graph, color)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-private boolean dfsColor(int node, int currentColor, List<List<Integer>> graph, int[] color) {
-    color[node] = currentColor;
+```java icon="code" title="Graph - DFS Traversal"
+public void dfs(int node, List<List<Integer>> graph, boolean[] visited, List<Integer> order) {
+    visited[node] = true;
+    order.add(node);
 
     for (int neighbor : graph.get(node)) {
-        if (color[neighbor] == -1) {
-            if (!dfsColor(neighbor, 1 - currentColor, graph, color)) return false;
-        } else if (color[neighbor] == currentColor) {
-            return false;
+        if (!visited[neighbor]) {
+            dfs(neighbor, graph, visited, order);
         }
     }
-
-    return true;
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Think of assigning people to two teams where rivals cannot be in same team.
+#### 1. Conceptual Analogy
 
-* If assignments can be completed without conflict, graph is bipartite.
-* Any unavoidable odd rivalry loop breaks feasibility.
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
----
+#### 2. Technical Analogy
 
-### When to Use
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-Look for these clues:
+### When to Use (and How to Recognize It)
 
-* Need to divide entities into two valid groups.
-* Constraints expressed as "must be in opposite groups".
-* Detect odd cycle in undirected graph.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Simple Coloring Model:** Easy to implement and reason about. | **Only Binary Partition:** Does not solve general graph coloring. |
-| **Linear Complexity:** Efficient for large sparse graphs. | **Disconnected Graph Handling Required:** Must start BFS/DFS from each component. |
-| **Useful Structural Check:** Quickly reveals odd-cycle conflicts. | **Directed Interpretation Varies:** Standard form is undirected. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Approach | Time | Space | Notes |
-| --- | --- | --- | --- |
-| **BFS Coloring** | $O(V+E)$ | $O(V)$ | Queue-based, iterative |
-| **DFS Coloring** | $O(V+E)$ | $O(V)$ | Recursive, compact |
-| **Odd-Cycle View** | $O(V+E)$ | $O(V)$ | Equivalent condition |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

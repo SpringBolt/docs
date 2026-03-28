@@ -1,180 +1,129 @@
 ---
 title: Expression Evaluation
+sidebarTitle: "Expression Evaluation"
 ---
 
 ### Introduction
 
-The **Expression Evaluation** stack pattern evaluates arithmetic expressions by respecting operator precedence and parentheses.
+The **Expression Evaluation** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-Instead of building a full parse tree, we can process expression tokens using stacks for operands and operators.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-This keeps the implementation iterative and efficient.
+### Intuition
 
-### Intuition: "Resolve Higher Priority First"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-In `3 + 2 * 4`, multiplication should happen before addition.
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-As we scan tokens:
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-* Numbers are pushed to value stack.
-* Operators are pushed to operator stack.
-* Before pushing a new operator, resolve all higher-or-equal precedence operators already on top.
+### What are Predictable Dynamics?
 
-For parentheses, evaluate until matching `'('` is found.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
----
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-### Core Variations
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-#### 1. Basic Calculator (No Parentheses)
+### Core Strategies
 
-* Handle `+`, `-`, `*`, `/`.
-* Use precedence checks.
+#### 1. Canonical State Modeling
 
-#### 2. Calculator with Parentheses
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-* Push `'('` as boundary marker.
-* Evaluate until boundary on `')'`.
+#### 2. Incremental Transition
 
-#### 3. Reverse Polish Notation (RPN)
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
-* Single stack solution.
-* Evaluate immediately when operator arrives.
+#### 3. Constraint-Driven Pruning
 
----
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Infix Expression Evaluation with Parentheses
-**Problem:** Evaluate expression containing non-negative integers, `+`, `-`, `*`, `/`, and parentheses.
+#### Example A: Balanced Parentheses
 
-```java icon="code" title="Stack - Infix Expression Evaluation"
-public int evaluate(String s) {
-    Deque<Integer> values = new ArrayDeque<>();
-    Deque<Character> operators = new ArrayDeque<>();
+```java icon="code" title="Stack - Balanced Parentheses"
+public boolean isValid(String s) {
+    Map<Character, Character> pairs = Map.of(')', '(', ']', '[', '}', '{');
+    Deque<Character> stack = new ArrayDeque<>();
 
-    int i = 0;
-    while (i < s.length()) {
-        char ch = s.charAt(i);
-
-        if (ch == ' ') {
-            i++;
-            continue;
-        }
-
-        if (Character.isDigit(ch)) {
-            int number = 0;
-            while (i < s.length() && Character.isDigit(s.charAt(i))) {
-                number = number * 10 + (s.charAt(i) - '0');
-                i++;
+    for (char ch : s.toCharArray()) {
+        if (pairs.containsValue(ch)) {
+            stack.push(ch);
+        } else if (pairs.containsKey(ch)) {
+            if (stack.isEmpty() || stack.pop() != pairs.get(ch)) {
+                return false;
             }
-            values.push(number);
-            continue;
         }
-
-        if (ch == '(') {
-            operators.push(ch);
-        } else if (ch == ')') {
-            while (!operators.isEmpty() && operators.peek() != '(') {
-                applyTopOperator(values, operators);
-            }
-            operators.pop(); // remove '('
-        } else {
-            while (!operators.isEmpty() && operators.peek() != '(' &&
-                   precedence(operators.peek()) >= precedence(ch)) {
-                applyTopOperator(values, operators);
-            }
-            operators.push(ch);
-        }
-
-        i++;
     }
 
-    while (!operators.isEmpty()) {
-        applyTopOperator(values, operators);
-    }
-
-    return values.pop();
-}
-
-private int precedence(char op) {
-    if (op == '+' || op == '-') return 1;
-    if (op == '*' || op == '/') return 2;
-    return 0;
-}
-
-private void applyTopOperator(Deque<Integer> values, Deque<Character> operators) {
-    int b = values.pop();
-    int a = values.pop();
-    char op = operators.pop();
-
-    if (op == '+') values.push(a + b);
-    else if (op == '-') values.push(a - b);
-    else if (op == '*') values.push(a * b);
-    else values.push(a / b);
+    return stack.isEmpty();
 }
 ```
 
-#### Example B: Evaluate Reverse Polish Notation
+#### Example B: Monotonic Stack for Next Greater Element
 
-**Problem:** Evaluate tokenized postfix expression.
+```java icon="code" title="Stack - Next Greater Element"
+public int[] nextGreaterElements(int[] nums) {
+    int[] answer = new int[nums.length];
+    Arrays.fill(answer, -1);
+    Deque<Integer> stack = new ArrayDeque<>(); // stores indices
 
-```java icon="code" title="Stack - Evaluate Reverse Polish Notation"
-public int evalRPN(String[] tokens) {
-    Deque<Integer> stack = new ArrayDeque<>();
-
-    for (String token : tokens) {
-        if (token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")) {
-            int b = stack.pop();
-            int a = stack.pop();
-
-            if (token.equals("+")) stack.push(a + b);
-            else if (token.equals("-")) stack.push(a - b);
-            else if (token.equals("*")) stack.push(a * b);
-            else stack.push(a / b);
-        } else {
-            stack.push(Integer.parseInt(token));
+    for (int i = 0; i < nums.length; i++) {
+        while (!stack.isEmpty() && nums[stack.peek()] < nums[i]) {
+            int index = stack.pop();
+            answer[index] = nums[i];
         }
+        stack.push(i);
     }
 
-    return stack.pop();
+    return answer;
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Think of a calculator app:
+#### 1. Conceptual Analogy
 
-* Digits are typed and buffered.
-* Operators are queued with precedence rules.
-* Parentheses force immediate resolution of a sub-expression.
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-The app is effectively using stack-like internal state to decide when to compute.
+#### 2. Technical Analogy
 
----
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-### When to Use
+### When to Use (and How to Recognize It)
 
-Look for these clues:
-
-* Arithmetic parser with precedence handling.
-* Nested expressions with parentheses.
-* Need iterative parser instead of recursive descent.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Handles Precedence Correctly:** Prevents invalid left-to-right evaluation. | **More Moving Parts:** Requires careful operator/value stack coordination. |
-| **Extensible:** Can add more operators and rules. | **Token Parsing Complexity:** Spaces, unary operators, and negatives need special handling. |
-| **Iterative and Efficient:** No explicit recursion required. | **Error Handling:** Invalid expressions need defensive checks. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Data Structures | Time | Space |
-| --- | --- | --- | --- |
-| **Infix with Parentheses** | Value stack + operator stack | $O(n)$ | $O(n)$ |
-| **Basic Calculator** | Running values + sign stack | $O(n)$ | $O(n)$ |
-| **RPN Evaluation** | Single value stack | $O(n)$ | $O(n)$ |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

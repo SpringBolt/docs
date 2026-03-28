@@ -1,147 +1,126 @@
 ---
 title: Prefix Sum
+sidebarTitle: "Prefix Sum"
 ---
 
 ### Introduction
 
-The **Prefix Sum** pattern is a precomputation technique where we store cumulative sums so that range-sum queries can be answered in constant time.
+The **Prefix Sum** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-Instead of recalculating the sum for every subarray repeatedly, we create a helper array where each index stores the sum from the beginning up to that point.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-In many problems, this transforms repeated work from **$O(n)$ per query** into **$O(1)$ per query** after an initial preprocessing step.
+### Intuition
 
-### Intuition: "Store Partial Answers Once"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-Suppose we have an array `[2, 4, 1, 7, 3]`.
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-Prefix sum array becomes:
-* `prefix[0] = 2`
-* `prefix[1] = 2 + 4 = 6`
-* `prefix[2] = 6 + 1 = 7`
-* `prefix[3] = 7 + 7 = 14`
-* `prefix[4] = 14 + 3 = 17`
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-Now, sum from index `l` to `r` can be found as:
-* `prefix[r] - prefix[l - 1]` (if `l > 0`)
-* `prefix[r]` (if `l == 0`)
+### What are Predictable Dynamics?
 
-So each query is computed instantly.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
----
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-### Core Variations
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-#### 1. 1D Prefix Sum
-Used for arrays where we answer many range-sum queries.
+### Core Strategies
 
-* **Preprocess:** Build cumulative sum array once.
-* **Query:** Use subtraction of two prefix values.
-* **Use Case:** Range sum query, subarray sum equals K, equilibrium index.
+#### 1. Canonical State Modeling
 
-#### 2. In-Place Prefix Sum
-Overwrite the original array with cumulative sums.
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-* **Preprocess:** `arr[i] += arr[i - 1]`
-* **Benefit:** No extra array.
-* **Tradeoff:** Original input is modified.
+#### 2. Incremental Transition
 
-#### 3. 2D Prefix Sum
-Used for matrices to compute rectangle sums quickly.
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
-* **Preprocess:** Each cell stores sum of rectangle from `(0,0)` to `(r,c)`.
-* **Query:** Inclusion-exclusion formula.
-* **Use Case:** Submatrix sum queries in grids.
+#### 3. Constraint-Driven Pruning
 
----
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: 1D Prefix Sum (Range Sum Query)
-**Problem:** Given an integer array and many queries `[left, right]`, return the sum of elements in that range.
+#### Example A: Prefix-Based Rolling Computation
 
-```java icon="code" title="Prefix Sum - Range Sum Query"
-public class RangeSumQuery {
-    private int[] prefix;
+```java icon="code" title="Linear Data Structures - Prefix Running Sum"
+public int[] runningSum(int[] nums) {
+    int[] prefix = new int[nums.length];
+    int running = 0;
 
-    public RangeSumQuery(int[] nums) {
-        prefix = new int[nums.length];
-        if (nums.length == 0) return;
-
-        prefix[0] = nums[0];
-        for (int i = 1; i < nums.length; i++) {
-            prefix[i] = prefix[i - 1] + nums[i];
-        }
+    for (int i = 0; i < nums.length; i++) {
+        running += nums[i];
+        prefix[i] = running;
     }
 
-    public int sumRange(int left, int right) {
-        if (left == 0) {
-            return prefix[right];
-        }
-        return prefix[right] - prefix[left - 1];
-    }
+    return prefix;
 }
 ```
 
-#### Example B: 1D Prefix Sum with HashMap (Subarray Sum Equals K)
+#### Example B: Sliding-Style Window Scan
 
-**Problem:** Count how many contiguous subarrays have sum exactly equal to `k`.
+```java icon="code" title="Linear Data Structures - Window Template"
+public int maxSumWindow(int[] nums, int k) {
+    int left = 0;
+    int windowSum = 0;
+    int best = Integer.MIN_VALUE;
 
-```java icon="code" title="Prefix Sum - Subarray Sum Equals K"
-public int subarraySum(int[] nums, int k) {
-    Map<Integer, Integer> prefixCount = new HashMap<>();
-    prefixCount.put(0, 1);
+    for (int right = 0; right < nums.length; right++) {
+        windowSum += nums[right];
 
-    int currentSum = 0;
-    int count = 0;
-
-    for (int num : nums) {
-        currentSum += num;
-
-        // If (currentSum - k) existed before, that many subarrays end here with sum k
-        count += prefixCount.getOrDefault(currentSum - k, 0);
-
-        prefixCount.put(currentSum, prefixCount.getOrDefault(currentSum, 0) + 1);
+        if (right >= k - 1) {
+            best = Math.max(best, windowSum);
+            windowSum -= nums[left];
+            left++;
+        }
     }
 
-    return count;
+    return best;
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Think of a **bank statement running balance**.
+#### 1. Conceptual Analogy
 
-* Each row stores balance up to that transaction.
-* If you want total spend between two dates, you do not re-add every transaction.
-* You subtract earlier balance from later balance.
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-That running balance is exactly a Prefix Sum idea.
+#### 2. Technical Analogy
 
----
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-### When to Use
+### When to Use (and How to Recognize It)
 
-Look for these signals:
-
-* **"Range Sum"** or **"Sum between L and R"**.
-* **Many queries** on the same immutable array.
-* **Subarray count/sum** constraints (`sum == k`, `sum < k`, etc.)
-* Want to replace nested loops with precomputation.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Fast Queries:** After preprocessing, each range query is $O(1)$. | **Preprocessing Cost:** Initial setup is $O(n)$. |
-| **Simple Formula:** Clean and reliable subtraction logic. | **Static-Friendly:** Updates in mutable arrays need extra data structures (Fenwick/Segment Tree). |
-| **Extensible:** Works in 1D and 2D forms. | **Extra Space:** Needs $O(n)$ or $O(r*c)$ memory for prefix arrays. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variation | Build Time | Query Time | Common Problems |
-| --- | --- | --- | --- |
-| **1D Prefix Sum** | $O(n)$ | $O(1)$ | Range Sum Query, Subarray Sum Equals K |
-| **In-Place Prefix** | $O(n)$ | $O(1)$ | One-time cumulative computations |
-| **2D Prefix Sum** | $O(r*c)$ | $O(1)$ | Matrix Region Sum Query |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

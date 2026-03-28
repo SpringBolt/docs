@@ -1,132 +1,129 @@
 ---
 title: Topological Sort
+sidebarTitle: "Topological Sort"
 ---
 
 ### Introduction
 
-The **Topological Sort** pattern produces a linear ordering of nodes in a **Directed Acyclic Graph (DAG)** such that every directed edge `u -> v` places `u` before `v`.
+The **Topological Sort** pattern generates an ordering of nodes in a **Directed Acyclic Graph (DAG)** such that for every edge `u -> v`, node `u` appears before `v`.
 
-It is widely used for dependency resolution (courses, build systems, task scheduling).
+It is the standard approach for dependency-driven tasks like course scheduling, build pipelines, and job execution plans.
 
-### Intuition: "Process What Has No Unmet Dependencies"
+### Intuition
 
-If a node has in-degree `0`, no dependency blocks it.
+Brute force tries permutations and validates dependencies, which is intractable.
 
-Kahn's Algorithm:
-1. Put all in-degree `0` nodes in queue.
-2. Remove one, append to order.
-3. Decrease in-degree of neighbors.
-4. If neighbor becomes `0`, enqueue it.
+```java icon="code" title="Brute Force Dependency Ordering"
+// Extremely expensive idea: test all permutations.
+// for each permutation, check whether every edge u -> v
+// satisfies position(u) < position(v)
+```
 
-If all nodes are processed, ordering exists. Otherwise, graph has cycle.
+Topological Sort instead repeatedly picks nodes with no remaining unmet prerequisites.
 
----
+### What are Predictable Dynamics?
 
-### Core Variations
+In a DAG:
 
-#### 1. Kahn's Algorithm (BFS)
+* At least one node has in-degree `0`.
+* Removing such a node and its outgoing edges may create new in-degree `0` nodes.
+* If no in-degree `0` node exists before processing all nodes, a cycle must exist.
 
-* Uses in-degree + queue.
-* Easy cycle detection via processed node count.
+This dependency-release dynamic drives Kahn’s BFS approach.
 
-#### 2. DFS Topological Sort
+### Core Strategies
 
-* Postorder stack/reverse finishing times.
-* Also detects cycles with recursion-state tracking.
+#### 1. Kahn’s Algorithm (BFS + In-Degree)
 
-#### 3. Lexicographically Smallest Order
+* Queue all nodes with in-degree `0`.
+* Pop, record, decrement neighbors’ in-degree.
+* If processed count < total nodes, cycle exists.
 
-* Replace queue with min-heap.
-* Picks smallest available node first.
+#### 2. DFS Postorder Topological Sort
 
----
+* DFS each node.
+* Push node after exploring descendants.
+* Reverse finishing order gives topological order.
+
+#### 3. Lexicographically Smallest Topological Order
+
+* Same as Kahn but use min-heap instead of queue.
+* Always picks smallest available node.
 
 ### Implementation Examples
 
-#### Example A: Kahn's Algorithm
-**Problem:** Return a valid topological order for `numCourses` and prerequisite edges.
+#### Example A: BFS Traversal on Graph
 
-```java icon="code" title="Topological Sort - Kahn's Algorithm"
-public int[] findOrder(int numCourses, int[][] prerequisites) {
-    List<List<Integer>> graph = new ArrayList<>();
-    for (int i = 0; i < numCourses; i++) graph.add(new ArrayList<>());
-
-    int[] indegree = new int[numCourses];
-
-    for (int[] edge : prerequisites) {
-        int course = edge[0];
-        int pre = edge[1];
-        graph.get(pre).add(course);
-        indegree[course]++;
-    }
-
+```java icon="code" title="Graph - BFS Traversal"
+public List<Integer> bfs(int n, List<List<Integer>> graph, int source) {
+    boolean[] visited = new boolean[n];
     Queue<Integer> queue = new LinkedList<>();
-    for (int i = 0; i < numCourses; i++) {
-        if (indegree[i] == 0) queue.offer(i);
-    }
+    List<Integer> order = new ArrayList<>();
 
-    int[] order = new int[numCourses];
-    int index = 0;
+    queue.offer(source);
+    visited[source] = true;
 
     while (!queue.isEmpty()) {
         int node = queue.poll();
-        order[index++] = node;
+        order.add(node);
 
         for (int neighbor : graph.get(node)) {
-            indegree[neighbor]--;
-            if (indegree[neighbor] == 0) {
+            if (!visited[neighbor]) {
+                visited[neighbor] = true;
                 queue.offer(neighbor);
             }
         }
     }
 
-    return (index == numCourses) ? order : new int[0];
+    return order;
 }
 ```
 
-#### Example B: Can Finish Courses (Cycle Check)
+#### Example B: DFS Traversal with Recursion
 
-**Problem:** Return true if all courses can be finished.
+```java icon="code" title="Graph - DFS Traversal"
+public void dfs(int node, List<List<Integer>> graph, boolean[] visited, List<Integer> order) {
+    visited[node] = true;
+    order.add(node);
 
-```java icon="code" title="Topological Sort - Cycle Check"
-public boolean canFinish(int numCourses, int[][] prerequisites) {
-    return findOrder(numCourses, prerequisites).length == numCourses;
+    for (int neighbor : graph.get(node)) {
+        if (!visited[neighbor]) {
+            dfs(neighbor, graph, visited, order);
+        }
+    }
 }
 ```
 
----
 
-### Real-World Analogy
+### Real-World Analogies
 
-Think of course planning in college.
+#### 1. Conceptual Analogy: University Course Plan
 
-* You can take a course only after completing its prerequisites.
-* Courses with no prerequisites can be taken first.
+You can register only for courses whose prerequisites are complete. As you finish courses, new courses become available.
 
-Topological order is one valid semester progression.
+#### 2. Technical Analogy: Build System Dependency Graph
 
----
+A build tool compiles modules with no pending dependencies first. Each completed module unlocks downstream modules until all buildable targets are processed.
 
-### When to Use
+### When to Use (and How to Recognize It)
 
-Look for these clues:
-
-* Directed dependencies (`A before B`).
-* Task scheduling with prerequisites.
-* Need cycle detection in directed dependency graph.
+* Directed dependency relation: “A must happen before B”.
+* Need valid execution/order plan.
+* Need cycle detection in prerequisite graph.
+* Terms: dependency, prerequisite, ordering, scheduling.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Dependency-Friendly:** Natural model for prerequisite problems. | **DAG Requirement:** Cycles invalidate ordering. |
-| **Cycle Detection Included:** Failed full processing implies cycle. | **Multiple Valid Orders:** Result may not be unique. |
-| **Linear Complexity:** Efficient on sparse/large graphs. | **Graph Build Overhead:** Need adjacency + indegree structures. |
+| Handles ordering and cycle detection together. | Only valid for DAGs (cycles break full ordering). |
+| Linear complexity: **O(V + E)** for BFS/DFS variants. | Multiple valid orders may exist; result is not unique. |
+| Extensible to deterministic ordering via heap. | Requires graph and in-degree bookkeeping. |
 
 ### Summary Table
 
-| Approach | Time | Space | Output |
-| --- | --- | --- | --- |
-| **Kahn's (BFS)** | $O(V+E)$ | $O(V+E)$ | One valid topological order |
-| **DFS Postorder** | $O(V+E)$ | $O(V+E)$ | Reverse postorder on DAG |
-| **Min-Heap Kahn** | $O((V+E)\log V)$ | $O(V+E)$ | Lexicographically smallest order |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Kahn BFS | Process in-degree `0` nodes level by level | Course Schedule II, Alien Dictionary (variant) |
+| DFS Postorder | Reverse DFS finishing order | Generic DAG ordering |
+| Min-Heap Kahn | Pick smallest available node each step | Lexicographically smallest topological order |

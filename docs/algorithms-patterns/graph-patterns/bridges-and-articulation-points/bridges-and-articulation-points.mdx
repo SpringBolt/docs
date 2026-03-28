@@ -1,173 +1,130 @@
 ---
 title: Bridges and Articulation Points
+sidebarTitle: "Bridges and Articulation Points"
 ---
 
 ### Introduction
 
-The **Bridges and Articulation Points** pattern finds critical edges and nodes in an undirected graph.
+The **Bridges and Articulation Points** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-* A **bridge** is an edge whose removal increases number of connected components.
-* An **articulation point** is a vertex whose removal disconnects the graph.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-This pattern is used in network resilience and failure-impact analysis.
+### Intuition
 
-### Intuition: "Back Edge Reachability Decides Criticality"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-DFS assigns each node:
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-* `tin[node]` -> discovery time
-* `low[node]` -> earliest discovery time reachable from node/subtree using at most one back edge
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-Bridge condition for edge `(u, v)` where `u` is parent:
+### What are Predictable Dynamics?
 
-* If `low[v] > tin[u]`, edge `(u, v)` is a bridge.
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-Articulation condition:
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-* Non-root `u` is articulation point if any child `v` has `low[v] >= tin[u]`.
-* Root is articulation point if it has more than one DFS child.
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
----
+### Core Strategies
 
-### Core Variations
+#### 1. Canonical State Modeling
 
-#### 1. Bridge Detection
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-* Collect all critical edges.
+#### 2. Incremental Transition
 
-#### 2. Articulation Point Detection
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
-* Collect all cut vertices.
+#### 3. Constraint-Driven Pruning
 
-#### 3. Critical Connections Problems
-
-* Common interview variant asking only bridges.
-
----
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Find All Bridges
-**Problem:** Return all bridge edges in undirected graph.
+#### Example A: BFS Traversal on Graph
 
-```java icon="code" title="Graph Critical - Bridges"
-private int timer;
+```java icon="code" title="Graph - BFS Traversal"
+public List<Integer> bfs(int n, List<List<Integer>> graph, int source) {
+    boolean[] visited = new boolean[n];
+    Queue<Integer> queue = new LinkedList<>();
+    List<Integer> order = new ArrayList<>();
 
-public List<List<Integer>> findBridges(int n, List<List<Integer>> graph) {
-    timer = 0;
-    int[] tin = new int[n];
-    int[] low = new int[n];
-    Arrays.fill(tin, -1);
+    queue.offer(source);
+    visited[source] = true;
 
-    List<List<Integer>> bridges = new ArrayList<>();
+    while (!queue.isEmpty()) {
+        int node = queue.poll();
+        order.add(node);
 
-    for (int i = 0; i < n; i++) {
-        if (tin[i] == -1) {
-            dfsBridge(i, -1, graph, tin, low, bridges);
+        for (int neighbor : graph.get(node)) {
+            if (!visited[neighbor]) {
+                visited[neighbor] = true;
+                queue.offer(neighbor);
+            }
         }
     }
 
-    return bridges;
+    return order;
 }
+```
 
-private void dfsBridge(int node, int parent, List<List<Integer>> graph, int[] tin, int[] low, List<List<Integer>> bridges) {
-    tin[node] = low[node] = timer++;
+#### Example B: DFS Traversal with Recursion
+
+```java icon="code" title="Graph - DFS Traversal"
+public void dfs(int node, List<List<Integer>> graph, boolean[] visited, List<Integer> order) {
+    visited[node] = true;
+    order.add(node);
 
     for (int neighbor : graph.get(node)) {
-        if (neighbor == parent) continue;
-
-        if (tin[neighbor] != -1) {
-            low[node] = Math.min(low[node], tin[neighbor]);
-        } else {
-            dfsBridge(neighbor, node, graph, tin, low, bridges);
-            low[node] = Math.min(low[node], low[neighbor]);
-
-            if (low[neighbor] > tin[node]) {
-                bridges.add(Arrays.asList(node, neighbor));
-            }
+        if (!visited[neighbor]) {
+            dfs(neighbor, graph, visited, order);
         }
     }
 }
 ```
 
-#### Example B: Find Articulation Points
 
-**Problem:** Return set of all articulation points.
+### Real-World Analogies
 
-```java icon="code" title="Graph Critical - Articulation Points"
-public Set<Integer> findArticulationPoints(int n, List<List<Integer>> graph) {
-    Set<Integer> points = new HashSet<>();
-    int[] tin = new int[n];
-    int[] low = new int[n];
-    Arrays.fill(tin, -1);
-    timer = 0;
+#### 1. Conceptual Analogy
 
-    for (int i = 0; i < n; i++) {
-        if (tin[i] == -1) {
-            dfsArticulation(i, -1, graph, tin, low, points);
-        }
-    }
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-    return points;
-}
+#### 2. Technical Analogy
 
-private void dfsArticulation(int node, int parent, List<List<Integer>> graph, int[] tin, int[] low, Set<Integer> points) {
-    tin[node] = low[node] = timer++;
-    int children = 0;
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-    for (int neighbor : graph.get(node)) {
-        if (neighbor == parent) continue;
+### When to Use (and How to Recognize It)
 
-        if (tin[neighbor] != -1) {
-            low[node] = Math.min(low[node], tin[neighbor]);
-        } else {
-            dfsArticulation(neighbor, node, graph, tin, low, points);
-            low[node] = Math.min(low[node], low[neighbor]);
-
-            if (parent != -1 && low[neighbor] >= tin[node]) {
-                points.add(node);
-            }
-            children++;
-        }
-    }
-
-    if (parent == -1 && children > 1) {
-        points.add(node);
-    }
-}
-```
-
----
-
-### Real-World Analogy
-
-Think of servers connected by network links.
-
-* A bridge link is a single cable whose failure splits network.
-* An articulation server is a central machine whose failure disconnects parts of system.
-
----
-
-### When to Use
-
-Look for these clues:
-
-* Need to identify critical links or nodes.
-* Failure impact / fault tolerance analysis.
-* Undirected connectivity decomposition.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Finds True Critical Components:** Exact structural weak points. | **Undirected Focus:** Template must be adapted for directed graphs. |
-| **Linear Complexity:** Efficient on large sparse graphs. | **Low-Link Logic Sensitive:** Easy to make parent/back-edge mistakes. |
-| **Reusable DFS Framework:** Similar style to SCC low-link concepts. | **Recursion Depth Risk:** Deep graphs may hit stack limits. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Task | Time | Space | Technique |
-| --- | --- | --- | --- |
-| **Bridges** | $O(V+E)$ | $O(V)$ | DFS + `tin/low` |
-| **Articulation Points** | $O(V+E)$ | $O(V)$ | DFS + child/root rules |
-| **Critical Connections** | $O(V+E)$ | $O(V)$ | Bridge-specific extraction |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

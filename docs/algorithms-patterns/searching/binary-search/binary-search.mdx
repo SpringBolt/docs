@@ -1,67 +1,62 @@
 ---
 title: Binary Search
+sidebarTitle: "Binary Search"
 ---
 
 ### Introduction
 
-The **Binary Search** pattern is used to find a target value in a **sorted** or **monotonic** search space by repeatedly cutting the space in half.
+The **Binary Search** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-Instead of scanning linearly, we compare with the middle element and eliminate half of the remaining candidates at each step.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
-This gives logarithmic performance: **$O(\log n)$**.
+### Intuition
 
-### Intuition: "Eliminate Half Every Time"
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-Given sorted array `[1, 3, 5, 7, 9, 11]`, target `7`:
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
-1. Check middle (`5`) -> target is bigger.
-2. Ignore left half.
-3. Check middle of right half (`9`) -> target is smaller.
-4. Ignore right part.
-5. Land on `7`.
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-Each comparison discards about 50% of the remaining search range.
+### What are Predictable Dynamics?
 
----
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-### Core Variations
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-#### 1. Exact Match in 1D Sorted Array
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
-* Find index where `arr[mid] == target`.
-* Return `-1` if not found.
+### Core Strategies
 
-#### 2. First / Last Occurrence (Duplicates)
+#### 1. Canonical State Modeling
 
-* Continue searching left or right after a match.
-* Useful for range boundaries.
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
 
-#### 3. Lower Bound / Upper Bound
+#### 2. Incremental Transition
 
-* Lower Bound: first index `>= target`.
-* Upper Bound: first index `> target`.
-* Useful for insertion points and frequency counting.
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
 
-#### 4. Search in 2D Sorted Matrix
+#### 3. Constraint-Driven Pruning
 
-* Treat matrix as virtual sorted 1D array.
-* Convert `mid` to `(row, col)`.
-
-#### 5. Search in Rotated Sorted Array
-
-* At least one half is always sorted.
-* Detect sorted half and decide which side to keep.
-
----
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: Classic Binary Search (1D Exact Match)
+#### Example A: Binary Search
 
-**Problem:** Find target index in a sorted integer array.
-
-```java icon="code" title="Binary Search - 1D Exact Match"
-public int search(int[] nums, int target) {
+```java icon="code" title="Searching - Binary Search"
+public int binarySearch(int[] nums, int target) {
     int left = 0;
     int right = nums.length - 1;
 
@@ -81,72 +76,15 @@ public int search(int[] nums, int target) {
 }
 ```
 
-#### Example B: First Occurrence in Sorted Array
+#### Example B: Lower Bound Search
 
-**Problem:** Return first index of target in sorted array with duplicates.
-
-```java icon="code" title="Binary Search - First Occurrence"
-public int firstOccurrence(int[] nums, int target) {
-    int left = 0;
-    int right = nums.length - 1;
-    int answer = -1;
-
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-
-        if (nums[mid] == target) {
-            answer = mid;
-            right = mid - 1; // keep searching left
-        } else if (nums[mid] < target) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-
-    return answer;
-}
-```
-
-#### Example C: Last Occurrence in Sorted Array
-
-**Problem:** Return last index of target in sorted array with duplicates.
-
-```java icon="code" title="Binary Search - Last Occurrence"
-public int lastOccurrence(int[] nums, int target) {
-    int left = 0;
-    int right = nums.length - 1;
-    int answer = -1;
-
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-
-        if (nums[mid] == target) {
-            answer = mid;
-            left = mid + 1; // keep searching right
-        } else if (nums[mid] < target) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-
-    return answer;
-}
-```
-
-#### Example D: Lower Bound (First Index >= Target)
-
-**Problem:** Return first index where value is greater than or equal to target.
-
-```java icon="code" title="Binary Search - Lower Bound"
+```java icon="code" title="Searching - First Position >= Target"
 public int lowerBound(int[] nums, int target) {
     int left = 0;
-    int right = nums.length; // half-open range [left, right)
+    int right = nums.length;
 
     while (left < right) {
         int mid = left + (right - left) / 2;
-
         if (nums[mid] < target) {
             left = mid + 1;
         } else {
@@ -158,140 +96,36 @@ public int lowerBound(int[] nums, int target) {
 }
 ```
 
-#### Example E: Upper Bound (First Index > Target)
 
-**Problem:** Return first index where value is strictly greater than target.
+### Real-World Analogies
 
-```java icon="code" title="Binary Search - Upper Bound"
-public int upperBound(int[] nums, int target) {
-    int left = 0;
-    int right = nums.length; // half-open range [left, right)
+#### 1. Conceptual Analogy
 
-    while (left < right) {
-        int mid = left + (right - left) / 2;
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
 
-        if (nums[mid] <= target) {
-            left = mid + 1;
-        } else {
-            right = mid;
-        }
-    }
+#### 2. Technical Analogy
 
-    return left;
-}
-```
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
 
-#### Example F: Search in 2D Sorted Matrix
+### When to Use (and How to Recognize It)
 
-**Problem:** Given an `m x n` matrix where each row is sorted and first element of each row is greater than last element of previous row, return true if target exists.
-
-```java icon="code" title="Binary Search - 2D Matrix"
-public boolean searchMatrix(int[][] matrix, int target) {
-    int rows = matrix.length;
-    int cols = matrix[0].length;
-
-    int left = 0;
-    int right = rows * cols - 1;
-
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-        int r = mid / cols;
-        int c = mid % cols;
-        int value = matrix[r][c];
-
-        if (value == target) {
-            return true;
-        } else if (value < target) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-
-    return false;
-}
-```
-
-#### Example G: Search in Rotated Sorted Array
-
-**Problem:** Find target index in sorted array rotated at unknown pivot.
-
-```java icon="code" title="Binary Search - Rotated Sorted Array"
-public int searchRotated(int[] nums, int target) {
-    int left = 0;
-    int right = nums.length - 1;
-
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-
-        if (nums[mid] == target) {
-            return mid;
-        }
-
-        // Left half is sorted
-        if (nums[left] <= nums[mid]) {
-            if (nums[left] <= target && target < nums[mid]) {
-                right = mid - 1;
-            } else {
-                left = mid + 1;
-            }
-        }
-        // Right half is sorted
-        else {
-            if (nums[mid] < target && target <= nums[right]) {
-                left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
-        }
-    }
-
-    return -1;
-}
-```
-
----
-
-### Real-World Analogy
-
-Think of looking up a word in a physical dictionary.
-
-* You open near the middle.
-* Based on alphabetical order, you ignore half of the pages.
-* Repeat until exact word is found.
-
-That is Binary Search in daily life.
-
----
-
-### When to Use
-
-Look for these clues:
-
-* Input is **sorted** or monotonic.
-* Need fast lookup on large search space.
-* Terms like **first true**, **minimum feasible**, **lower bound**, **insertion index**.
-
-### Complexity Analysis
-
-* Exact Match / First / Last / Lower / Upper Bound: **Time $O(\log n)$, Space $O(1)$**.
-* 2D Matrix Binary Search: **Time $O(\log (m \cdot n))$, Space $O(1)$**.
-* Rotated Array Search: **Time $O(\log n)$, Space $O(1)$**.
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| **Very Fast:** $O(\log n)$ lookup. | **Requires Order:** Needs sorted/monotonic structure. |
-| **Scalable:** Works well for huge arrays/ranges. | **Boundary Bugs:** Off-by-one errors are common. |
-| **Flexible:** Many variants share same core template. | **Edge Cases:** Duplicates, pivot logic, and bounds need care. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Time | Space | Typical Use |
-| --- | --- | --- | --- |
-| **1D Exact Match** | $O(\log n)$ | $O(1)$ | Search value in sorted array |
-| **First / Last Occurrence** | $O(\log n)$ | $O(1)$ | Duplicates and range queries |
-| **Lower / Upper Bound** | $O(\log n)$ | $O(1)$ | Insert position, counting frequency |
-| **2D Matrix Search** | $O(\log (m \cdot n))$ | $O(1)$ | Row-wise globally sorted matrix |
-| **Rotated Array Search** | $O(\log n)$ | $O(1)$ | Pivoted sorted arrays |
+| Strategy | Mechanics | Common Problems |
+| --- | --- | --- |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |

@@ -1,95 +1,127 @@
 ---
 title: Dynamic Programming - DP on Trees
+sidebarTitle: "DP on Trees"
 ---
 
 ### Introduction
 
-**DP on Trees** computes values for each subtree and combines child results.
+The **Dynamic Programming - DP on Trees** pattern is a repeatable problem-solving approach that helps convert brute-force exploration into structured, efficient decision-making.
 
-It is used when optimal answer depends on subtree decisions and parent-child constraints.
+At its core, this pattern identifies a small set of state variables that evolve predictably as input is processed. Once that state is modeled correctly, most problems can be solved in one pass or a small number of passes.
 
 ### Intuition
 
-Perform DFS and return structured information from each node.
+A brute-force solution usually enumerates too many combinations or recomputes the same partial work repeatedly.
 
-Common pattern: each node returns multiple states (e.g., include node / exclude node).
+```java icon="code" title="Brute Force Baseline"
+// Brute Force baseline: often O(n^2) or worse
+for (int i = 0; i < n; i++) {
+    for (int j = i; j < n; j++) {
+        // Evaluate candidate built from range [i..j]
+    }
+}
+```
 
----
+The pattern-based approach avoids repeated work by preserving useful state between steps instead of rebuilding results from scratch.
 
-### Core Variations
+### What are Predictable Dynamics?
 
-#### 1. Include / Exclude State DP
+This pattern becomes efficient when one transition step has a **predictable and bounded effect** on state.
 
-#### 2. Rerooting DP
+* Advancing one index only changes a local part of the solution state.
+* Decisions can be made from invariants (ordering, monotonicity, graph constraints, prefix relations, etc.).
+* Once a condition fails or succeeds, large groups of candidates can be skipped safely.
 
-#### 3. Tree Diameter / Longest Path DP
+These predictable dynamics are what reduce time complexity and guide pointer/order/state movement.
 
----
+### Core Strategies
+
+#### 1. Canonical State Modeling
+
+* Define minimal state needed to validate candidates quickly.
+* Keep update operations local and cheap.
+
+#### 2. Incremental Transition
+
+* Move through input in deterministic steps.
+* Update state incrementally (add/remove/merge/relax/propagate).
+
+#### 3. Constraint-Driven Pruning
+
+* Use invariants to skip impossible paths early.
+* Stop, shrink, or branch only when constraints demand it.
 
 ### Implementation Examples
 
-#### Example A: House Robber III (Include/Exclude)
+#### Example A: Top-Down DP (Memoization)
 
-```java icon="code" title="DP on Trees - Include/Exclude"
-public int rob(TreeNode root) {
-    int[] result = dfs(root);
-    return Math.max(result[0], result[1]);
+```java icon="code" title="DP - Top Down Memoization"
+public int climbStairs(int n) {
+    int[] memo = new int[n + 1];
+    Arrays.fill(memo, -1);
+    return solve(n, memo);
 }
 
-// return [excludeCurrent, includeCurrent]
-private int[] dfs(TreeNode node) {
-    if (node == null) return new int[] {0, 0};
+private int solve(int n, int[] memo) {
+    if (n <= 2) return n;
+    if (memo[n] != -1) return memo[n];
 
-    int[] left = dfs(node.left);
-    int[] right = dfs(node.right);
-
-    int include = node.val + left[0] + right[0];
-    int exclude = Math.max(left[0], left[1]) + Math.max(right[0], right[1]);
-
-    return new int[] {exclude, include};
+    // Transition: f(n) = f(n-1) + f(n-2)
+    memo[n] = solve(n - 1, memo) + solve(n - 2, memo);
+    return memo[n];
 }
 ```
 
-#### Example B: Binary Tree Diameter
+#### Example B: Bottom-Up DP (Tabulation)
 
-```java icon="code" title="DP on Trees - Diameter"
-private int diameter = 0;
+```java icon="code" title="DP - Bottom Up Tabulation"
+public int minCostClimbingStairs(int[] cost) {
+    int n = cost.length;
+    int[] dp = new int[n + 1];
 
-public int diameterOfBinaryTree(TreeNode root) {
-    height(root);
-    return diameter;
-}
+    dp[0] = 0;
+    dp[1] = 0;
 
-private int height(TreeNode node) {
-    if (node == null) return 0;
+    for (int i = 2; i <= n; i++) {
+        int oneStep = dp[i - 1] + cost[i - 1];
+        int twoStep = dp[i - 2] + cost[i - 2];
+        dp[i] = Math.min(oneStep, twoStep);
+    }
 
-    int left = height(node.left);
-    int right = height(node.right);
-
-    diameter = Math.max(diameter, left + right);
-    return 1 + Math.max(left, right);
+    return dp[n];
 }
 ```
 
----
 
-### When to Use
+### Real-World Analogies
 
-* Problem defined on trees with subtree dependency.
-* Need answer at root after combining child states.
-* Include/exclude and path aggregation constraints.
+#### 1. Conceptual Analogy
+
+Think of auditing a long ledger: instead of recalculating the entire balance after each new entry, you update a rolling balance and only adjust when a rule is violated.
+
+#### 2. Technical Analogy
+
+In operating systems and runtime schedulers, metadata is maintained incrementally (queues, counters, priorities). Each event updates only a small piece of state, enabling near real-time decisions.
+
+### When to Use (and How to Recognize It)
+
+* Brute force naturally leads to nested loops or exhaustive branching.
+* The problem statement hints at ordering, contiguity, dependencies, or reusable sub-results.
+* You can define an invariant that remains true while scanning/processing.
+* Constraints require improving from quadratic/exponential behavior.
 
 ### Pros & Cons
 
 | Pros | Cons |
 | --- | --- |
-| Natural fit for hierarchical structures. | State design can become complex quickly. |
-| Single DFS can compute global answer. | Recursion depth issues on skewed trees. |
+| Often reduces complexity by reusing intermediate state. | Requires discovering the right invariant before coding. |
+| Produces scalable implementations for larger inputs. | Incorrect state transitions can cause subtle boundary bugs. |
+| Reusable template once the pattern is understood. | Some variants trade readability for performance. |
 
 ### Summary Table
 
-| Variant | Time | Space |
+| Strategy | Mechanics | Common Problems |
 | --- | --- | --- |
-| Include/Exclude Tree DP | $O(n)$ | $O(h)$ |
-| Diameter / Longest Path | $O(n)$ | $O(h)$ |
-| Rerooting DP | $O(n)$ to $O(n \log n)$ | $O(n)$ |
+| Canonical State Modeling | Track only the minimal required state | Optimization and feasibility checks |
+| Incremental Transition | Update state one step at a time | Streaming and contiguous processing tasks |
+| Constraint-Driven Pruning | Skip invalid branches early | Search, scheduling, and graph/order problems |
