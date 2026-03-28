@@ -1,0 +1,33 @@
+---
+title: Maximum Depth
+---
+
+### Introduction
+
+The **Maximum Depth** pattern is a common binary tree template used in coding interviews.
+
+---
+
+### Problem Statement
+
+Return the maximum depth of a binary tree.
+
+### Approach
+
+Use bottom-up recursion: depth at a node is `1 + max(leftDepth, rightDepth)`.
+
+```java icon="code" title="Binary Tree - Maximum Depth"
+public int maxDepth(TreeNode root) {
+    if (root == null) return 0;
+
+    int leftDepth = maxDepth(root.left);
+    int rightDepth = maxDepth(root.right);
+
+    return 1 + Math.max(leftDepth, rightDepth);
+}
+```
+
+### Complexity Analysis
+
+* **Time:** $O(n)$
+* **Space:** $O(h)$

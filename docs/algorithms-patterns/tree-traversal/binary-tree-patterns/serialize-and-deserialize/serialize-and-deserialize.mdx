@@ -1,0 +1,56 @@
+---
+title: Serialize and Deserialize
+---
+
+### Introduction
+
+The **Serialize and Deserialize** pattern is a common binary tree template used in coding interviews.
+
+---
+
+### Problem Statement
+
+Serialize a binary tree to string and deserialize it back.
+
+### Approach
+
+Use preorder DFS with `#` as null marker and comma as separator. Rebuild using queue of tokens.
+
+```java icon="code" title="Binary Tree - Serialize and Deserialize"
+public String serialize(TreeNode root) {
+    StringBuilder sb = new StringBuilder();
+    serializeDfs(root, sb);
+    return sb.toString();
+}
+
+private void serializeDfs(TreeNode node, StringBuilder sb) {
+    if (node == null) {
+        sb.append("#,");
+        return;
+    }
+
+    sb.append(node.val).append(",");
+    serializeDfs(node.left, sb);
+    serializeDfs(node.right, sb);
+}
+
+public TreeNode deserialize(String data) {
+    Queue<String> queue = new LinkedList<>(Arrays.asList(data.split(",")));
+    return deserializeDfs(queue);
+}
+
+private TreeNode deserializeDfs(Queue<String> queue) {
+    String token = queue.poll();
+    if (token.equals("#")) return null;
+
+    TreeNode node = new TreeNode(Integer.parseInt(token));
+    node.left = deserializeDfs(queue);
+    node.right = deserializeDfs(queue);
+    return node;
+}
+```
+
+### Complexity Analysis
+
+* **Time:** $O(n)$ serialize + $O(n)$ deserialize
+* **Space:** $O(n)$

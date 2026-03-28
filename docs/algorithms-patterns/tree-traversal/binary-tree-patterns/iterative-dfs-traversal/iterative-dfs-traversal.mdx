@@ -1,0 +1,43 @@
+---
+title: Iterative DFS Traversal
+---
+
+### Introduction
+
+The **Iterative DFS Traversal** pattern is a common binary tree template used in coding interviews.
+
+---
+
+### Problem Statement
+
+Return inorder traversal of a binary tree without recursion.
+
+### Approach
+
+Use a stack to simulate recursion. Push left chain first, process node, then move to right subtree.
+
+```java icon="code" title="Binary Tree - Iterative Inorder"
+public List<Integer> inorderTraversal(TreeNode root) {
+    List<Integer> result = new ArrayList<>();
+    Deque<TreeNode> stack = new ArrayDeque<>();
+    TreeNode current = root;
+
+    while (current != null || !stack.isEmpty()) {
+        while (current != null) {
+            stack.push(current);
+            current = current.left;
+        }
+
+        current = stack.pop();
+        result.add(current.val);
+        current = current.right;
+    }
+
+    return result;
+}
+```
+
+### Complexity Analysis
+
+* **Time:** $O(n)$
+* **Space:** $O(h)$

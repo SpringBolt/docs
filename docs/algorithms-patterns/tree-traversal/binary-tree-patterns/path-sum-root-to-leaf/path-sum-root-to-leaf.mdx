@@ -1,0 +1,35 @@
+---
+title: Path Sum (Root to Leaf)
+---
+
+### Introduction
+
+The **Path Sum (Root to Leaf)** pattern is a common binary tree template used in coding interviews.
+
+---
+
+### Problem Statement
+
+Return true if there exists a root-to-leaf path with sum equal to `targetSum`.
+
+### Approach
+
+Subtract current node value from target and recursively check children. At leaf, check exact equality.
+
+```java icon="code" title="Binary Tree - Path Sum"
+public boolean hasPathSum(TreeNode root, int targetSum) {
+    if (root == null) return false;
+
+    if (root.left == null && root.right == null) {
+        return targetSum == root.val;
+    }
+
+    int remaining = targetSum - root.val;
+    return hasPathSum(root.left, remaining) || hasPathSum(root.right, remaining);
+}
+```
+
+### Complexity Analysis
+
+* **Time:** $O(n)$
+* **Space:** $O(h)$
