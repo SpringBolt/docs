@@ -1,0 +1,183 @@
+---
+title: Circular Queue
+---
+
+### Introduction
+
+The **Circular Queue** pattern is a fixed-size queue implemented on top of an array where front and rear wrap around using modulo.
+
+This avoids shifting elements on dequeue and provides efficient bounded buffering.
+
+All main operations (`enQueue`, `deQueue`, `Front`, `Rear`) run in **$O(1)$**.
+
+### Intuition: "Reuse Freed Slots"
+
+In a normal array queue, dequeued slots at the front become unused unless we shift elements.
+
+Circular queue avoids this waste by wrapping indices:
+
+* Next position = `(index + 1) % capacity`.
+* Rear moves in circle.
+* Front also moves in circle.
+
+So previously freed slots are reused naturally.
+
+---
+
+### Core Variations
+
+#### 1. Basic Circular Queue
+
+* Fixed capacity.
+* Single producer/consumer logic.
+
+#### 2. Circular Deque
+
+* Insert and delete at both ends.
+* Useful in cache and task scheduling.
+
+#### 3. Ring Buffer for Streams
+
+* Overwrite oldest element when full (design-dependent).
+* Common in logging and telemetry systems.
+
+---
+
+### Implementation Examples
+
+#### Example A: Design Circular Queue
+**Problem:** Implement queue with fixed capacity using array and modular arithmetic.
+
+```java icon="code" title="Queue - Circular Queue"
+class MyCircularQueue {
+    private int[] data;
+    private int front;
+    private int rear;
+    private int size;
+    private int capacity;
+
+    public MyCircularQueue(int k) {
+        data = new int[k];
+        capacity = k;
+        front = 0;
+        rear = -1;
+        size = 0;
+    }
+
+    public boolean enQueue(int value) {
+        if (isFull()) return false;
+
+        rear = (rear + 1) % capacity;
+        data[rear] = value;
+        size++;
+        return true;
+    }
+
+    public boolean deQueue() {
+        if (isEmpty()) return false;
+
+        front = (front + 1) % capacity;
+        size--;
+        return true;
+    }
+
+    public int Front() {
+        return isEmpty() ? -1 : data[front];
+    }
+
+    public int Rear() {
+        return isEmpty() ? -1 : data[rear];
+    }
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    public boolean isFull() {
+        return size == capacity;
+    }
+}
+```
+
+#### Example B: Circular Queue with Count-Free Full Check
+
+**Problem:** Track only `front` and `rear`, keep one empty slot to distinguish full vs empty.
+
+```java icon="code" title="Queue - Circular Queue (One Empty Slot Technique)"
+class CircularQueue {
+    private int[] data;
+    private int front;
+    private int rear;
+
+    public CircularQueue(int capacity) {
+        data = new int[capacity + 1]; // one extra slot
+        front = 0;
+        rear = 0;
+    }
+
+    public boolean offer(int val) {
+        if (isFull()) return false;
+
+        data[rear] = val;
+        rear = (rear + 1) % data.length;
+        return true;
+    }
+
+    public boolean poll() {
+        if (isEmpty()) return false;
+
+        front = (front + 1) % data.length;
+        return true;
+    }
+
+    public int peek() {
+        return isEmpty() ? -1 : data[front];
+    }
+
+    public boolean isEmpty() {
+        return front == rear;
+    }
+
+    public boolean isFull() {
+        return (rear + 1) % data.length == front;
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of seats arranged in a circle.
+
+* People leave from one side.
+* New people enter from next available seat.
+* Once the last seat is used, counting continues from first seat again.
+
+Space is continuously reused without reshuffling anyone.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Fixed-capacity queue requirement.
+* High-frequency enqueue/dequeue operations.
+* Need efficient buffer implementation.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Constant-Time Operations:** No element shifting needed. | **Fixed Capacity:** Cannot grow dynamically without reallocation logic. |
+| **Memory Efficient for Buffers:** Reuses slots cleanly. | **Index Math:** Modulo arithmetic mistakes are common. |
+| **Common System Primitive:** Basis of ring buffers and schedulers. | **Concurrency Needs Extra Care:** Thread-safe version needs synchronization. |
+
+### Summary Table
+
+| Variant | Capacity Model | Time per Op | Space |
+| --- | --- | --- | --- |
+| **Basic Circular Queue** | Fixed `k` | $O(1)$ | $O(k)$ |
+| **One Empty Slot Design** | Fixed `k+1` internal array | $O(1)$ | $O(k)$ |
+| **Ring Buffer Overwrite** | Fixed, overwrite oldest on full | $O(1)$ | $O(k)$ |
