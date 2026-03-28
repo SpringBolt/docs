@@ -1,0 +1,173 @@
+---
+title: Bridges and Articulation Points
+---
+
+### Introduction
+
+The **Bridges and Articulation Points** pattern finds critical edges and nodes in an undirected graph.
+
+* A **bridge** is an edge whose removal increases number of connected components.
+* An **articulation point** is a vertex whose removal disconnects the graph.
+
+This pattern is used in network resilience and failure-impact analysis.
+
+### Intuition: "Back Edge Reachability Decides Criticality"
+
+DFS assigns each node:
+
+* `tin[node]` -> discovery time
+* `low[node]` -> earliest discovery time reachable from node/subtree using at most one back edge
+
+Bridge condition for edge `(u, v)` where `u` is parent:
+
+* If `low[v] > tin[u]`, edge `(u, v)` is a bridge.
+
+Articulation condition:
+
+* Non-root `u` is articulation point if any child `v` has `low[v] >= tin[u]`.
+* Root is articulation point if it has more than one DFS child.
+
+---
+
+### Core Variations
+
+#### 1. Bridge Detection
+
+* Collect all critical edges.
+
+#### 2. Articulation Point Detection
+
+* Collect all cut vertices.
+
+#### 3. Critical Connections Problems
+
+* Common interview variant asking only bridges.
+
+---
+
+### Implementation Examples
+
+#### Example A: Find All Bridges
+**Problem:** Return all bridge edges in undirected graph.
+
+```java icon="code" title="Graph Critical - Bridges"
+private int timer;
+
+public List<List<Integer>> findBridges(int n, List<List<Integer>> graph) {
+    timer = 0;
+    int[] tin = new int[n];
+    int[] low = new int[n];
+    Arrays.fill(tin, -1);
+
+    List<List<Integer>> bridges = new ArrayList<>();
+
+    for (int i = 0; i < n; i++) {
+        if (tin[i] == -1) {
+            dfsBridge(i, -1, graph, tin, low, bridges);
+        }
+    }
+
+    return bridges;
+}
+
+private void dfsBridge(int node, int parent, List<List<Integer>> graph, int[] tin, int[] low, List<List<Integer>> bridges) {
+    tin[node] = low[node] = timer++;
+
+    for (int neighbor : graph.get(node)) {
+        if (neighbor == parent) continue;
+
+        if (tin[neighbor] != -1) {
+            low[node] = Math.min(low[node], tin[neighbor]);
+        } else {
+            dfsBridge(neighbor, node, graph, tin, low, bridges);
+            low[node] = Math.min(low[node], low[neighbor]);
+
+            if (low[neighbor] > tin[node]) {
+                bridges.add(Arrays.asList(node, neighbor));
+            }
+        }
+    }
+}
+```
+
+#### Example B: Find Articulation Points
+
+**Problem:** Return set of all articulation points.
+
+```java icon="code" title="Graph Critical - Articulation Points"
+public Set<Integer> findArticulationPoints(int n, List<List<Integer>> graph) {
+    Set<Integer> points = new HashSet<>();
+    int[] tin = new int[n];
+    int[] low = new int[n];
+    Arrays.fill(tin, -1);
+    timer = 0;
+
+    for (int i = 0; i < n; i++) {
+        if (tin[i] == -1) {
+            dfsArticulation(i, -1, graph, tin, low, points);
+        }
+    }
+
+    return points;
+}
+
+private void dfsArticulation(int node, int parent, List<List<Integer>> graph, int[] tin, int[] low, Set<Integer> points) {
+    tin[node] = low[node] = timer++;
+    int children = 0;
+
+    for (int neighbor : graph.get(node)) {
+        if (neighbor == parent) continue;
+
+        if (tin[neighbor] != -1) {
+            low[node] = Math.min(low[node], tin[neighbor]);
+        } else {
+            dfsArticulation(neighbor, node, graph, tin, low, points);
+            low[node] = Math.min(low[node], low[neighbor]);
+
+            if (parent != -1 && low[neighbor] >= tin[node]) {
+                points.add(node);
+            }
+            children++;
+        }
+    }
+
+    if (parent == -1 && children > 1) {
+        points.add(node);
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of servers connected by network links.
+
+* A bridge link is a single cable whose failure splits network.
+* An articulation server is a central machine whose failure disconnects parts of system.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Need to identify critical links or nodes.
+* Failure impact / fault tolerance analysis.
+* Undirected connectivity decomposition.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Finds True Critical Components:** Exact structural weak points. | **Undirected Focus:** Template must be adapted for directed graphs. |
+| **Linear Complexity:** Efficient on large sparse graphs. | **Low-Link Logic Sensitive:** Easy to make parent/back-edge mistakes. |
+| **Reusable DFS Framework:** Similar style to SCC low-link concepts. | **Recursion Depth Risk:** Deep graphs may hit stack limits. |
+
+### Summary Table
+
+| Task | Time | Space | Technique |
+| --- | --- | --- | --- |
+| **Bridges** | $O(V+E)$ | $O(V)$ | DFS + `tin/low` |
+| **Articulation Points** | $O(V+E)$ | $O(V)$ | DFS + child/root rules |
+| **Critical Connections** | $O(V+E)$ | $O(V)$ | Bridge-specific extraction |
