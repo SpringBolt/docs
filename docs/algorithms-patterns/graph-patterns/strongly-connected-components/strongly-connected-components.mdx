@@ -1,0 +1,153 @@
+---
+title: Strongly Connected Components
+---
+
+### Introduction
+
+The **Strongly Connected Components (SCC)** pattern partitions a directed graph into maximal groups where every node is reachable from every other node in the same group.
+
+SCC decomposition is key for dependency condensation, cycle grouping, and directed graph structure analysis.
+
+### Intuition: "Collapse Mutual-Reachability Islands"
+
+In directed graphs, connectivity is not symmetric.
+
+SCC finds node groups with two-way reachability and compresses each group as one meta-node (forming a DAG of components).
+
+Two classic algorithms:
+
+* **Kosaraju:** DFS order + transpose graph DFS.
+* **Tarjan:** Single DFS with discovery time and low-link values.
+
+---
+
+### Core Variations
+
+#### 1. Kosaraju's Algorithm
+
+* DFS to record finishing order.
+* Reverse graph.
+* DFS by reverse finishing order to collect SCCs.
+
+#### 2. Tarjan's Algorithm
+
+* One pass DFS.
+* Uses stack + low-link to detect SCC roots.
+
+#### 3. Condensation Graph
+
+* Treat each SCC as one node.
+* Build DAG for higher-level processing.
+
+---
+
+### Implementation Examples
+
+#### Example A: Kosaraju SCC Count
+**Problem:** Return number of strongly connected components.
+
+```java icon="code" title="SCC - Kosaraju Count"
+public int countSCC(int n, List<List<Integer>> graph) {
+    boolean[] visited = new boolean[n];
+    Stack<Integer> order = new Stack<>();
+
+    for (int i = 0; i < n; i++) {
+        if (!visited[i]) {
+            dfsOrder(i, graph, visited, order);
+        }
+    }
+
+    List<List<Integer>> reversed = new ArrayList<>();
+    for (int i = 0; i < n; i++) reversed.add(new ArrayList<>());
+
+    for (int u = 0; u < n; u++) {
+        for (int v : graph.get(u)) {
+            reversed.get(v).add(u);
+        }
+    }
+
+    Arrays.fill(visited, false);
+    int components = 0;
+
+    while (!order.isEmpty()) {
+        int node = order.pop();
+        if (!visited[node]) {
+            components++;
+            dfsCollect(node, reversed, visited);
+        }
+    }
+
+    return components;
+}
+
+private void dfsOrder(int node, List<List<Integer>> graph, boolean[] visited, Stack<Integer> order) {
+    visited[node] = true;
+
+    for (int neighbor : graph.get(node)) {
+        if (!visited[neighbor]) {
+            dfsOrder(neighbor, graph, visited, order);
+        }
+    }
+
+    order.push(node);
+}
+
+private void dfsCollect(int node, List<List<Integer>> graph, boolean[] visited) {
+    visited[node] = true;
+
+    for (int neighbor : graph.get(node)) {
+        if (!visited[neighbor]) {
+            dfsCollect(neighbor, graph, visited);
+        }
+    }
+}
+```
+
+#### Example B: SCC Grouping (Kosaraju)
+
+**Problem:** Return all SCC groups.
+
+```java icon="code" title="SCC - Component Groups"
+public List<List<Integer>> getSCCGroups(int n, List<List<Integer>> graph) {
+    List<List<Integer>> groups = new ArrayList<>();
+    // same order + reverse setup as countSCC
+    // during second DFS, collect nodes in one list and append to groups
+    return groups;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of one-way roads between cities.
+
+* Some city clusters still allow round-trip travel internally.
+* These clusters are SCCs.
+* Between clusters, travel may be one-directional.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Directed graph with cycle grouping requirement.
+* Need to compress cycles into higher-level DAG.
+* Dependency graph optimization or validation.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Deep Directed Graph Insight:** Reveals cycle structure precisely. | **More Advanced Template:** Harder than basic DFS/BFS. |
+| **Condensation DAG Ready:** Enables topological processing of components. | **Implementation Details Matter:** Order/transpose mistakes are common. |
+| **Linear Time:** Efficient for large sparse graphs. | **Recursion Depth Risk:** Very deep graphs can stress call stack. |
+
+### Summary Table
+
+| Approach | Time | Space | Notes |
+| --- | --- | --- | --- |
+| **Kosaraju** | $O(V+E)$ | $O(V+E)$ | Two DFS passes + transpose |
+| **Tarjan** | $O(V+E)$ | $O(V)$ | One DFS pass with low-link |
+| **Condensation Build** | $O(V+E)$ | $O(V+E)$ | SCC DAG construction |

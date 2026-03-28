@@ -1,0 +1,90 @@
+---
+title: Two-Pointer Gap Pattern
+---
+
+### Introduction
+
+The **Two-Pointer Gap** pattern uses two pointers separated by a fixed offset.
+
+After creating the gap, both pointers move together. This allows one-pass solutions for “from-end” list queries.
+
+### Intuition: "Distance is Information"
+
+If `fast` is `n` nodes ahead of `slow`, when `fast` reaches the end, `slow` is exactly at the predecessor or target position required by the problem.
+
+---
+
+### Core Variations
+
+#### 1. Remove Nth Node from End
+* Advance `fast` by `n + 1` from dummy.
+* Move both pointers together.
+* `slow.next` is removable node.
+
+#### 2. Nth Node from End (Read-Only)
+* Maintain gap of `n`.
+* Return `slow` once `fast` ends.
+
+#### 3. Middle with Gap Dynamics
+* Special case where gap expands by speed difference (`fast=2x`, `slow=1x`).
+
+---
+
+### Implementation Examples
+
+#### Example A: Remove Nth Node from End
+
+**Problem:** Remove nth node from end of list in one pass.
+
+```java icon="code" title="Two-Pointer Gap - Remove Nth Node"
+public ListNode removeNthFromEnd(ListNode head, int n) {
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+
+    ListNode fast = dummy;
+    ListNode slow = dummy;
+
+    for (int i = 0; i <= n; i++) {
+        fast = fast.next;
+    }
+
+    while (fast != null) {
+        fast = fast.next;
+        slow = slow.next;
+    }
+
+    slow.next = slow.next.next;
+    return dummy.next;
+}
+```
+
+#### Example B: Return Nth Node from End
+
+**Problem:** Return the value of nth node from end (1-indexed).
+
+```java icon="code" title="Two-Pointer Gap - Nth From End"
+public int nthFromEnd(ListNode head, int n) {
+    ListNode fast = head;
+    ListNode slow = head;
+
+    for (int i = 0; i < n; i++) {
+        fast = fast.next;
+    }
+
+    while (fast != null) {
+        fast = fast.next;
+        slow = slow.next;
+    }
+
+    return slow.val;
+}
+```
+
+---
+
+### Complexity Analysis
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| **Remove Nth From End** | $O(n)$ | $O(1)$ |
+| **Nth From End** | $O(n)$ | $O(1)$ |

@@ -1,0 +1,96 @@
+---
+title: Dummy Node Technique
+---
+
+### Introduction
+
+The **Dummy Node** (sentinel) pattern adds a temporary node before `head` to simplify insertions, deletions, and segment rewiring near the beginning of a list.
+
+Without a dummy node, head-edge cases require extra branching. With a dummy node, head operations become regular internal operations.
+
+### Intuition: "Normalize the Head Case"
+
+If every operation has a valid predecessor node, pointer updates stay uniform.
+
+`dummy -> head` guarantees a stable predecessor even when the original head changes.
+
+---
+
+### Core Variations
+
+#### 1. Delete with Stable Previous
+* Keep `prev` pointer.
+* Rewire using `prev.next = prev.next.next`.
+
+#### 2. Insert Before Current Head
+* Build new node chain.
+* Attach through `dummy.next`.
+
+#### 3. Segment Splice
+* Useful in partition and merge operations.
+
+---
+
+### Implementation Examples
+
+#### Example A: Remove Elements by Value
+
+**Problem:** Remove all nodes with value `val` and return new head.
+
+```java icon="code" title="Dummy Node - Remove Linked List Elements"
+public ListNode removeElements(ListNode head, int val) {
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+
+    ListNode curr = dummy;
+    while (curr.next != null) {
+        if (curr.next.val == val) {
+            curr.next = curr.next.next;
+        } else {
+            curr = curr.next;
+        }
+    }
+
+    return dummy.next;
+}
+```
+
+#### Example B: Swap Nodes in Pairs
+
+**Problem:** Swap every two adjacent nodes and return modified head.
+
+```java icon="code" title="Dummy Node - Swap Nodes in Pairs"
+public ListNode swapPairs(ListNode head) {
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+    ListNode prev = dummy;
+
+    while (prev.next != null && prev.next.next != null) {
+        ListNode first = prev.next;
+        ListNode second = first.next;
+
+        first.next = second.next;
+        second.next = first;
+        prev.next = second;
+
+        prev = first;
+    }
+
+    return dummy.next;
+}
+```
+
+---
+
+### When to Use
+
+* Node may be removed/inserted at head.
+* Need uniform pointer logic without special head branches.
+* Operations need stable predecessor anchor.
+
+### Complexity Analysis
+
+| Problem | Time | Space |
+| --- | --- | --- |
+| **Remove Elements** | $O(n)$ | $O(1)$ |
+| **Swap Pairs** | $O(n)$ | $O(1)$ |

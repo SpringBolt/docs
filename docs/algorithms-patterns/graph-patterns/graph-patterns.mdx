@@ -1,0 +1,62 @@
+---
+title: Graph Patterns
+---
+
+### Introduction
+
+Graph problems are about relationships between entities (nodes) connected by edges.
+
+The right graph pattern depends on objective:
+
+* traversal,
+* shortest path,
+* dependency ordering,
+* connectivity merging,
+* cycle grouping,
+* critical link analysis.
+
+---
+
+### Standard Graph Patterns
+
+1. **Breadth First Search (BFS)**
+   * Shortest path in unweighted graph.
+
+2. **Depth First Search (DFS)**
+   * Path exploration, component traversal, recursion-state problems.
+
+3. **Topological Sort**
+   * Ordering tasks with directed dependencies in DAG.
+
+4. **Union Find (DSU)**
+   * Fast connectivity merges and cycle checks in undirected graphs.
+
+5. **Dijkstra Shortest Path**
+   * Source shortest path with non-negative weighted edges.
+
+6. **Minimum Spanning Tree (Kruskal / Prim)**
+   * Minimum-cost full connectivity in weighted undirected graph.
+
+7. **Strongly Connected Components (SCC)**
+   * Cycle-group decomposition in directed graph.
+
+8. **Bipartite Graph Check**
+   * Two-color feasibility and odd-cycle detection.
+
+9. **Bridges and Articulation Points**
+   * Critical edges/nodes in connectivity graph.
+
+---
+
+### Pattern Selection Quick Guide
+
+| Goal | Recommended Pattern |
+| --- | --- |
+| Shortest path (unweighted) | BFS |
+| Shortest path (weighted, non-negative) | Dijkstra |
+| Dependency ordering in DAG | Topological Sort |
+| Dynamic connectivity / cycle in undirected graph | Union Find |
+| Minimum total connection cost | MST (Kruskal/Prim) |
+| Directed cycle grouping | SCC |
+| Two-group partition feasibility | Bipartite Check |
+| Find critical links/nodes | Bridges / Articulation |

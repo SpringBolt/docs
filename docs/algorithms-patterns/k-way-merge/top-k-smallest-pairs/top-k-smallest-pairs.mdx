@@ -1,0 +1,161 @@
+---
+title: Top K Smallest Pairs
+---
+
+### Introduction
+
+The **Top K Smallest Pairs** pattern is a K-way merge style problem where we generate pair sums in sorted order without enumerating all combinations.
+
+Given two sorted arrays `nums1` and `nums2`, we need `k` pairs `(u, v)` with smallest sums.
+
+Brute force creates all `n * m` pairs and sorts them, which is expensive.
+
+A min-heap lets us generate only the next best candidates.
+
+---
+
+### Intuition: "Expand from the Current Best Pair"
+
+If arrays are sorted, then for fixed `i`:
+
+* `(i, 0)` has smallest partner in second array.
+* Next candidate from same row is `(i, 1)`, then `(i, 2)`.
+
+So we can:
+
+1. Initialize heap with first pair from each relevant row `(i, 0)`.
+2. Pop smallest sum pair.
+3. Push next pair from same row `(i, j + 1)`.
+
+This behaves like merging `k` sorted lists of pair sums.
+
+---
+
+### Core Variations
+
+#### 1. Two Sorted Arrays
+
+* Most common version.
+* Heap entry tracks indices `(i, j)`.
+
+#### 2. K Largest Pairs
+
+* Use max-heap on bounded size or reverse ordering.
+
+#### 3. Multiple Arrays (Generalized)
+
+* Extend tuple state and visited set for higher dimensions.
+
+---
+
+### Implementation Examples
+
+#### Example A: Top K Smallest Sum Pairs
+
+**Problem:** Return `k` pairs with smallest sums from two sorted arrays.
+
+```java icon="code" title="Top K Merge - K Smallest Pairs"
+public List<int[]> kSmallestPairs(int[] nums1, int[] nums2, int k) {
+    List<int[]> result = new ArrayList<>();
+
+    if (nums1.length == 0 || nums2.length == 0 || k == 0) {
+        return result;
+    }
+
+    PriorityQueue<int[]> minHeap = new PriorityQueue<>(
+        (a, b) -> Integer.compare(a[0], b[0])
+    );
+    // heap entry: [sum, i, j]
+
+    int rows = Math.min(nums1.length, k);
+    for (int i = 0; i < rows; i++) {
+        minHeap.offer(new int[] {nums1[i] + nums2[0], i, 0});
+    }
+
+    while (!minHeap.isEmpty() && result.size() < k) {
+        int[] top = minHeap.poll();
+        int i = top[1];
+        int j = top[2];
+
+        result.add(new int[] {nums1[i], nums2[j]});
+
+        if (j + 1 < nums2.length) {
+            minHeap.offer(new int[] {nums1[i] + nums2[j + 1], i, j + 1});
+        }
+    }
+
+    return result;
+}
+```
+
+#### Example B: Kth Smallest Pair Sum
+
+**Problem:** Return the kth smallest pair sum from two sorted arrays.
+
+```java icon="code" title="Top K Merge - Kth Smallest Pair Sum"
+public int kthSmallestPairSum(int[] nums1, int[] nums2, int k) {
+    if (nums1.length == 0 || nums2.length == 0 || k <= 0) {
+        return -1;
+    }
+
+    PriorityQueue<int[]> minHeap = new PriorityQueue<>(
+        (a, b) -> Integer.compare(a[0], b[0])
+    );
+
+    int rows = Math.min(nums1.length, k);
+    for (int i = 0; i < rows; i++) {
+        minHeap.offer(new int[] {nums1[i] + nums2[0], i, 0});
+    }
+
+    int answer = -1;
+    for (int count = 0; count < k && !minHeap.isEmpty(); count++) {
+        int[] top = minHeap.poll();
+        answer = top[0];
+
+        int i = top[1];
+        int j = top[2];
+
+        if (j + 1 < nums2.length) {
+            minHeap.offer(new int[] {nums1[i] + nums2[j + 1], i, j + 1});
+        }
+    }
+
+    return answer;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Imagine combining flight prices from two sorted fare lists:
+
+* List A: base fares
+* List B: add-on fees
+
+Instead of computing every possible total fare, you always expand the next cheapest combination first.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Two or more sorted sources.
+* Need only top/bottom `k` combinations.
+* Full Cartesian product is too expensive.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Efficient:** Avoids generating all pair combinations. | **Sorted Dependency:** Input arrays should be sorted. |
+| **K-Driven Cost:** Runtime depends on `k`, not `n * m` fully. | **Tuple Bookkeeping:** Need index tracking per heap node. |
+| **Natural K-Way View:** Reuses merge intuition. | **Edge Cases:** Empty arrays and small `k` need guards. |
+
+### Summary Table
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| **Top K Smallest Pairs** | $O(k \log \min(n, k))$ | $O(\min(n, k))$ |
+| **Kth Smallest Pair Sum** | $O(k \log \min(n, k))$ | $O(\min(n, k))$ |

@@ -1,0 +1,140 @@
+---
+title: Balanced Parentheses
+---
+
+### Introduction
+
+The **Balanced Parentheses** stack pattern is used to validate nested structures.
+
+When we see an opening bracket, we push it. When we see a closing bracket, we check whether it matches the latest opening bracket on top of the stack.
+
+This **Last-In, First-Out (LIFO)** behavior is exactly why stack is the right data structure here.
+
+### Intuition: "Close What Opened Last"
+
+Consider the string `([{}])`.
+
+* `(` opens first.
+* `[` opens second.
+* `{` opens third.
+
+Now the first closing bracket must close `{`, not `(`.
+
+So the latest opening symbol must be closed first. That is stack order.
+
+---
+
+### Core Variations
+
+#### 1. Basic Valid Parentheses
+
+* Validate only `()[]{}`.
+* Return true/false.
+
+#### 2. Minimum Removal to Make Valid
+
+* Track invalid indices.
+* Remove unmatched brackets.
+
+#### 3. Longest Valid Parentheses
+
+* Stack stores indices, not characters.
+* Compute max valid span length.
+
+---
+
+### Implementation Examples
+
+#### Example A: Valid Parentheses
+**Problem:** Return `true` if all opening brackets are closed in correct order.
+
+```java icon="code" title="Stack - Valid Parentheses"
+public boolean isValid(String s) {
+    Deque<Character> stack = new ArrayDeque<>();
+
+    for (char ch : s.toCharArray()) {
+        if (ch == '(' || ch == '[' || ch == '{') {
+            stack.push(ch);
+        } else {
+            if (stack.isEmpty()) return false;
+
+            char top = stack.pop();
+            if ((ch == ')' && top != '(') ||
+                (ch == ']' && top != '[') ||
+                (ch == '}' && top != '{')) {
+                return false;
+            }
+        }
+    }
+
+    return stack.isEmpty();
+}
+```
+
+#### Example B: Longest Valid Parentheses
+
+**Problem:** Return length of the longest valid parentheses substring.
+
+```java icon="code" title="Stack - Longest Valid Parentheses"
+public int longestValidParentheses(String s) {
+    Deque<Integer> stack = new ArrayDeque<>();
+    stack.push(-1); // base index for valid length calculation
+
+    int maxLength = 0;
+
+    for (int i = 0; i < s.length(); i++) {
+        char ch = s.charAt(i);
+
+        if (ch == '(') {
+            stack.push(i);
+        } else {
+            stack.pop();
+
+            if (stack.isEmpty()) {
+                stack.push(i); // reset base
+            } else {
+                maxLength = Math.max(maxLength, i - stack.peek());
+            }
+        }
+    }
+
+    return maxLength;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of opening and closing folders in a UI:
+
+* You open Folder A, then B, then C.
+* To return correctly, you close C first, then B, then A.
+
+That reverse closing order is exactly stack behavior.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Nested symbols or expressions.
+* "Valid parentheses" style constraints.
+* Need to match opening and closing tokens with ordering.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Natural Fit for Nesting:** Models nested order directly. | **Character Mapping Errors:** Easy to mismatch bracket conditions. |
+| **Linear Time:** One pass for validation. | **Only Order Checks:** Does not evaluate expression value itself. |
+| **Simple to Implement:** Small and reusable template. | **Edge Cases:** Empty and single-char strings need care. |
+
+### Summary Table
+
+| Variant | Stack Content | Time | Space |
+| --- | --- | --- | --- |
+| **Valid Parentheses** | Opening characters | $O(n)$ | $O(n)$ |
+| **Longest Valid Parentheses** | Indices | $O(n)$ | $O(n)$ |
+| **Minimum Removal** | Indices/characters | $O(n)$ | $O(n)$ |

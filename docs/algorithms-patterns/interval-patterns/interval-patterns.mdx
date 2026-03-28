@@ -1,0 +1,44 @@
+---
+title: Interval Patterns
+---
+
+### Introduction
+
+Interval problems deal with ranges like `[start, end]` and usually focus on overlap, merging, or conflict detection.
+
+Most interval solutions rely on:
+
+1. sorting by start time,
+2. single pass with greedy decisions,
+3. occasional two-pointer scanning across two sorted lists.
+
+---
+
+### Standard Interval Patterns
+
+1. **Merge Intervals**
+   * Collapse overlapping ranges into consolidated blocks.
+
+2. **Insert Interval**
+   * Insert new range into sorted disjoint ranges and merge locally.
+
+3. **Interval Intersection**
+   * Compute overlap blocks from two sorted interval lists.
+
+4. **Meeting Rooms / Resource Allocation**
+   * Count simultaneous overlaps to determine required rooms.
+
+5. **Non-Overlapping Selection**
+   * Greedy selection/removal based on earliest finishing intervals.
+
+---
+
+### Pattern Selection Quick Guide
+
+| Goal | Recommended Pattern |
+| --- | --- |
+| Combine overlapping intervals | Merge Intervals |
+| Add one new interval | Insert Interval |
+| Common overlap from two lists | Interval Intersection |
+| Minimum resources for overlaps | Meeting Rooms |
+| Keep max non-overlapping intervals | Interval Scheduling Greedy |

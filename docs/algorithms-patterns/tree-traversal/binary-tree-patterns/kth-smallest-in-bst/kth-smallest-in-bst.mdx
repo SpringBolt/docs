@@ -1,0 +1,46 @@
+---
+title: Kth Smallest in BST
+---
+
+### Introduction
+
+The **Kth Smallest in BST** pattern is a common binary tree template used in coding interviews.
+
+---
+
+### Problem Statement
+
+Return the kth smallest value in a BST.
+
+### Approach
+
+Use inorder traversal (sorted order for BST). Count visited nodes and stop at `k`.
+
+```java icon="code" title="Binary Tree - Kth Smallest in BST"
+private int count = 0;
+private int answer = -1;
+
+public int kthSmallest(TreeNode root, int k) {
+    inorder(root, k);
+    return answer;
+}
+
+private void inorder(TreeNode node, int k) {
+    if (node == null || count >= k) return;
+
+    inorder(node.left, k);
+
+    count++;
+    if (count == k) {
+        answer = node.val;
+        return;
+    }
+
+    inorder(node.right, k);
+}
+```
+
+### Complexity Analysis
+
+* **Time:** $O(h + k)$ average, $O(n)$ worst case
+* **Space:** $O(h)$

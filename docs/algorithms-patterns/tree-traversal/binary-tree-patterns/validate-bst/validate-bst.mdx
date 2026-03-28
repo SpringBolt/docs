@@ -1,0 +1,36 @@
+---
+title: Validate BST
+---
+
+### Introduction
+
+The **Validate BST** pattern is a common binary tree template used in coding interviews.
+
+---
+
+### Problem Statement
+
+Check if a binary tree is a valid Binary Search Tree.
+
+### Approach
+
+Pass valid min/max range through recursion. Every node value must satisfy `min < node.val < max`.
+
+```java icon="code" title="Binary Tree - Validate BST"
+public boolean isValidBST(TreeNode root) {
+    return validate(root, Long.MIN_VALUE, Long.MAX_VALUE);
+}
+
+private boolean validate(TreeNode node, long min, long max) {
+    if (node == null) return true;
+
+    if (node.val <= min || node.val >= max) return false;
+
+    return validate(node.left, min, node.val) && validate(node.right, node.val, max);
+}
+```
+
+### Complexity Analysis
+
+* **Time:** $O(n)$
+* **Space:** $O(h)$

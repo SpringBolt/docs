@@ -1,0 +1,164 @@
+---
+title: Two Pointers
+---
+
+### Introduction
+
+The **Two Pointers** pattern is an algorithmic technique that uses two distinct indices (pointers) to traverse a linear data structure, such as an array, string, or linked list.
+
+#### What is a pointer?
+
+In this context, a "pointer" is simply a variable that keeps track of a position or index within the data structure.
+
+Most basic algorithms use a single pointer to iterate through elements one by one (`for i in range(n)`). However, utilizing a **second pointer** unlocks new possibilities:
+1.  **Simultaneous Comparison:** You can compare elements at the beginning and end of an array at the same time.
+2.  **State Management:** You can keep track of two different states, such as a "read" position and a "write" position.
+3.  **Scope Definition:** You can define a dynamic range or window between two indices.
+
+### Intuition: Leveraging Predictable Dynamics
+
+In a naive approach, comparing every pair of elements usually requires nested loops.
+
+```java icon="code" title="Brute Force Approach"
+// Brute Force: O(n^2) complexity
+for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+        compare(nums[i], nums[j]);
+    }
+}
+```
+
+This  approach is slow because it checks every possibility blindly. The **Two Pointers** technique optimizes this to **** by taking advantage of **predictable dynamics** in the data.
+
+#### What are Predictable Dynamics?
+
+If the data follows a specific rule (like being sorted), moving a pointer results in a predictable outcome.
+
+* In a **sorted array**, moving a pointer to the **right** guarantees the value will increase (or stay same).
+* Moving a pointer to the **left** guarantees the value will decrease.
+
+Because we can predict the outcome of moving a pointer, we don't need to check every pair. We can move the pointers logically to find the answer in a single pass.
+
+### Core Strategies
+
+There are three main ways to implement this pattern:
+
+#### 1. Inward Traversal (Opposite Ends)
+
+This is the most common variation, often called "Meet in the Middle."
+
+* **Setup:** One pointer starts at the beginning (`left = 0`), and the other starts at the end (`right = n - 1`).
+* **Movement:** They move toward each other (`left++`, `right--`) until they meet.
+* **Use Case:** Palindromes, Reversing arrays, Two Sum (Sorted).
+
+#### 2. Unidirectional Traversal (Fast & Slow)
+
+Both pointers start at the beginning, but they move at different speeds or based on different conditions.
+
+* **Setup:** `slow = 0`, `fast = 0` (or `1`).
+* **Movement:** The `fast` pointer scouts ahead to find a condition. The `slow` pointer acts as an anchor or a "write head" for valid data.
+* **Use Case:** Removing duplicates, Moving Zeroes, Finding cycles (Tortoise and Hare).
+
+#### 3. Staged Traversal
+
+In this variation, one pointer waits until a specific condition is met before the second pointer starts moving.
+
+* **Setup:** `p1` traverses. `p2` is inactive.
+* **Movement:** When `p1` finds a trigger (e.g., a specific character), `p2` activates to perform a secondary task (e.g., expanding outward to check for a palindrome).
+* **Use Case:** Longest Palindromic Substring, complex string manipulation.
+
+### Implementation Examples
+
+#### Example A: Inward Traversal (Two Sum Sorted)
+
+**Problem:** Given a *sorted* array, find two numbers that add up to a specific `target`.
+
+```java icon="code" title="Two Pointers - Two Sum (Sorted)"
+public int[] twoSum(int[] numbers, int target) {
+    int left = 0;
+    int right = numbers.length - 1;
+
+    while (left < right) {
+        int currentSum = numbers[left] + numbers[right];
+
+        if (currentSum == target) {
+            return new int[] { left + 1, right + 1 };
+        } 
+        else if (currentSum < target) {
+            // Logic: Sum is too small. We need a bigger number.
+            // Since the array is sorted, moving 'left' to the right gives us a bigger number.
+            left++;
+        } 
+        else {
+            // Logic: Sum is too big. We need a smaller number.
+            right--;
+        }
+    }
+    return new int[] { -1, -1 };
+}
+```
+
+#### Example B: Unidirectional Traversal (Remove Duplicates)
+
+**Problem:** Remove duplicates from a sorted array *in-place* and return the new length.
+
+```java icon="code" title="Two Pointers - Remove Duplicates"
+public int removeDuplicates(int[] nums) {
+    if (nums.length == 0) return 0;
+
+    int slow = 0; // Acts as the "Write" pointer
+
+    // 'fast' acts as the "Read/Scan" pointer
+    for (int fast = 1; fast < nums.length; fast++) {
+        // If we find a new unique number
+        if (nums[fast] != nums[slow]) {
+            slow++;           // Move write head forward
+            nums[slow] = nums[fast]; // Write the unique number here
+        }
+        // If it IS a duplicate, 'fast' just skips it
+    }
+    return slow + 1;
+}
+```
+
+### Real-World Analogies
+
+#### 1. Conceptual: Reading a Book
+
+Imagine checking a book for errors with a friend.
+
+* **Opposite Ends:** You read the first page, your friend reads the last page. You check for symmetry (Palindrome).
+* **Same Direction:** You are the **Editor** (Slow pointer). Your friend is the **Scanner** (Fast pointer). Your friend quickly scans ahead. When they find a good sentence, they read it out, and you write it down in the final draft.
+
+#### 2. Technical: Garbage Collection
+
+A classic system-level example is **Memory Compaction**.
+
+* The computer needs to clear "dead" objects and keep "live" objects.
+* A **Scan Pointer (Fast)** traverses memory looking for live objects.
+* A **Free Pointer (Slow)** tracks the next available free slot.
+* When the Scan pointer finds a live object, it copies it to the Free pointer's location. This packs all live objects tightly together.
+
+### When to Use
+
+Check for these signs to identify a Two Pointers problem:
+
+* **Sorted Input:** The array or list is sorted (Strongest indicator).
+* **Linear Structure:** The input is an array, string, or linked list.
+* **Pair Seeking:** The problem asks for a pair of values ("Find two numbers...").
+* **In-Place Constraint:** You need to solve the problem with  space (modifying the input directly).
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Time Efficiency:** Reduces  solutions to . | **Sorting Dependency:** Usually requires data to be sorted. If not, sorting adds  cost. |
+| **Space Efficiency:** Uses  extra memory (just two integer variables). | **Linear Access:** Doesn't work well on data structures that don't support random access or sequential traversal. |
+
+### Summary Table
+
+| Strategy | Pointer Movement | Common Problems |
+| --- | --- | --- |
+| **Opposite Ends** | `left++`, `right--` | Two Sum (Sorted), Valid Palindrome, Reverse String, Container With Most Water |
+| **Same Direction** | `slow++`, `fast++` | Remove Duplicates, Move Zeroes, Intersection of Arrays |
+| **Staged Traversal** | `p1` triggers `p2` | Longest Palindromic Substring, Complex String Manipulation |

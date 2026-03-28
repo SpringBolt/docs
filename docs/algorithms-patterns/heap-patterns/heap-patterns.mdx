@@ -1,0 +1,46 @@
+---
+title: Heap Patterns
+---
+
+### Introduction
+
+Heap-based patterns solve problems where we repeatedly need the **smallest** or **largest** element under changing data.
+
+A heap gives efficient insert/remove-top operations:
+
+* insert: $O(\log n)$
+* remove top: $O(\log n)$
+* peek top: $O(1)$
+
+This makes heaps a natural fit for dynamic ranking, scheduling, and multi-source merge tasks.
+
+---
+
+### Standard Heap Patterns
+
+1. **Heap and Heapify**
+   * Build heap from array and maintain heap order.
+
+2. **Top K Elements**
+   * Keep only best `k` candidates using bounded heap.
+
+3. **K-Way Merge**
+   * Merge multiple sorted streams/lists using min-heap.
+
+4. **Two Heaps**
+   * Maintain lower and upper halves (e.g., running median).
+
+5. **Priority Scheduling**
+   * Always execute next best/earliest priority task.
+
+---
+
+### Pattern Selection Quick Guide
+
+| Goal | Recommended Pattern |
+| --- | --- |
+| Repeated min/max extraction | Heap and Heapify |
+| K largest / K smallest / top K frequent | Top K Elements |
+| Merge k sorted arrays/lists/iterators | K-Way Merge |
+| Online median / balanced halves | Two Heaps |
+| Dynamic next-task selection | Priority Scheduling |

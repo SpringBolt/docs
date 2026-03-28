@@ -1,0 +1,70 @@
+---
+title: Backtracking - Letter Combinations Pattern
+---
+
+### Introduction
+
+This pattern maps each position to a set of choices (digit -> letters).
+
+Backtracking builds all strings by taking one choice per level.
+
+---
+
+### Intuition
+
+For each digit:
+
+* iterate mapped letters,
+* append one letter,
+* recurse to next digit,
+* remove letter.
+
+Depth equals input length.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Backtracking - Letter Combinations of Phone Number"
+public List<String> letterCombinations(String digits) {
+    List<String> result = new ArrayList<>();
+    if (digits == null || digits.length() == 0) return result;
+
+    String[] map = new String[] {
+        "", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"
+    };
+
+    dfs(0, digits, map, new StringBuilder(), result);
+    return result;
+}
+
+private void dfs(int index, String digits, String[] map, StringBuilder path, List<String> result) {
+    if (index == digits.length()) {
+        result.add(path.toString());
+        return;
+    }
+
+    String letters = map[digits.charAt(index) - '0'];
+    for (int i = 0; i < letters.length(); i++) {
+        path.append(letters.charAt(i));
+        dfs(index + 1, digits, map, path, result);
+        path.deleteCharAt(path.length() - 1);
+    }
+}
+```
+
+---
+
+### When to Use
+
+* Position-wise Cartesian product generation.
+* String generation with fixed depth.
+
+### Complexity Analysis
+
+| Metric | Complexity |
+| --- | --- |
+| Time | $O(4^n * n)$ |
+| Space | $O(n)$ recursion + output |
+
+`4^n` upper bound because digits 7/9 map to 4 letters.

@@ -1,0 +1,123 @@
+---
+title: Split and Stitch Pattern
+---
+
+### Introduction
+
+The **Split and Stitch** pattern breaks a list into meaningful segments, processes them, and reconnects in required order.
+
+This pattern is central to reorder and partition problems.
+
+### Intuition: "Transform by Sections"
+
+Complex list transforms become easier when decomposed:
+
+1. Split at a computed boundary (middle, index, value partition).
+2. Apply local operation to each segment.
+3. Stitch segments with controlled pointer wiring.
+
+---
+
+### Core Variations
+
+#### 1. Reorder List
+* Split at middle.
+* Reverse second half.
+* Merge alternating nodes.
+
+#### 2. Partition List Around Value
+* Build `< x` and `>= x` chains.
+* Join the two chains.
+
+#### 3. Odd-Even Index Grouping
+* Separate odd/even node positions.
+* Reconnect odd tail to even head.
+
+---
+
+### Implementation Examples
+
+#### Example A: Reorder List
+
+**Problem:** Reorder `L0 → L1 → ... → Ln` into `L0 → Ln → L1 → Ln-1 ...`.
+
+```java icon="code" title="Split & Stitch - Reorder List"
+public void reorderList(ListNode head) {
+    if (head == null || head.next == null) return;
+
+    ListNode slow = head;
+    ListNode fast = head;
+    while (fast.next != null && fast.next.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+
+    ListNode second = reverse(slow.next);
+    slow.next = null;
+    ListNode first = head;
+
+    while (second != null) {
+        ListNode temp1 = first.next;
+        ListNode temp2 = second.next;
+
+        first.next = second;
+        second.next = temp1;
+
+        first = temp1;
+        second = temp2;
+    }
+}
+
+private ListNode reverse(ListNode head) {
+    ListNode prev = null;
+    ListNode curr = head;
+
+    while (curr != null) {
+        ListNode nextNode = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = nextNode;
+    }
+
+    return prev;
+}
+```
+
+#### Example B: Partition List
+
+**Problem:** Partition nodes so values `< x` come before nodes `>= x`.
+
+```java icon="code" title="Split & Stitch - Partition List"
+public ListNode partition(ListNode head, int x) {
+    ListNode lessDummy = new ListNode(0);
+    ListNode greaterDummy = new ListNode(0);
+
+    ListNode less = lessDummy;
+    ListNode greater = greaterDummy;
+
+    ListNode curr = head;
+    while (curr != null) {
+        if (curr.val < x) {
+            less.next = curr;
+            less = less.next;
+        } else {
+            greater.next = curr;
+            greater = greater.next;
+        }
+        curr = curr.next;
+    }
+
+    greater.next = null;
+    less.next = greaterDummy.next;
+    return lessDummy.next;
+}
+```
+
+---
+
+### Complexity Analysis
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| **Reorder List** | $O(n)$ | $O(1)$ |
+| **Partition List** | $O(n)$ | $O(1)$ |

@@ -1,0 +1,145 @@
+---
+title: K-Way Merge
+---
+
+### Introduction
+
+The **K-Way Merge** pattern merges `k` sorted lists efficiently using a min-heap.
+
+Instead of repeatedly scanning heads of all lists, we keep only current minimum candidates in a heap.
+
+This is common in merging sorted arrays/lists, external sorting, and smallest-range problems.
+
+### Intuition: "Always Extract Global Minimum"
+
+For `k` sorted lists:
+
+1. Insert first element of each list into min-heap.
+2. Pop smallest element, append to answer.
+3. Push next element from the same list.
+4. Repeat until heap is empty.
+
+Heap size stays at most `k`, so each operation is `O(log k)`.
+
+---
+
+### Core Variations
+
+#### 1. Merge K Sorted Lists
+
+* Standard linked-list or array merge.
+* Output fully merged sorted sequence.
+
+#### 2. Kth Smallest in M Sorted Lists
+
+* Pop from min-heap `k` times.
+* Last popped value is answer.
+
+#### 3. Smallest Range Covering Elements from K Lists
+
+* Track current max while popping min.
+* Optimize `[min, max]` window.
+
+---
+
+### Implementation Examples
+
+#### Example A: Merge K Sorted Arrays
+**Problem:** Merge k sorted integer arrays into a single sorted list.
+
+```java icon="code" title="K-Way Merge - Merge K Sorted Arrays"
+public List<Integer> mergeKSortedArrays(List<int[]> arrays) {
+    List<Integer> result = new ArrayList<>();
+
+    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a[0], b[0]));
+    // heap entry: [value, arrayIndex, elementIndex]
+
+    for (int i = 0; i < arrays.size(); i++) {
+        if (arrays.get(i).length > 0) {
+            minHeap.offer(new int[] {arrays.get(i)[0], i, 0});
+        }
+    }
+
+    while (!minHeap.isEmpty()) {
+        int[] top = minHeap.poll();
+        int value = top[0];
+        int arrayIndex = top[1];
+        int elementIndex = top[2];
+
+        result.add(value);
+
+        int nextIndex = elementIndex + 1;
+        if (nextIndex < arrays.get(arrayIndex).length) {
+            minHeap.offer(new int[] {arrays.get(arrayIndex)[nextIndex], arrayIndex, nextIndex});
+        }
+    }
+
+    return result;
+}
+```
+
+#### Example B: Kth Smallest from Sorted Matrix (Rows Sorted)
+
+**Problem:** Return kth smallest element from matrix where each row is sorted.
+
+```java icon="code" title="K-Way Merge - Kth Smallest"
+public int kthSmallest(int[][] matrix, int k) {
+    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a[0], b[0]));
+    // [value, row, col]
+
+    for (int row = 0; row < Math.min(matrix.length, k); row++) {
+        minHeap.offer(new int[] {matrix[row][0], row, 0});
+    }
+
+    int number = -1;
+    for (int i = 0; i < k; i++) {
+        int[] top = minHeap.poll();
+        number = top[0];
+        int row = top[1];
+        int col = top[2];
+
+        if (col + 1 < matrix[row].length) {
+            minHeap.offer(new int[] {matrix[row][col + 1], row, col + 1});
+        }
+    }
+
+    return number;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of merging headlines from multiple already-sorted news feeds.
+
+* You only compare current top headline from each feed.
+* Pick earliest one, then pull next from that feed.
+
+This avoids rescanning all feed history repeatedly.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Multiple **already sorted** lists/streams.
+* Need global minimum/maximum across k sources.
+* Need kth element while preserving sorted order logic.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Efficient:** Better than flatten+sort for many cases. | **Heap Dependency:** Requires comparator and tuple bookkeeping. |
+| **Scales with K:** Cost depends on `log k`, not `log n`. | **Extra Space:** Heap stores one candidate per list. |
+| **Streaming-Friendly:** Can merge iterators/lazy sources. | **Implementation Noise:** Index tracking can be verbose. |
+
+### Summary Table
+
+| Variant | Time | Space | Notes |
+| --- | --- | --- | --- |
+| **Merge K Lists** | $O(N \log k)$ | $O(k)$ | `N` = total elements |
+| **Kth Smallest** | $O(k \log k)$ | $O(k)$ | Pop `k` times |
+| **Smallest Range** | $O(N \log k)$ | $O(k)$ | Maintain running max |

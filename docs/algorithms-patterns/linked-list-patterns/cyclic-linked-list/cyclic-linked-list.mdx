@@ -1,0 +1,89 @@
+---
+title: Cyclic Linked List Pattern
+---
+
+### Introduction
+
+The **Cyclic Linked List** pattern applies fast/slow pointer dynamics to detect loops and identify cycle entry.
+
+It solves cycle tasks in linear time and constant extra space.
+
+### Intuition: "Relative Speed Guarantees Meeting"
+
+If a cycle exists, a fast pointer moving two steps eventually catches a slow pointer moving one step.
+
+After the first meeting, resetting one pointer to `head` and moving both by one reveals cycle start.
+
+---
+
+### Core Variations
+
+#### 1. Detect Cycle
+* Return boolean if pointers meet.
+
+#### 2. Find Cycle Entry
+* Detect meeting first.
+* Reset one pointer to head.
+* Advance both by one to entry.
+
+#### 3. Cycle Length
+* From meeting point, loop once and count steps.
+
+---
+
+### Implementation Examples
+
+#### Example A: Detect Cycle
+
+**Problem:** Return `true` if linked list contains a cycle.
+
+```java icon="code" title="Cycle Pattern - Detect Cycle"
+public boolean hasCycle(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+        if (slow == fast) return true;
+    }
+
+    return false;
+}
+```
+
+#### Example B: Detect Cycle Start
+
+**Problem:** Return node where cycle begins, or `null`.
+
+```java icon="code" title="Cycle Pattern - Detect Cycle Start"
+public ListNode detectCycle(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+
+        if (slow == fast) {
+            ListNode entry = head;
+            while (entry != slow) {
+                entry = entry.next;
+                slow = slow.next;
+            }
+            return entry;
+        }
+    }
+
+    return null;
+}
+```
+
+---
+
+### Complexity Analysis
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| **Cycle Detection** | $O(n)$ | $O(1)$ |
+| **Cycle Entry** | $O(n)$ | $O(1)$ |

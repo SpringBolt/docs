@@ -1,0 +1,84 @@
+---
+title: Bucket Sort
+---
+
+### Introduction
+
+**Bucket Sort** distributes elements into several buckets, sorts each bucket individually, and concatenates buckets.
+
+It is highly effective when input values are uniformly distributed.
+
+### Intuition: "Distribute Then Sort Locally"
+
+1. Create `k` buckets.
+2. Map each value to its bucket.
+3. Sort each bucket (often with Insertion Sort).
+4. Merge buckets in order.
+
+If distribution is balanced, each bucket stays small and total work is low.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Bucket Sort (Numbers in [0, 1))"
+public void bucketSort(double[] nums) {
+    int n = nums.length;
+    if (n <= 1) {
+        return;
+    }
+
+    List<List<Double>> buckets = new ArrayList<>();
+    for (int i = 0; i < n; i++) {
+        buckets.add(new ArrayList<>());
+    }
+
+    for (double value : nums) {
+        int bucketIndex = (int) (value * n);
+        buckets.get(bucketIndex).add(value);
+    }
+
+    int index = 0;
+    for (List<Double> bucket : buckets) {
+        bucket.sort(Double::compareTo);
+        for (double value : bucket) {
+            nums[index++] = value;
+        }
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Like sorting students into grade bands first (A, B, C...), then sorting within each band.
+
+---
+
+### When to Use
+
+* Values are uniformly distributed over a known interval.
+* Need expected near-linear sorting.
+* Data can be reasonably bucketized.
+
+### Caution
+
+* If many values fall into one bucket, performance degrades toward quadratic (depending on bucket sort method).
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Excellent expected performance on uniform data. | Sensitive to input distribution. |
+| Conceptually simple pipeline. | Needs extra memory for buckets. |
+| Flexible with local sorting strategy. | Worst-case can be poor. |
+
+### Complexity Analysis
+
+| Case | Time | Space |
+| --- | --- | --- |
+| Best / Expected (uniform) | $O(n + k)$ | $O(n + k)$ |
+| Worst | $O(n^2)$ | $O(n + k)$ |
+
+`k` is number of buckets.

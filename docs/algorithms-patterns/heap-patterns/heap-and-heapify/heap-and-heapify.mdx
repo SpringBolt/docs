@@ -1,0 +1,182 @@
+---
+title: Heap and Heapify
+---
+
+### Introduction
+
+The **Heap and Heapify** pattern is used when we need fast repeated access to the minimum or maximum value.
+
+A **heap** is a complete binary tree represented as an array:
+
+* **Min-heap:** parent value <= child values.
+* **Max-heap:** parent value >= child values.
+
+**Heapify** means restoring heap property after insertion, deletion, or bulk construction.
+
+---
+
+### Intuition: "Keep Best Candidate at the Top"
+
+In an unsorted array, finding minimum repeatedly takes `O(n)` each time.
+
+A min-heap keeps smallest element at root:
+
+1. Access minimum in `O(1)`.
+2. Remove minimum in `O(log n)`.
+3. Insert new value in `O(log n)`.
+
+For `n` repeated operations, this is usually much better than rescanning the array each time.
+
+---
+
+### Core Variations
+
+#### 1. Build Heap (Bottom-Up Heapify)
+
+* Convert array into heap in linear time.
+* Start from last non-leaf node and sift down.
+
+#### 2. Insert (Sift Up)
+
+* Add value at end.
+* Swap upward until heap property holds.
+
+#### 3. Extract Top (Sift Down)
+
+* Remove root.
+* Move last element to root.
+* Push down until heap property is restored.
+
+---
+
+### Implementation Examples
+
+#### Example A: Build Min-Heap Using Heapify
+
+**Problem:** Convert integer array into min-heap in-place.
+
+```java icon="code" title="Heap and Heapify - Build Min Heap"
+public void buildMinHeap(int[] nums) {
+    int n = nums.length;
+
+    // Last non-leaf node = (n / 2) - 1
+    for (int i = (n / 2) - 1; i >= 0; i--) {
+        siftDown(nums, i, n);
+    }
+}
+
+private void siftDown(int[] nums, int index, int size) {
+    while (true) {
+        int left = 2 * index + 1;
+        int right = 2 * index + 2;
+        int smallest = index;
+
+        if (left < size && nums[left] < nums[smallest]) {
+            smallest = left;
+        }
+
+        if (right < size && nums[right] < nums[smallest]) {
+            smallest = right;
+        }
+
+        if (smallest == index) {
+            break;
+        }
+
+        int temp = nums[index];
+        nums[index] = nums[smallest];
+        nums[smallest] = temp;
+
+        index = smallest;
+    }
+}
+```
+
+#### Example B: Heap Sort (Ascending)
+
+**Problem:** Sort array in ascending order using max-heap.
+
+```java icon="code" title="Heap and Heapify - Heap Sort"
+public void heapSort(int[] nums) {
+    int n = nums.length;
+
+    // Build max-heap
+    for (int i = (n / 2) - 1; i >= 0; i--) {
+        siftDownMax(nums, i, n);
+    }
+
+    // Move max to end, then heapify remaining prefix
+    for (int end = n - 1; end > 0; end--) {
+        int temp = nums[0];
+        nums[0] = nums[end];
+        nums[end] = temp;
+
+        siftDownMax(nums, 0, end);
+    }
+}
+
+private void siftDownMax(int[] nums, int index, int size) {
+    while (true) {
+        int left = 2 * index + 1;
+        int right = 2 * index + 2;
+        int largest = index;
+
+        if (left < size && nums[left] > nums[largest]) {
+            largest = left;
+        }
+
+        if (right < size && nums[right] > nums[largest]) {
+            largest = right;
+        }
+
+        if (largest == index) {
+            break;
+        }
+
+        int temp = nums[index];
+        nums[index] = nums[largest];
+        nums[largest] = temp;
+
+        index = largest;
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of a hospital triage queue:
+
+* Most urgent case should always be selected first.
+* New patients can arrive at any time.
+* After handling one patient, queue must quickly decide next one.
+
+A heap models this dynamic priority efficiently.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Repeatedly need current minimum/maximum.
+* Frequent insertions and top removals.
+* Words like **priority queue, schedule, smallest first, largest first**.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Fast Top Access:** Peek is `O(1)`. | **No Full Order:** Internal array is not globally sorted. |
+| **Efficient Dynamic Updates:** Insert/extract in `O(log n)`. | **Index Arithmetic:** Parent/child mapping can cause bugs. |
+| **Linear Build:** Heapify from array is `O(n)`. | **Not Best for Random Lookup:** Searching arbitrary value is `O(n)`. |
+
+### Summary Table
+
+| Operation | Time | Space |
+| --- | --- | --- |
+| **Build Heap (heapify)** | $O(n)$ | $O(1)$ in-place |
+| **Insert** | $O(\log n)$ | $O(1)$ auxiliary |
+| **Extract Top** | $O(\log n)$ | $O(1)$ auxiliary |
+| **Heap Sort** | $O(n \log n)$ | $O(1)$ auxiliary |

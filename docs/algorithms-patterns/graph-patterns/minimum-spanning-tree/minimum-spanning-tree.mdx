@@ -1,0 +1,147 @@
+---
+title: Minimum Spanning Tree
+---
+
+### Introduction
+
+The **Minimum Spanning Tree (MST)** pattern connects all vertices in a weighted undirected graph with minimum total edge weight and without cycles.
+
+MST is foundational in network design, clustering, and cost-optimized infrastructure planning.
+
+### Intuition: "Connect Everything at Minimum Cost Without Cycles"
+
+A spanning tree over `V` nodes always has exactly `V - 1` edges.
+
+To minimize cost:
+
+* Prefer cheaper edges.
+* Avoid cycle-forming edges.
+
+Two standard methods:
+
+* **Kruskal:** Sort edges, add if components are different (DSU).
+* **Prim:** Grow tree from any start node using min-edge frontier.
+
+---
+
+### Core Variations
+
+#### 1. Kruskal's Algorithm
+
+* Sort all edges by weight.
+* Use DSU to skip cycle-forming edges.
+
+#### 2. Prim's Algorithm (Min-Heap)
+
+* Start from one node.
+* Repeatedly add cheapest edge connecting tree to outside node.
+
+#### 3. Maximum Spanning Tree
+
+* Same structure, reverse comparison (pick larger weights first).
+
+---
+
+### Implementation Examples
+
+#### Example A: Kruskal + DSU
+**Problem:** Return total MST cost, or `-1` if graph is disconnected.
+
+```java icon="code" title="MST - Kruskal"
+public int kruskalMST(int n, int[][] edges) {
+    Arrays.sort(edges, (a, b) -> Integer.compare(a[2], b[2]));
+
+    DSU dsu = new DSU(n);
+    int used = 0;
+    int totalCost = 0;
+
+    for (int[] edge : edges) {
+        int u = edge[0];
+        int v = edge[1];
+        int w = edge[2];
+
+        if (dsu.union(u, v)) {
+            totalCost += w;
+            used++;
+            if (used == n - 1) break;
+        }
+    }
+
+    return used == n - 1 ? totalCost : -1;
+}
+```
+
+#### Example B: Prim (Adjacency List + Min-Heap)
+
+**Problem:** Return MST cost from node `0`, or `-1` if not all nodes are reachable.
+
+```java icon="code" title="MST - Prim"
+public int primMST(int n, List<int[]>[] graph) {
+    boolean[] visited = new boolean[n];
+    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a[1], b[1]));
+
+    minHeap.offer(new int[] {0, 0}); // node, edgeCost
+    int totalCost = 0;
+    int visitedCount = 0;
+
+    while (!minHeap.isEmpty()) {
+        int[] current = minHeap.poll();
+        int node = current[0];
+        int cost = current[1];
+
+        if (visited[node]) continue;
+
+        visited[node] = true;
+        visitedCount++;
+        totalCost += cost;
+
+        for (int[] edge : graph[node]) {
+            int neighbor = edge[0];
+            int weight = edge[1];
+            if (!visited[neighbor]) {
+                minHeap.offer(new int[] {neighbor, weight});
+            }
+        }
+    }
+
+    return visitedCount == n ? totalCost : -1;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of connecting cities with fiber cables.
+
+* Every city must be connected.
+* Total cable cost should be minimum.
+* Redundant loops are unnecessary for basic connectivity.
+
+That is the MST objective.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Weighted **undirected** graph.
+* Need minimum total connection cost.
+* No requirement for redundant paths.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Global Cost Optimization:** Finds cheapest full connectivity. | **Undirected Assumption:** Standard MST does not apply directly to directed graphs. |
+| **Two Strong Templates:** Kruskal and Prim cover most settings. | **Disconnected Graph Handling Needed:** May fail to connect all nodes. |
+| **Practical Importance:** Core for network and clustering tasks. | **Not a Shortest-Path Tree:** Different objective than source shortest paths. |
+
+### Summary Table
+
+| Approach | Time | Space | Best Use |
+| --- | --- | --- | --- |
+| **Kruskal + DSU** | $O(E \log E)$ | $O(V)$ | Edge-list input, sparse graphs |
+| **Prim + Min-Heap** | $O((V+E) \log V)$ | $O(V+E)$ | Adjacency-list input |
+| **Prim + Matrix** | $O(V^2)$ | $O(V^2)$ | Dense graphs |

@@ -1,0 +1,94 @@
+---
+title: Counting Sort
+---
+
+### Introduction
+
+**Counting Sort** is a non-comparison sorting algorithm for integers in a limited range.
+
+Instead of comparing elements, it counts frequency of each value and reconstructs sorted output.
+
+When the range is small, it can run in linear time.
+
+### Intuition: "Count Frequencies, Then Rebuild"
+
+1. Find value range.
+2. Count occurrences of each number.
+3. Convert counts to prefix positions.
+4. Place numbers into output in stable order.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Counting Sort (Supports Negative Values)"
+public int[] countingSort(int[] nums) {
+    if (nums == null || nums.length == 0) {
+        return nums;
+    }
+
+    int min = nums[0];
+    int max = nums[0];
+
+    for (int num : nums) {
+        min = Math.min(min, num);
+        max = Math.max(max, num);
+    }
+
+    int range = max - min + 1;
+    int[] count = new int[range];
+
+    for (int num : nums) {
+        count[num - min]++;
+    }
+
+    for (int i = 1; i < range; i++) {
+        count[i] += count[i - 1];
+    }
+
+    int[] output = new int[nums.length];
+    for (int i = nums.length - 1; i >= 0; i--) {
+        int value = nums[i];
+        int index = value - min;
+        output[count[index] - 1] = value;
+        count[index]--;
+    }
+
+    return output;
+}
+```
+
+---
+
+### Real-World Analogy
+
+If exam scores are between 0 and 100, count how many students got each score, then list scores from smallest to largest using the counts.
+
+---
+
+### When to Use
+
+* Integers with small known range.
+* Need stable sorting and linear-like speed.
+* Preprocessing for frequency-heavy tasks.
+
+### Why Not for Large Value Ranges
+
+* Memory depends on range `k`, not just element count `n`.
+* If `k` is huge, it becomes inefficient.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Can be faster than comparison sorts. | Requires bounded integer range. |
+| Stable (with backward placement). | Extra memory can be large if range is large. |
+| Simple frequency-based idea. | Not directly for floating points or arbitrary objects. |
+
+### Complexity Analysis
+
+Let `n` be number of elements and `k` be value range size.
+
+| Case | Time | Space |
+| --- | --- | --- |
+| All cases | $O(n + k)$ | $O(n + k)$ |

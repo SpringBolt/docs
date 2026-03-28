@@ -1,0 +1,140 @@
+---
+title: Linked List Reversal Pattern
+---
+
+### Introduction
+
+The **Linked List Reversal** pattern rewires `next` pointers in-place using the classic trio:
+
+* `prev`
+* `curr`
+* `nextNode`
+
+It is a base template for full reverse, sublist reverse, and k-group reverse.
+
+### Intuition: "Reverse One Arrow at a Time"
+
+Each node initially points forward. Reversal flips pointer direction incrementally while preserving access to remaining nodes.
+
+The essential safety step is storing `nextNode = curr.next` before changing `curr.next`.
+
+---
+
+### Core Variations
+
+#### 1. Full List Reversal
+* Reverse every link until `curr == null`.
+
+#### 2. Sublist Reversal (`left..right`)
+* Walk to sublist boundary.
+* Reverse only the bounded segment.
+* Reattach front and tail pieces.
+
+#### 3. K-Group Reversal
+* Reverse in chunks of `k`.
+* Keep leftover nodes unchanged.
+
+---
+
+### Implementation Examples
+
+#### Example A: Reverse Entire List
+
+**Problem:** Reverse a singly linked list and return the new head.
+
+```java icon="code" title="Reversal - Reverse List"
+public ListNode reverseList(ListNode head) {
+    ListNode prev = null;
+    ListNode curr = head;
+
+    while (curr != null) {
+        ListNode nextNode = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = nextNode;
+    }
+
+    return prev;
+}
+```
+
+#### Example B: Reverse Sublist (Between Left and Right)
+
+**Problem:** Reverse list nodes from position `left` to `right`.
+
+```java icon="code" title="Reversal - Reverse Linked List II"
+public ListNode reverseBetween(ListNode head, int left, int right) {
+    if (head == null || left == right) return head;
+
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+    ListNode prev = dummy;
+
+    for (int i = 1; i < left; i++) {
+        prev = prev.next;
+    }
+
+    ListNode curr = prev.next;
+    for (int i = 0; i < right - left; i++) {
+        ListNode nextNode = curr.next;
+        curr.next = nextNode.next;
+        nextNode.next = prev.next;
+        prev.next = nextNode;
+    }
+
+    return dummy.next;
+}
+```
+
+#### Example C: Reverse Nodes in K-Group
+
+**Problem:** Reverse nodes in groups of size `k`.
+
+```java icon="code" title="Reversal - Reverse Nodes in K Group"
+public ListNode reverseKGroup(ListNode head, int k) {
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+    ListNode groupPrev = dummy;
+
+    while (true) {
+        ListNode kth = getKthNode(groupPrev, k);
+        if (kth == null) break;
+
+        ListNode groupNext = kth.next;
+        ListNode prev = groupNext;
+        ListNode curr = groupPrev.next;
+
+        while (curr != groupNext) {
+            ListNode nextNode = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = nextNode;
+        }
+
+        ListNode oldGroupStart = groupPrev.next;
+        groupPrev.next = kth;
+        groupPrev = oldGroupStart;
+    }
+
+    return dummy.next;
+}
+
+private ListNode getKthNode(ListNode start, int k) {
+    ListNode curr = start;
+    while (curr != null && k > 0) {
+        curr = curr.next;
+        k--;
+    }
+    return curr;
+}
+```
+
+---
+
+### Complexity Analysis
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| **Full Reverse** | $O(n)$ | $O(1)$ |
+| **Sublist Reverse** | $O(n)$ | $O(1)$ |
+| **K-Group Reverse** | $O(n)$ | $O(1)$ |

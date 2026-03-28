@@ -1,0 +1,180 @@
+---
+title: Expression Evaluation
+---
+
+### Introduction
+
+The **Expression Evaluation** stack pattern evaluates arithmetic expressions by respecting operator precedence and parentheses.
+
+Instead of building a full parse tree, we can process expression tokens using stacks for operands and operators.
+
+This keeps the implementation iterative and efficient.
+
+### Intuition: "Resolve Higher Priority First"
+
+In `3 + 2 * 4`, multiplication should happen before addition.
+
+As we scan tokens:
+
+* Numbers are pushed to value stack.
+* Operators are pushed to operator stack.
+* Before pushing a new operator, resolve all higher-or-equal precedence operators already on top.
+
+For parentheses, evaluate until matching `'('` is found.
+
+---
+
+### Core Variations
+
+#### 1. Basic Calculator (No Parentheses)
+
+* Handle `+`, `-`, `*`, `/`.
+* Use precedence checks.
+
+#### 2. Calculator with Parentheses
+
+* Push `'('` as boundary marker.
+* Evaluate until boundary on `')'`.
+
+#### 3. Reverse Polish Notation (RPN)
+
+* Single stack solution.
+* Evaluate immediately when operator arrives.
+
+---
+
+### Implementation Examples
+
+#### Example A: Infix Expression Evaluation with Parentheses
+**Problem:** Evaluate expression containing non-negative integers, `+`, `-`, `*`, `/`, and parentheses.
+
+```java icon="code" title="Stack - Infix Expression Evaluation"
+public int evaluate(String s) {
+    Deque<Integer> values = new ArrayDeque<>();
+    Deque<Character> operators = new ArrayDeque<>();
+
+    int i = 0;
+    while (i < s.length()) {
+        char ch = s.charAt(i);
+
+        if (ch == ' ') {
+            i++;
+            continue;
+        }
+
+        if (Character.isDigit(ch)) {
+            int number = 0;
+            while (i < s.length() && Character.isDigit(s.charAt(i))) {
+                number = number * 10 + (s.charAt(i) - '0');
+                i++;
+            }
+            values.push(number);
+            continue;
+        }
+
+        if (ch == '(') {
+            operators.push(ch);
+        } else if (ch == ')') {
+            while (!operators.isEmpty() && operators.peek() != '(') {
+                applyTopOperator(values, operators);
+            }
+            operators.pop(); // remove '('
+        } else {
+            while (!operators.isEmpty() && operators.peek() != '(' &&
+                   precedence(operators.peek()) >= precedence(ch)) {
+                applyTopOperator(values, operators);
+            }
+            operators.push(ch);
+        }
+
+        i++;
+    }
+
+    while (!operators.isEmpty()) {
+        applyTopOperator(values, operators);
+    }
+
+    return values.pop();
+}
+
+private int precedence(char op) {
+    if (op == '+' || op == '-') return 1;
+    if (op == '*' || op == '/') return 2;
+    return 0;
+}
+
+private void applyTopOperator(Deque<Integer> values, Deque<Character> operators) {
+    int b = values.pop();
+    int a = values.pop();
+    char op = operators.pop();
+
+    if (op == '+') values.push(a + b);
+    else if (op == '-') values.push(a - b);
+    else if (op == '*') values.push(a * b);
+    else values.push(a / b);
+}
+```
+
+#### Example B: Evaluate Reverse Polish Notation
+
+**Problem:** Evaluate tokenized postfix expression.
+
+```java icon="code" title="Stack - Evaluate Reverse Polish Notation"
+public int evalRPN(String[] tokens) {
+    Deque<Integer> stack = new ArrayDeque<>();
+
+    for (String token : tokens) {
+        if (token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")) {
+            int b = stack.pop();
+            int a = stack.pop();
+
+            if (token.equals("+")) stack.push(a + b);
+            else if (token.equals("-")) stack.push(a - b);
+            else if (token.equals("*")) stack.push(a * b);
+            else stack.push(a / b);
+        } else {
+            stack.push(Integer.parseInt(token));
+        }
+    }
+
+    return stack.pop();
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of a calculator app:
+
+* Digits are typed and buffered.
+* Operators are queued with precedence rules.
+* Parentheses force immediate resolution of a sub-expression.
+
+The app is effectively using stack-like internal state to decide when to compute.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Arithmetic parser with precedence handling.
+* Nested expressions with parentheses.
+* Need iterative parser instead of recursive descent.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Handles Precedence Correctly:** Prevents invalid left-to-right evaluation. | **More Moving Parts:** Requires careful operator/value stack coordination. |
+| **Extensible:** Can add more operators and rules. | **Token Parsing Complexity:** Spaces, unary operators, and negatives need special handling. |
+| **Iterative and Efficient:** No explicit recursion required. | **Error Handling:** Invalid expressions need defensive checks. |
+
+### Summary Table
+
+| Variant | Data Structures | Time | Space |
+| --- | --- | --- | --- |
+| **Infix with Parentheses** | Value stack + operator stack | $O(n)$ | $O(n)$ |
+| **Basic Calculator** | Running values + sign stack | $O(n)$ | $O(n)$ |
+| **RPN Evaluation** | Single value stack | $O(n)$ | $O(n)$ |

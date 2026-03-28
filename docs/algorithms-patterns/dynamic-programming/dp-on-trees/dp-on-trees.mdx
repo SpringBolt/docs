@@ -1,0 +1,95 @@
+---
+title: Dynamic Programming - DP on Trees
+---
+
+### Introduction
+
+**DP on Trees** computes values for each subtree and combines child results.
+
+It is used when optimal answer depends on subtree decisions and parent-child constraints.
+
+### Intuition
+
+Perform DFS and return structured information from each node.
+
+Common pattern: each node returns multiple states (e.g., include node / exclude node).
+
+---
+
+### Core Variations
+
+#### 1. Include / Exclude State DP
+
+#### 2. Rerooting DP
+
+#### 3. Tree Diameter / Longest Path DP
+
+---
+
+### Implementation Examples
+
+#### Example A: House Robber III (Include/Exclude)
+
+```java icon="code" title="DP on Trees - Include/Exclude"
+public int rob(TreeNode root) {
+    int[] result = dfs(root);
+    return Math.max(result[0], result[1]);
+}
+
+// return [excludeCurrent, includeCurrent]
+private int[] dfs(TreeNode node) {
+    if (node == null) return new int[] {0, 0};
+
+    int[] left = dfs(node.left);
+    int[] right = dfs(node.right);
+
+    int include = node.val + left[0] + right[0];
+    int exclude = Math.max(left[0], left[1]) + Math.max(right[0], right[1]);
+
+    return new int[] {exclude, include};
+}
+```
+
+#### Example B: Binary Tree Diameter
+
+```java icon="code" title="DP on Trees - Diameter"
+private int diameter = 0;
+
+public int diameterOfBinaryTree(TreeNode root) {
+    height(root);
+    return diameter;
+}
+
+private int height(TreeNode node) {
+    if (node == null) return 0;
+
+    int left = height(node.left);
+    int right = height(node.right);
+
+    diameter = Math.max(diameter, left + right);
+    return 1 + Math.max(left, right);
+}
+```
+
+---
+
+### When to Use
+
+* Problem defined on trees with subtree dependency.
+* Need answer at root after combining child states.
+* Include/exclude and path aggregation constraints.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Natural fit for hierarchical structures. | State design can become complex quickly. |
+| Single DFS can compute global answer. | Recursion depth issues on skewed trees. |
+
+### Summary Table
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| Include/Exclude Tree DP | $O(n)$ | $O(h)$ |
+| Diameter / Longest Path | $O(n)$ | $O(h)$ |
+| Rerooting DP | $O(n)$ to $O(n \log n)$ | $O(n)$ |

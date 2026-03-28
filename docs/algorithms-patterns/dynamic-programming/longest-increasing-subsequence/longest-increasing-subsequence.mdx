@@ -1,0 +1,98 @@
+---
+title: Dynamic Programming - Longest Increasing Subsequence
+---
+
+### Introduction
+
+The **LIS Pattern** finds the longest strictly increasing subsequence in an array.
+
+Classic DP defines `dp[i]` = LIS ending at index `i`.
+
+### Intuition
+
+For each index `i`, look back at all `j < i`.
+If `nums[j] < nums[i]`, we can extend subsequence from `j` to `i`.
+
+---
+
+### Core Variations
+
+#### 1. O(n^2) DP LIS
+
+#### 2. O(n log n) Binary Search LIS
+
+#### 3. Number of LIS / Mountain Array variants
+
+---
+
+### Implementation Examples
+
+#### Example A: O(n^2) DP LIS
+
+```java icon="code" title="DP LIS - O(n^2)"
+public int lengthOfLIS(int[] nums) {
+    int n = nums.length;
+    int[] dp = new int[n];
+    Arrays.fill(dp, 1);
+
+    int answer = 1;
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (nums[j] < nums[i]) {
+                dp[i] = Math.max(dp[i], dp[j] + 1);
+            }
+        }
+        answer = Math.max(answer, dp[i]);
+    }
+
+    return answer;
+}
+```
+
+#### Example B: O(n log n) Patience Style
+
+```java icon="code" title="DP LIS - O(n log n)"
+public int lengthOfLISFast(int[] nums) {
+    List<Integer> tails = new ArrayList<>();
+
+    for (int num : nums) {
+        int left = 0;
+        int right = tails.size();
+
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+            if (tails.get(mid) < num) left = mid + 1;
+            else right = mid;
+        }
+
+        if (left == tails.size()) tails.add(num);
+        else tails.set(left, num);
+    }
+
+    return tails.size();
+}
+```
+
+---
+
+### When to Use
+
+* "Longest increasing/decreasing subsequence".
+* Ordering problems with non-contiguous picks.
+* Need optimization over previous indices.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Classic DP with clear transition. | O(n^2) can be slow for large n. |
+| Fast O(n log n) variant available. | Fast variant is harder to reason about. |
+
+### Summary Table
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| DP LIS | $O(n^2)$ | $O(n)$ |
+| Binary Search LIS | $O(n \log n)$ | $O(n)$ |
+| Number of LIS | $O(n^2)$ | $O(n)$ |

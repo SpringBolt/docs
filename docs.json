@@ -23,7 +23,7 @@
         ]
       },
       {
-        "tab" : "Core Java",
+        "tab": "Core Java",
         "groups": [
           {
             "group": "Core Java",
@@ -37,7 +37,7 @@
             "group": "Object Oriented Programming",
             "pages": [
               "docs/core-java/oops-concepts/classes-and-objects/classes-and-objects",
-              "docs/core-java/oops-concepts/enum/enum",    
+              "docs/core-java/oops-concepts/enum/enum",
               "docs/core-java/oops-concepts/encapsulation/encapsulation",
               "docs/core-java/oops-concepts/inheritance/inheritance",
               "docs/core-java/oops-concepts/polymorphism/polymorphism",
@@ -110,6 +110,158 @@
         ]
       },
       {
+        "tab": "Algorithm Patterns",
+        "groups": [
+          {
+            "group": "Linear Data Structure Patterns",
+            "pages": [
+              "docs/algorithms-patterns/linear-data-structures/two-pointers/two-pointers",
+              "docs/algorithms-patterns/linear-data-structures/fast-and-slow-pointers/fast-and-slow-pointers",
+              "docs/algorithms-patterns/linear-data-structures/sliding-window/sliding-window",
+              "docs/algorithms-patterns/linear-data-structures/prefix-sum/prefix-sum"
+            ]
+          },
+          {
+            "group": "Searching Patterns",
+            "pages": [
+              "docs/algorithms-patterns/searching/linear-search/linear-search",
+              "docs/algorithms-patterns/searching/binary-search/binary-search"
+            ]
+          },
+          {
+            "group": "Sorting Patterns",
+            "pages": [
+              "docs/algorithms-patterns/sorting-patterns/sorting-patterns/sorting-patterns",
+              "docs/algorithms-patterns/sorting-patterns/bubble-sort/bubble-sort",
+              "docs/algorithms-patterns/sorting-patterns/selection-sort/selection-sort",
+              "docs/algorithms-patterns/sorting-patterns/insertion-sort/insertion-sort",
+              "docs/algorithms-patterns/sorting-patterns/shell-sort/shell-sort",
+              "docs/algorithms-patterns/sorting-patterns/merge-sort/merge-sort",
+              "docs/algorithms-patterns/sorting-patterns/quick-sort/quick-sort",
+              "docs/algorithms-patterns/sorting-patterns/heap-sort/heap-sort",
+              "docs/algorithms-patterns/sorting-patterns/counting-sort/counting-sort",
+              "docs/algorithms-patterns/sorting-patterns/radix-sort/radix-sort",
+              "docs/algorithms-patterns/sorting-patterns/bucket-sort/bucket-sort"
+            ]
+          },
+          {
+            "group": "Stack Patterns",
+            "pages": [
+              "docs/algorithms-patterns/stack-patterns/balanced-parentheses/balanced-parentheses",
+              "docs/algorithms-patterns/stack-patterns/min-stack/min-stack",
+              "docs/algorithms-patterns/stack-patterns/monotonic-stack/monotonic-stack",
+              "docs/algorithms-patterns/stack-patterns/expression-evaluation/expression-evaluation"
+            ]
+          },
+          {
+            "group": "Queue Patterns",
+            "pages": [
+              "docs/algorithms-patterns/queue-patterns/queue-using-two-stacks/queue-using-two-stacks",
+              "docs/algorithms-patterns/queue-patterns/circular-queue/circular-queue",
+              "docs/algorithms-patterns/queue-patterns/monotonic-queue/monotonic-queue"
+            ]
+          },
+          {
+            "group": "Heap Patterns",
+            "pages": [
+              "docs/algorithms-patterns/heap-patterns/heap-patterns",
+              "docs/algorithms-patterns/heap-patterns/heap-and-heapify/heap-and-heapify",
+              "docs/algorithms-patterns/heap-patterns/top-k-elements/top-k-elements"
+            ]
+          },
+          {
+            "group": "Interval Patterns",
+            "pages": [
+              "docs/algorithms-patterns/interval-patterns/interval-patterns",
+              "docs/algorithms-patterns/interval-patterns/merge-intervals/merge-intervals",
+              "docs/algorithms-patterns/interval-patterns/interval-intersection/interval-intersection",
+              "docs/algorithms-patterns/interval-patterns/meeting-rooms/meeting-rooms"
+            ]
+          },
+          {
+            "group": "Linked List Patterns",
+            "pages": [
+              "docs/algorithms-patterns/linked-list-patterns/linked-list-patterns/linked-list-patterns",
+              "docs/algorithms-patterns/linked-list-patterns/dummy-node-technique/dummy-node-technique",
+              "docs/algorithms-patterns/linked-list-patterns/linked-list-reversal/linked-list-reversal",
+              "docs/algorithms-patterns/linked-list-patterns/two-pointer-gap/two-pointer-gap",
+              "docs/algorithms-patterns/linked-list-patterns/merge-pattern/merge-pattern",
+              "docs/algorithms-patterns/linked-list-patterns/cyclic-linked-list/cyclic-linked-list",
+              "docs/algorithms-patterns/linked-list-patterns/split-and-stitch/split-and-stitch"
+            ]
+          },
+          {
+            "group": "Tree Traversal Patterns",
+            "pages": [
+              "docs/algorithms-patterns/tree-traversal/depth-first-search/depth-first-search",
+              "docs/algorithms-patterns/tree-traversal/breadth-first-search/breadth-first-search",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/binary-tree-patterns",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/recursive-dfs-traversal/recursive-dfs-traversal",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/iterative-dfs-traversal/iterative-dfs-traversal",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/bfs-level-order-traversal/bfs-level-order-traversal",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/maximum-depth/maximum-depth",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/path-sum-root-to-leaf/path-sum-root-to-leaf",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/diameter-of-binary-tree/diameter-of-binary-tree",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/validate-bst/validate-bst",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/lowest-common-ancestor/lowest-common-ancestor",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/kth-smallest-in-bst/kth-smallest-in-bst",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/build-tree-from-traversals/build-tree-from-traversals",
+              "docs/algorithms-patterns/tree-traversal/binary-tree-patterns/serialize-and-deserialize/serialize-and-deserialize"
+            ]
+          },
+          {
+            "group": "Graph Patterns",
+            "pages": [
+              "docs/algorithms-patterns/graph-patterns/graph-patterns",
+              "docs/algorithms-patterns/graph-patterns/topological-sort/topological-sort",
+              "docs/algorithms-patterns/graph-patterns/union-find/union-find",
+              "docs/algorithms-patterns/graph-patterns/dijkstra-shortest-path/dijkstra-shortest-path",
+              "docs/algorithms-patterns/graph-patterns/minimum-spanning-tree/minimum-spanning-tree",
+              "docs/algorithms-patterns/graph-patterns/strongly-connected-components/strongly-connected-components",
+              "docs/algorithms-patterns/graph-patterns/bipartite-graph-check/bipartite-graph-check",
+              "docs/algorithms-patterns/graph-patterns/bridges-and-articulation-points/bridges-and-articulation-points"
+            ]
+          },
+          {
+            "group": "Backtracking Patterns",
+            "pages": [
+              "docs/algorithms-patterns/backtracking/backtracking-patterns",
+              "docs/algorithms-patterns/backtracking/subsets/subsets",
+              "docs/algorithms-patterns/backtracking/subsets-ii/subsets-ii",
+              "docs/algorithms-patterns/backtracking/permutations/permutations",
+              "docs/algorithms-patterns/backtracking/combination-sum/combination-sum",
+              "docs/algorithms-patterns/backtracking/combination-sum-ii/combination-sum-ii",
+              "docs/algorithms-patterns/backtracking/palindrome-partitioning/palindrome-partitioning",
+              "docs/algorithms-patterns/backtracking/letter-combinations-phone-number/letter-combinations-phone-number",
+              "docs/algorithms-patterns/backtracking/word-search/word-search",
+              "docs/algorithms-patterns/backtracking/n-queens/n-queens",
+              "docs/algorithms-patterns/backtracking/sudoku-solver/sudoku-solver"
+            ]
+          },
+          {
+            "group": "Dynamic Programming Patterns",
+            "pages": [
+              "docs/algorithms-patterns/dynamic-programming/fibonacci-pattern/fibonacci-pattern",
+              "docs/algorithms-patterns/dynamic-programming/zero-one-knapsack/zero-one-knapsack",
+              "docs/algorithms-patterns/dynamic-programming/unbounded-knapsack/unbounded-knapsack",
+              "docs/algorithms-patterns/dynamic-programming/longest-common-subsequence/longest-common-subsequence",
+              "docs/algorithms-patterns/dynamic-programming/longest-increasing-subsequence/longest-increasing-subsequence",
+              "docs/algorithms-patterns/dynamic-programming/interval-dp/interval-dp",
+              "docs/algorithms-patterns/dynamic-programming/dp-on-trees/dp-on-trees",
+              "docs/algorithms-patterns/dynamic-programming/bitmask-dp/bitmask-dp",
+              "docs/algorithms-patterns/dynamic-programming/digit-dp/digit-dp"
+            ]
+          },
+          {
+            "group": "K-Way Merge Patterns",
+            "pages": [
+              "docs/algorithms-patterns/k-way-merge/k-way-merge/k-way-merge",
+              "docs/algorithms-patterns/k-way-merge/top-k-smallest-pairs/top-k-smallest-pairs"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "J2EE Patterns",
         "groups": [
           {
@@ -177,15 +329,15 @@
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "errors": {
     "404": {
@@ -197,15 +349,15 @@
   "footer": {
     "socials": {
       "github": "https://github.com/jitenraj",
-      "x":"https://x.com/jitenrajx",
+      "x": "https://x.com/jitenrajx",
       "website": "https://jitenraj.github.io/"
     }
   },
   "seo": {
     "metatags": {
-      "canonical": "https://springbolt.mintlify.app", 
+      "canonical": "https://springbolt.mintlify.app",
       "og:locale": "en_US",
       "keywords": "java, spring boot, algorithms, design patterns, coding patterns, oops, dsa, backend development"
     }
-}
+  }
 }

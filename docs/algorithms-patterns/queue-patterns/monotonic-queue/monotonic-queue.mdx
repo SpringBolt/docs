@@ -1,0 +1,145 @@
+---
+title: Monotonic Queue
+---
+
+### Introduction
+
+The **Monotonic Queue** pattern is used when we need fast min/max queries over a sliding window.
+
+A normal queue preserves insertion order but does not help with max/min retrieval.
+
+A monotonic queue maintains elements in sorted order (usually decreasing for maximum), so window maximum can be fetched in **$O(1)$**.
+
+### Intuition: "Keep Window Candidates Ordered"
+
+For sliding window maximum:
+
+* Remove smaller elements from queue tail before adding new value.
+* Front always holds current window maximum.
+* Remove front when it goes out of current window range.
+
+Each index is inserted once and removed once, giving linear complexity.
+
+---
+
+### Core Variations
+
+#### 1. Sliding Window Maximum
+
+* Decreasing deque.
+* Front = maximum.
+
+#### 2. Sliding Window Minimum
+
+* Increasing deque.
+* Front = minimum.
+
+#### 3. Constraint Optimization in DP
+
+* Keep best candidate states in monotonic order.
+* Common in optimized transition equations.
+
+---
+
+### Implementation Examples
+
+#### Example A: Sliding Window Maximum
+**Problem:** Given array `nums` and window size `k`, return max of each window.
+
+```java icon="code" title="Queue - Sliding Window Maximum"
+public int[] maxSlidingWindow(int[] nums, int k) {
+    int n = nums.length;
+    if (n == 0 || k == 0) return new int[0];
+
+    int[] result = new int[n - k + 1];
+    Deque<Integer> deque = new ArrayDeque<>(); // stores indices, values decreasing
+
+    for (int i = 0; i < n; i++) {
+        while (!deque.isEmpty() && deque.peekFirst() <= i - k) {
+            deque.pollFirst();
+        }
+
+        while (!deque.isEmpty() && nums[deque.peekLast()] <= nums[i]) {
+            deque.pollLast();
+        }
+
+        deque.offerLast(i);
+
+        if (i >= k - 1) {
+            result[i - k + 1] = nums[deque.peekFirst()];
+        }
+    }
+
+    return result;
+}
+```
+
+#### Example B: Sliding Window Minimum
+
+**Problem:** Return minimum value for each window of size `k`.
+
+```java icon="code" title="Queue - Sliding Window Minimum"
+public int[] minSlidingWindow(int[] nums, int k) {
+    int n = nums.length;
+    if (n == 0 || k == 0) return new int[0];
+
+    int[] result = new int[n - k + 1];
+    Deque<Integer> deque = new ArrayDeque<>(); // stores indices, values increasing
+
+    for (int i = 0; i < n; i++) {
+        while (!deque.isEmpty() && deque.peekFirst() <= i - k) {
+            deque.pollFirst();
+        }
+
+        while (!deque.isEmpty() && nums[deque.peekLast()] >= nums[i]) {
+            deque.pollLast();
+        }
+
+        deque.offerLast(i);
+
+        if (i >= k - 1) {
+            result[i - k + 1] = nums[deque.peekFirst()];
+        }
+    }
+
+    return result;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Imagine tracking the hottest temperature in the last 7 days.
+
+* Old days leave the window and are discarded.
+* New day enters.
+* Less useful cooler days behind a hotter day are removed because they can never become max while hotter day is in range.
+
+The queue stores only useful candidates.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Sliding window with min/max query.
+* Need better than `O(nk)` brute force.
+* Continuous range statistics over stream-like input.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Linear Time for Window Extrema:** Efficient for large windows. | **Less Intuitive:** Candidate removal logic takes practice. |
+| **Deterministic Operations:** Each index enters/leaves once. | **Index-Based Bookkeeping:** Easy off-by-one mistakes. |
+| **Great for Real-Time Streams:** Works incrementally. | **Specific Use Case:** Mostly for window extrema, not general queries. |
+
+### Summary Table
+
+| Variant | Queue Order | Time | Space |
+| --- | --- | --- | --- |
+| **Window Maximum** | Decreasing values | $O(n)$ | $O(k)$ |
+| **Window Minimum** | Increasing values | $O(n)$ | $O(k)$ |
+| **DP Candidate Queue** | Depends on transition | $O(n)$ | $O(n)$ |

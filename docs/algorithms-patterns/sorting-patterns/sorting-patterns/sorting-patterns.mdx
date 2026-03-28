@@ -1,0 +1,83 @@
+---
+title: Sorting Patterns
+---
+
+### Introduction
+
+**Sorting Patterns** are foundational techniques for arranging data in increasing or decreasing order.
+
+Different sorting algorithms optimize for different constraints:
+
+* small vs large input size,
+* nearly sorted vs random input,
+* memory usage limits,
+* value range constraints,
+* stability requirements.
+
+There is no single best sorting algorithm for every case.
+
+---
+
+### Core Sorting Families
+
+#### 1. Comparison-Based Sorting
+
+* Compare two elements to decide order.
+* Lower bound is **$O(n \log n)$** for general sorting.
+* Examples: Merge Sort, Quick Sort, Heap Sort.
+
+#### 2. Exchange / Incremental Sorting
+
+* Build order via swaps or shifts.
+* Very useful for small or nearly sorted arrays.
+* Examples: Bubble Sort, Selection Sort, Insertion Sort, Shell Sort.
+
+#### 3. Non-Comparison Sorting
+
+* Use value properties (digits/range/buckets) instead of pairwise comparisons.
+* Can beat **$O(n \log n)$** under right constraints.
+* Examples: Counting Sort, Radix Sort, Bucket Sort.
+
+---
+
+### Choosing the Right Sorting Pattern
+
+| Situation | Good Choice | Why |
+| --- | --- | --- |
+| Data is almost sorted | **Insertion Sort** | Fast in practice with low movement. |
+| Need guaranteed $O(n \log n)$ | **Merge Sort / Heap Sort** | Predictable worst-case performance. |
+| Average-case speed on arrays | **Quick Sort** | Cache-friendly and typically very fast. |
+| Integers in small known range | **Counting Sort** | Linear-time counting approach. |
+| Fixed-length numeric keys | **Radix Sort** | Sorts by digits with stable passes. |
+| Values uniformly distributed | **Bucket Sort** | Near-linear expected performance. |
+| Tiny arrays / educational | **Bubble / Selection** | Simple to implement and reason about. |
+
+---
+
+### Included Patterns
+
+* [Bubble Sort](/docs/algorithms-patterns/sorting-patterns/bubble-sort/bubble-sort)
+* [Selection Sort](/docs/algorithms-patterns/sorting-patterns/selection-sort/selection-sort)
+* [Insertion Sort](/docs/algorithms-patterns/sorting-patterns/insertion-sort/insertion-sort)
+* [Merge Sort](/docs/algorithms-patterns/sorting-patterns/merge-sort/merge-sort)
+* [Quick Sort](/docs/algorithms-patterns/sorting-patterns/quick-sort/quick-sort)
+* [Heap Sort](/docs/algorithms-patterns/sorting-patterns/heap-sort/heap-sort)
+* [Counting Sort](/docs/algorithms-patterns/sorting-patterns/counting-sort/counting-sort)
+* [Radix Sort](/docs/algorithms-patterns/sorting-patterns/radix-sort/radix-sort)
+* [Bucket Sort](/docs/algorithms-patterns/sorting-patterns/bucket-sort/bucket-sort)
+* [Shell Sort](/docs/algorithms-patterns/sorting-patterns/shell-sort/shell-sort)
+
+### Summary Table
+
+| Algorithm | Best / Average / Worst Time | Extra Space | Stable | Typical Use |
+| --- | --- | --- | --- | --- |
+| Bubble Sort | $O(n)$ / $O(n^2)$ / $O(n^2)$ | $O(1)$ | Yes | Educational, tiny datasets |
+| Selection Sort | $O(n^2)$ / $O(n^2)$ / $O(n^2)$ | $O(1)$ | No | Minimize number of swaps |
+| Insertion Sort | $O(n)$ / $O(n^2)$ / $O(n^2)$ | $O(1)$ | Yes | Nearly sorted arrays |
+| Merge Sort | $O(n \log n)$ / $O(n \log n)$ / $O(n \log n)$ | $O(n)$ | Yes | Stable, predictable sorting |
+| Quick Sort | $O(n \log n)$ / $O(n \log n)$ / $O(n^2)$ | $O(\log n)$ | No | Fast general-purpose array sort |
+| Heap Sort | $O(n \log n)$ / $O(n \log n)$ / $O(n \log n)$ | $O(1)$ | No | In-place with guaranteed bound |
+| Counting Sort | $O(n + k)$ | $O(n + k)$ | Yes | Integers in bounded range |
+| Radix Sort | $O(d(n + b))$ | $O(n + b)$ | Yes (with stable pass) | Fixed-length integers/strings |
+| Bucket Sort | Expected $O(n + k)$, worst $O(n^2)$ | $O(n + k)$ | Depends | Uniformly distributed real numbers |
+| Shell Sort | Depends on gaps; commonly around $O(n^{1.3} \text{ to } n^{1.5})$ | $O(1)$ | No | Faster in-place alternative to insertion |

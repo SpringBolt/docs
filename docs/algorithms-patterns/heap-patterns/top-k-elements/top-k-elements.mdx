@@ -1,0 +1,138 @@
+---
+title: Top K Elements
+---
+
+### Introduction
+
+The **Top K Elements** pattern uses a heap (priority queue) to efficiently keep track of the k largest or k smallest elements.
+
+When we only need a small subset (`k`) from large data (`n`), sorting everything is often unnecessary.
+
+A heap keeps the best candidates dynamically with **$O(n \log k)$** performance.
+
+### Intuition: "Keep Only K Best Candidates"
+
+To find k largest elements:
+
+* Maintain a **min-heap** of size at most `k`.
+* Push each element.
+* If heap size exceeds `k`, pop smallest.
+
+At the end, heap contains the k largest values.
+
+---
+
+### Core Variations
+
+#### 1. K Largest Elements
+
+* Use min-heap of size `k`.
+* Remove smallest when size exceeds `k`.
+
+#### 2. K Smallest Elements
+
+* Use max-heap of size `k`.
+* Remove largest when size exceeds `k`.
+
+#### 3. Frequency-Based Top K
+
+* Count frequency with map.
+* Use heap over `(value, frequency)` pairs.
+
+---
+
+### Implementation Examples
+
+#### Example A: K Largest Elements
+**Problem:** Return k largest values from an array.
+
+```java icon="code" title="Top K Elements - K Largest Values"
+public int[] topKLargest(int[] nums, int k) {
+    PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+
+    for (int num : nums) {
+        minHeap.offer(num);
+
+        if (minHeap.size() > k) {
+            minHeap.poll();
+        }
+    }
+
+    int[] result = new int[minHeap.size()];
+    int index = 0;
+    for (int num : minHeap) {
+        result[index++] = num;
+    }
+
+    return result;
+}
+```
+
+#### Example B: Top K Frequent Elements
+
+**Problem:** Return `k` most frequent numbers in an array.
+
+```java icon="code" title="Top K Elements - Top K Frequent"
+public int[] topKFrequent(int[] nums, int k) {
+    Map<Integer, Integer> frequencyMap = new HashMap<>();
+    for (int num : nums) {
+        frequencyMap.put(num, frequencyMap.getOrDefault(num, 0) + 1);
+    }
+
+    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a[1], b[1]));
+
+    for (Map.Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
+        minHeap.offer(new int[] {entry.getKey(), entry.getValue()});
+
+        if (minHeap.size() > k) {
+            minHeap.poll();
+        }
+    }
+
+    int[] result = new int[minHeap.size()];
+    int i = 0;
+    while (!minHeap.isEmpty()) {
+        result[i++] = minHeap.poll()[0];
+    }
+
+    return result;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of maintaining a live leaderboard of top `k` scores.
+
+* New scores keep arriving.
+* You do not sort all historical scores again.
+* You keep only top contenders and remove low performers immediately.
+
+That is exactly heap-based Top K processing.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* **Top K / K largest / K smallest / K frequent**.
+* Need partial ranking, not full sorting.
+* Streaming or continuously arriving data.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Efficient for Small K:** Better than full sort when `k << n`. | **Heap Overhead:** Constant factors higher than simple scans. |
+| **Streaming Friendly:** Works with online data input. | **Ordering:** Heap output is not fully sorted unless processed further. |
+| **Flexible:** Works with custom comparators (frequency, distance, score). | **Comparator Bugs:** Easy to invert min/max logic incorrectly. |
+
+### Summary Table
+
+| Variant | Heap Type | Time | Space |
+| --- | --- | --- | --- |
+| **K Largest** | Min-heap size `k` | $O(n \log k)$ | $O(k)$ |
+| **K Smallest** | Max-heap size `k` | $O(n \log k)$ | $O(k)$ |
+| **Top K Frequent** | Min-heap on frequency | $O(n \log k)$ | $O(n)$ |

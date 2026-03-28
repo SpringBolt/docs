@@ -1,0 +1,126 @@
+---
+title: Dijkstra Shortest Path
+---
+
+### Introduction
+
+The **Dijkstra Shortest Path** pattern finds minimum distance from a source node to every reachable node in a graph with **non-negative edge weights**.
+
+It is widely used for route planning, network latency minimization, and weighted dependency traversal.
+
+### Intuition: "Always Expand the Current Best Distance"
+
+If we already know the smallest tentative distance node, finalizing it is safe when all edge weights are non-negative.
+
+Core idea:
+
+1. Start with source distance `0`, others as infinity.
+2. Use min-heap to extract node with smallest current distance.
+3. Relax outgoing edges.
+4. Push updated distances back to heap.
+
+---
+
+### Core Variations
+
+#### 1. Single Source to All Nodes
+
+* Compute shortest distance array from source.
+* Standard Dijkstra template.
+
+#### 2. Single Source to One Target
+
+* Stop early when target node is popped from min-heap.
+* Useful when only one destination matters.
+
+#### 3. Path Reconstruction
+
+* Track `parent[node]` during relaxation.
+* Rebuild shortest path by backtracking from target.
+
+---
+
+### Implementation Examples
+
+#### Example A: Distance Array (Source to All Nodes)
+**Problem:** Return shortest distance from source to every node.
+
+```java icon="code" title="Dijkstra - Shortest Distances"
+public int[] dijkstra(int n, List<int[]>[] graph, int source) {
+    int[] dist = new int[n];
+    Arrays.fill(dist, Integer.MAX_VALUE);
+    dist[source] = 0;
+
+    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a[1], b[1]));
+    minHeap.offer(new int[] {source, 0});
+
+    while (!minHeap.isEmpty()) {
+        int[] current = minHeap.poll();
+        int node = current[0];
+        int currentDist = current[1];
+
+        if (currentDist > dist[node]) continue; // stale entry
+
+        for (int[] edge : graph[node]) {
+            int neighbor = edge[0];
+            int weight = edge[1];
+            int nextDist = currentDist + weight;
+
+            if (nextDist < dist[neighbor]) {
+                dist[neighbor] = nextDist;
+                minHeap.offer(new int[] {neighbor, nextDist});
+            }
+        }
+    }
+
+    return dist;
+}
+```
+
+#### Example B: Source to Target with Early Exit
+
+**Problem:** Return shortest path cost from `source` to `target`.
+
+```java icon="code" title="Dijkstra - Source to Target"
+public int shortestPathCost(int n, List<int[]>[] graph, int source, int target) {
+    int[] dist = dijkstra(n, graph, source);
+    return dist[target] == Integer.MAX_VALUE ? -1 : dist[target];
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of finding minimum travel time in a road map where all travel times are non-negative.
+
+* Each time, choose the currently fastest known city.
+* Update neighbors through that city.
+
+This greedy expansion is Dijkstra's behavior.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Weighted graph with **non-negative** costs.
+* Need shortest path from one source.
+* Network routing and cost minimization.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Efficient for Sparse Graphs:** Heap-based approach scales well. | **Non-Negative Constraint:** Fails with negative weights. |
+| **Greedy + Correct:** Strong correctness guarantee with relaxation. | **Heap Overhead:** More complex than BFS on unweighted graphs. |
+| **Path Reconstruction Friendly:** Parent tracking is straightforward. | **All-Pairs Not Direct:** Must run from each source or use another algorithm. |
+
+### Summary Table
+
+| Variant | Time | Space | Notes |
+| --- | --- | --- | --- |
+| **Min-Heap Dijkstra** | $O((V+E) \log V)$ | $O(V+E)$ | Standard sparse-graph template |
+| **Array-Based Dijkstra** | $O(V^2)$ | $O(V+E)$ | Works for dense/small graphs |
+| **Target Early Exit** | Up to $O((V+E) \log V)$ | $O(V+E)$ | Often faster in practice |

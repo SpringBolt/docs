@@ -1,0 +1,135 @@
+---
+title: Backtracking (Subsets Pattern)
+---
+
+### Introduction
+
+The **Backtracking** pattern explores all valid choices by building partial solutions, recursing, and undoing the choice.
+
+The **Subsets Pattern** is the canonical include-exclude tree:
+
+* include current element,
+* recurse,
+* exclude current element,
+* recurse.
+
+---
+
+### Intuition: "Choose, Explore, Unchoose"
+
+For each index `i`:
+
+1. Add `nums[i]` to current subset.
+2. Explore deeper.
+3. Remove `nums[i]` (rollback).
+4. Explore branch without it.
+
+This produces complete power set in structured DFS order.
+
+---
+
+### Core Variations
+
+#### 1. Subsets / Power Set
+
+* Distinct input values.
+* Include-exclude recursion.
+
+#### 2. Subsets with Duplicates
+
+* Sort input.
+* Skip equal values at same recursion depth.
+
+#### 3. Fixed-Size Subsets (Combinations)
+
+* Continue recursion only while `path.size() <= k`.
+* Record result only when `path.size() == k`.
+
+---
+
+### Implementation Examples
+
+#### Example A: Generate All Subsets (Distinct)
+
+```java icon="code" title="Backtracking - Subsets"
+public List<List<Integer>> subsets(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    backtrack(0, nums, new ArrayList<>(), result);
+    return result;
+}
+
+private void backtrack(int index, int[] nums, List<Integer> current, List<List<Integer>> result) {
+    if (index == nums.length) {
+        result.add(new ArrayList<>(current));
+        return;
+    }
+
+    // include nums[index]
+    current.add(nums[index]);
+    backtrack(index + 1, nums, current, result);
+
+    // exclude nums[index]
+    current.remove(current.size() - 1);
+    backtrack(index + 1, nums, current, result);
+}
+```
+
+#### Example B: Iterative Expansion Variant
+
+```java icon="code" title="Backtracking Idea - Iterative Subset Expansion"
+public List<List<Integer>> subsetsIterative(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    result.add(new ArrayList<>());
+
+    for (int num : nums) {
+        int size = result.size();
+        for (int i = 0; i < size; i++) {
+            List<Integer> next = new ArrayList<>(result.get(i));
+            next.add(num);
+            result.add(next);
+        }
+    }
+    return result;
+}
+```
+
+---
+
+### Dry Run (nums = [1, 2])
+
+* Start `[]`
+* Include `1` -> `[1]`
+  * Include `2` -> `[1,2]` (record)
+  * Exclude `2` -> `[1]` (record)
+* Exclude `1` -> `[]`
+  * Include `2` -> `[2]` (record)
+  * Exclude `2` -> `[]` (record)
+
+Output: `[[1,2], [1], [2], []]` (order may vary by traversal).
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Need **all subsets/subsequences/combinations**.
+* Binary decision at each element.
+* Phrase: "return all possible selections."
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| Exhaustive and guaranteed complete. | Exponential output growth. |
+| Simple recursive skeleton. | Requires careful rollback of mutable state. |
+| Supports pruning extensions. | Deep recursion for large `n`. |
+
+### Complexity Analysis
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| Recursive include-exclude | $O(n * 2^n)$ | $O(n)$ recursion + output |
+| Iterative expansion | $O(n * 2^n)$ | $O(1)$ extra (excluding output) |
+
+`2^n` subsets exist, and copying each subset contributes the `n` factor.

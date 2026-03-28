@@ -1,0 +1,154 @@
+---
+title: Min Stack
+---
+
+### Introduction
+
+The **Min Stack** pattern supports normal stack operations and also returns the current minimum in constant time.
+
+A naive approach scans the entire stack to find minimum after every pop, which is expensive.
+
+The optimized pattern maintains extra state so both `push` and `getMin` stay **$O(1)$**.
+
+### Intuition: "Track Minimum Along the Way"
+
+When pushing values, keep a second stack that stores the minimum at each depth.
+
+If current value is smaller than or equal to current minimum, push it into `minStack`.
+
+When popping, if popped value equals top of `minStack`, pop from `minStack` too.
+
+This keeps minimum synchronized with the main stack state.
+
+---
+
+### Core Variations
+
+#### 1. Two-Stack Implementation
+
+* Main stack stores all values.
+* Min stack stores current minimum history.
+
+#### 2. Pair-Based Implementation
+
+* Each node stores `(value, minSoFar)`.
+* No separate min stack needed.
+
+#### 3. Max Stack Extension
+
+* Track both min and max for range queries.
+* Useful in custom data stream designs.
+
+---
+
+### Implementation Examples
+
+#### Example A: Classic Two-Stack Min Stack
+**Problem:** Design a stack with `push`, `pop`, `top`, and `getMin` in constant time.
+
+```java icon="code" title="Stack - Min Stack (Two Stacks)"
+class MinStack {
+    private Deque<Integer> stack;
+    private Deque<Integer> minStack;
+
+    public MinStack() {
+        stack = new ArrayDeque<>();
+        minStack = new ArrayDeque<>();
+    }
+
+    public void push(int val) {
+        stack.push(val);
+
+        if (minStack.isEmpty() || val <= minStack.peek()) {
+            minStack.push(val);
+        }
+    }
+
+    public void pop() {
+        if (stack.isEmpty()) return;
+
+        int removed = stack.pop();
+        if (!minStack.isEmpty() && removed == minStack.peek()) {
+            minStack.pop();
+        }
+    }
+
+    public int top() {
+        return stack.peek();
+    }
+
+    public int getMin() {
+        return minStack.peek();
+    }
+}
+```
+
+#### Example B: Pair-Based Min Stack
+
+**Problem:** Store value and minimum-so-far together in a single stack.
+
+```java icon="code" title="Stack - Min Stack (Single Stack Pairs)"
+class MinStack {
+    private Deque<int[]> stack;
+
+    public MinStack() {
+        stack = new ArrayDeque<>();
+    }
+
+    public void push(int val) {
+        int currentMin = stack.isEmpty() ? val : Math.min(val, stack.peek()[1]);
+        stack.push(new int[] { val, currentMin });
+    }
+
+    public void pop() {
+        if (!stack.isEmpty()) {
+            stack.pop();
+        }
+    }
+
+    public int top() {
+        return stack.peek()[0];
+    }
+
+    public int getMin() {
+        return stack.peek()[1];
+    }
+}
+```
+
+---
+
+### Real-World Analogy
+
+Imagine stacking books while also keeping a sticky note of the lightest book seen so far.
+
+* Every time you place a book, you update the note if needed.
+* When removing books, if the removed one was the lightest, you restore the previous note.
+
+You always know the lightest book instantly.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Stack with frequent minimum/maximum queries.
+* Requirement says `getMin()` must be **$O(1)$**.
+* Online stream with push/pop and aggregate state.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Constant-Time Minimum Query:** Efficient for repeated min lookups. | **Extra Space:** Requires additional storage for min tracking. |
+| **Simple Logic:** Easy extension over regular stack. | **Implementation Detail:** Duplicate minimum handling is critical. |
+| **Interview Favorite:** Common design pattern question. | **Limited Query Type:** Supports top-based updates only. |
+
+### Summary Table
+
+| Variant | Structure | Push/Pop | getMin | Space |
+| --- | --- | --- | --- | --- |
+| **Two Stacks** | `stack + minStack` | $O(1)$ | $O(1)$ | $O(n)$ |
+| **Pair Stack** | `(value, minSoFar)` | $O(1)$ | $O(1)$ | $O(n)$ |
+| **Min + Max Stack** | Extra trackers | $O(1)$ | $O(1)$ | $O(n)$ |

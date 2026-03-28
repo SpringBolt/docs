@@ -1,0 +1,50 @@
+---
+title: Linked List Patterns
+---
+
+### Introduction
+
+The **Linked List Patterns** family groups reusable pointer techniques for singly and doubly linked list questions.
+
+Most linked-list problems are not about arithmetic on values. They are about **safe link rewiring** with minimal extra memory.
+
+This section is split into separate detailed files so each standard pattern can be studied independently.
+
+---
+
+### Pattern Map
+
+| Pattern | Primary Goal | Detailed File |
+| --- | --- | --- |
+| **Dummy Node (Sentinel)** | Simplify head-edge insert/delete logic | `dummy-node-technique` |
+| **In-Place Reversal** | Reverse full list / sublist / k-group | `linked-list-reversal` |
+| **Two-Pointer Gap** | Remove nth from end, locate offset nodes | `two-pointer-gap` |
+| **Merge Pattern** | Merge sorted lists and multi-list variants | `merge-pattern` |
+| **Cycle Pattern** | Detect cycle and locate cycle entry | `cyclic-linked-list` |
+| **Split + Stitch** | Reorder, partition, and combine halves | `split-and-stitch` |
+
+---
+
+### Shared Safety Rules
+
+Before modifying links:
+
+1. Save references (`nextNode`, `groupNext`, etc.) before rewiring.
+2. Change one pointer at a time.
+3. Keep a stable anchor (`dummy`, `prev`, `tail`) for reconnecting list segments.
+4. Validate boundary conditions (`head == null`, `k <= 1`, short list lengths).
+
+These rules prevent broken chains, lost nodes, and accidental cycles.
+
+---
+
+### Complexity Snapshot
+
+| Pattern | Typical Time | Typical Extra Space |
+| --- | --- | --- |
+| **Dummy Node** | $O(n)$ | $O(1)$ |
+| **Reversal** | $O(n)$ | $O(1)$ |
+| **Two-Pointer Gap** | $O(n)$ | $O(1)$ |
+| **Merge** | $O(n + m)$ | $O(1)$ |
+| **Cycle** | $O(n)$ | $O(1)$ |
+| **Split + Stitch** | $O(n)$ | $O(1)$ |

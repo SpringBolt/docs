@@ -1,0 +1,122 @@
+---
+title: 0/1 Knapsack
+---
+
+### Introduction
+
+The **0/1 Knapsack** pattern is a Dynamic Programming technique used when each item can be either **picked once** or **skipped**.
+
+It is used to maximize (or minimize) a value under a capacity/constraint.
+
+The core decision at each item is binary: include or exclude.
+
+### Intuition: "Pick or Skip"
+
+For each item `i` with weight `w[i]` and value `v[i]`:
+
+* If we skip it -> best value remains from previous items.
+* If we pick it (if capacity allows) -> value becomes `v[i] + best of remaining capacity`.
+
+DP stores the best answer for subproblems like:
+* first `i` items
+* capacity `c`
+
+---
+
+### Core Variations
+
+#### 1. Max Value with Capacity
+
+* Standard form.
+* Maximize value under total weight limit.
+
+#### 2. Subset Sum (Decision)
+
+* Determine if exact sum can be formed.
+* Same include/exclude transition.
+
+#### 3. Equal Partition / Target Sum
+
+* Derived forms with transformed sum constraints.
+
+---
+
+### Implementation Examples
+
+#### Example A: 0/1 Knapsack (Tabulation)
+**Problem:** Given weights and values, maximize value under capacity `W`.
+
+```java icon="code" title="0/1 Knapsack - Tabulation"
+public int knapsack(int[] weights, int[] values, int capacity) {
+    int n = weights.length;
+    int[][] dp = new int[n + 1][capacity + 1];
+
+    for (int i = 1; i <= n; i++) {
+        for (int c = 0; c <= capacity; c++) {
+            dp[i][c] = dp[i - 1][c]; // skip
+
+            if (weights[i - 1] <= c) {
+                dp[i][c] = Math.max(dp[i][c], values[i - 1] + dp[i - 1][c - weights[i - 1]]);
+            }
+        }
+    }
+
+    return dp[n][capacity];
+}
+```
+
+#### Example B: Subset Sum (Boolean DP)
+
+**Problem:** Return true if subset with sum `target` exists.
+
+```java icon="code" title="0/1 Knapsack - Subset Sum"
+public boolean canReachTarget(int[] nums, int target) {
+    boolean[] dp = new boolean[target + 1];
+    dp[0] = true;
+
+    for (int num : nums) {
+        for (int s = target; s >= num; s--) {
+            dp[s] = dp[s] || dp[s - num];
+        }
+    }
+
+    return dp[target];
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of packing a travel bag with limited weight.
+
+* Every item is either packed or not packed.
+* You want maximum utility without exceeding capacity.
+
+That is exactly the 0/1 Knapsack decision process.
+
+---
+
+### When to Use
+
+Look for these signals:
+
+* "Choose items under constraint"
+* "Each item at most once"
+* maximize/minimize value with capacity/sum limit
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Powerful Template:** Solves many subset decision/optimization problems. | **Memory Cost:** 2D DP can be heavy for large capacities. |
+| **Deterministic:** Clear include/exclude transition. | **Pseudo-Polynomial:** Depends on capacity range. |
+| **Reusable:** Easy to optimize from 2D to 1D DP. | **Not Greedy-Friendly:** Local best choices can fail globally. |
+
+### Summary Table
+
+| Variant | Time | Space | Notes |
+| --- | --- | --- | --- |
+| **0/1 Knapsack (2D)** | $O(nW)$ | $O(nW)$ | Full DP table |
+| **0/1 Knapsack (1D)** | $O(nW)$ | $O(W)$ | Reverse-capacity iteration |
+| **Subset Sum** | $O(nS)$ | $O(S)$ | Boolean feasibility |

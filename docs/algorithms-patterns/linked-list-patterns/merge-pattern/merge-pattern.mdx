@@ -1,0 +1,97 @@
+---
+title: Linked List Merge Pattern
+---
+
+### Introduction
+
+The **Merge Pattern** combines sorted linked lists while preserving order.
+
+A tail pointer builds the answer list node-by-node, always attaching the smaller current candidate.
+
+### Intuition: "Build Once, Never Re-scan"
+
+Two sorted inputs already encode ordering constraints.
+
+Instead of copying to arrays or re-sorting, choose the smaller head and advance that list. Repeat until one list is exhausted.
+
+---
+
+### Core Variations
+
+#### 1. Merge Two Sorted Lists
+* Linear scan with one `tail` pointer.
+
+#### 2. Merge K Sorted Lists
+* Use min-heap of current list heads.
+
+#### 3. Merge In Between Lists
+* Splice list2 into list1 between positions.
+
+---
+
+### Implementation Examples
+
+#### Example A: Merge Two Sorted Lists
+
+**Problem:** Merge two sorted linked lists into one sorted list.
+
+```java icon="code" title="Merge Pattern - Merge Two Sorted Lists"
+public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+    ListNode dummy = new ListNode(-1);
+    ListNode tail = dummy;
+
+    while (list1 != null && list2 != null) {
+        if (list1.val <= list2.val) {
+            tail.next = list1;
+            list1 = list1.next;
+        } else {
+            tail.next = list2;
+            list2 = list2.next;
+        }
+        tail = tail.next;
+    }
+
+    tail.next = (list1 != null) ? list1 : list2;
+    return dummy.next;
+}
+```
+
+#### Example B: Merge K Sorted Lists (Min-Heap)
+
+**Problem:** Merge `k` sorted linked lists.
+
+```java icon="code" title="Merge Pattern - Merge K Sorted Lists"
+public ListNode mergeKLists(ListNode[] lists) {
+    PriorityQueue<ListNode> minHeap = new PriorityQueue<>((a, b) -> Integer.compare(a.val, b.val));
+
+    for (ListNode node : lists) {
+        if (node != null) {
+            minHeap.offer(node);
+        }
+    }
+
+    ListNode dummy = new ListNode(0);
+    ListNode tail = dummy;
+
+    while (!minHeap.isEmpty()) {
+        ListNode node = minHeap.poll();
+        tail.next = node;
+        tail = tail.next;
+
+        if (node.next != null) {
+            minHeap.offer(node.next);
+        }
+    }
+
+    return dummy.next;
+}
+```
+
+---
+
+### Complexity Analysis
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| **Merge Two** | $O(n + m)$ | $O(1)$ |
+| **Merge K** | $O(N \log k)$ | $O(k)$ |
