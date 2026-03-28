@@ -1,0 +1,135 @@
+---
+title: Meeting Rooms
+---
+
+### Introduction
+
+The **Meeting Rooms** interval pattern determines resource requirements under overlapping time ranges.
+
+Typical questions:
+
+* Can one person attend all meetings?
+* Minimum number of rooms needed?
+
+This pattern combines interval sorting with either greedy scanning or min-heap.
+
+---
+
+### Intuition: "Overlaps Define Concurrent Resource Usage"
+
+If a meeting starts before previous one ends, they overlap and need separate rooms.
+
+For minimum rooms:
+
+1. Sort meetings by start time.
+2. Keep min-heap of end times for active meetings.
+3. If earliest ending meeting ends before current start, reuse that room.
+4. Otherwise allocate new room.
+
+Heap size at any moment equals rooms currently needed.
+
+---
+
+### Core Variations
+
+#### 1. Meeting Rooms I (Feasibility)
+
+* Check if any overlap exists.
+* Return boolean.
+
+#### 2. Meeting Rooms II (Minimum Rooms)
+
+* Count maximum concurrent overlaps.
+* Use min-heap on end times.
+
+#### 3. Maximum Non-Overlapping Meetings
+
+* Greedy by earliest finish time.
+
+---
+
+### Implementation Examples
+
+#### Example A: Can Attend All Meetings
+
+**Problem:** Return true if no meetings overlap.
+
+```java icon="code" title="Interval Patterns - Meeting Rooms I"
+public boolean canAttendMeetings(int[][] intervals) {
+    Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
+
+    for (int i = 1; i < intervals.length; i++) {
+        if (intervals[i][0] < intervals[i - 1][1]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+```
+
+#### Example B: Minimum Meeting Rooms Required
+
+**Problem:** Return minimum number of rooms needed to host all meetings.
+
+```java icon="code" title="Interval Patterns - Meeting Rooms II"
+public int minMeetingRooms(int[][] intervals) {
+    if (intervals == null || intervals.length == 0) {
+        return 0;
+    }
+
+    Arrays.sort(intervals, (a, b) -> Integer.compare(a[0], b[0]));
+
+    PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+    minHeap.offer(intervals[0][1]);
+
+    for (int i = 1; i < intervals.length; i++) {
+        int start = intervals[i][0];
+        int end = intervals[i][1];
+
+        if (start >= minHeap.peek()) {
+            minHeap.poll();
+        }
+
+        minHeap.offer(end);
+    }
+
+    return minHeap.size();
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of conference rooms in an office:
+
+* Each meeting occupies one room for `[start, end]`.
+* Overlapping meetings cannot share room.
+* Reusing a room is possible as soon as previous meeting ends.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Time intervals with shared resources.
+* Need overlap count or conflict detection.
+* Keywords like **rooms, servers, channels, booking conflicts**.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Clear Overlap Model:** Converts scheduling to interval logic. | **Sort Required:** Usually starts with `O(n \log n)` sorting. |
+| **Scalable Counting:** Min-heap tracks active meetings efficiently. | **Endpoint Semantics:** Inclusive/exclusive end-time handling matters. |
+| **Reusable for Resources:** Same approach works for many allocation tasks. | **Heap Overhead:** Slight constant-factor cost for priority queue. |
+
+### Summary Table
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| **Can Attend All Meetings** | $O(n \log n)$ | $O(1)$ auxiliary |
+| **Minimum Rooms** | $O(n \log n)$ | $O(n)$ |
+| **Max Non-Overlapping Meetings** | $O(n \log n)$ | $O(1)$ auxiliary |

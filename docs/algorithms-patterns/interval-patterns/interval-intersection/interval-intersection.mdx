@@ -1,0 +1,138 @@
+---
+title: Interval Intersection
+---
+
+### Introduction
+
+The **Interval Intersection** pattern finds overlapping ranges between two sorted interval lists.
+
+If list A and list B are individually sorted and non-overlapping within themselves, we can solve in linear time with two pointers.
+
+---
+
+### Intuition: "Advance the Interval That Ends First"
+
+At pointers `i` and `j`, we compare:
+
+* `A[i] = [startA, endA]`
+* `B[j] = [startB, endB]`
+
+Intersection exists when:
+
+* `max(startA, startB) <= min(endA, endB)`
+
+After processing this pair, move the interval with smaller end value because it cannot overlap future intervals anymore.
+
+---
+
+### Core Variations
+
+#### 1. Pairwise Intersection of Two Lists
+
+* Classic two-pointer scan.
+
+#### 2. Intersection Size / Total Covered Length
+
+* Instead of storing intervals, aggregate count or length.
+
+#### 3. Calendar Availability Matching
+
+* Intersect free-time intervals from two or more calendars.
+
+---
+
+### Implementation Examples
+
+#### Example A: Intersect Two Interval Lists
+
+**Problem:** Return all intersections between two sorted disjoint interval lists.
+
+```java icon="code" title="Interval Patterns - Interval Intersection"
+public int[][] intervalIntersection(int[][] firstList, int[][] secondList) {
+    List<int[]> result = new ArrayList<>();
+    int i = 0;
+    int j = 0;
+
+    while (i < firstList.length && j < secondList.length) {
+        int start = Math.max(firstList[i][0], secondList[j][0]);
+        int end = Math.min(firstList[i][1], secondList[j][1]);
+
+        if (start <= end) {
+            result.add(new int[] {start, end});
+        }
+
+        if (firstList[i][1] < secondList[j][1]) {
+            i++;
+        } else {
+            j++;
+        }
+    }
+
+    return result.toArray(new int[result.size()][]);
+}
+```
+
+#### Example B: Total Intersection Length
+
+**Problem:** Return total length covered by intersections of two sorted interval lists.
+
+```java icon="code" title="Interval Patterns - Total Intersection Length"
+public int totalIntersectionLength(int[][] firstList, int[][] secondList) {
+    int i = 0;
+    int j = 0;
+    int total = 0;
+
+    while (i < firstList.length && j < secondList.length) {
+        int start = Math.max(firstList[i][0], secondList[j][0]);
+        int end = Math.min(firstList[i][1], secondList[j][1]);
+
+        if (start <= end) {
+            total += (end - start);
+        }
+
+        if (firstList[i][1] < secondList[j][1]) {
+            i++;
+        } else {
+            j++;
+        }
+    }
+
+    return total;
+}
+```
+
+---
+
+### Real-World Analogy
+
+Think of matching common free slots between two people:
+
+* Person A free windows.
+* Person B free windows.
+
+The overlaps are valid meeting slots.
+
+---
+
+### When to Use
+
+Look for these clues:
+
+* Two interval lists are already sorted.
+* Need overlap segments or overlap metrics.
+* Keywords like **common slots, shared availability, overlap windows**.
+
+### Pros & Cons
+
+| Pros | Cons |
+| --- | --- |
+| **Linear Time:** One pass with two pointers. | **Requires Sorted Input:** Otherwise sorting is needed first. |
+| **Simple Logic:** Local overlap formula is clean. | **Only Pairwise by Default:** More lists need iterative/generalized approach. |
+| **Memory Efficient:** Constant auxiliary space excluding output. | **Boundary Care:** Inclusive/exclusive endpoint rules must be clear. |
+
+### Summary Table
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| **List Intersection** | $O(n + m)$ | $O(1)$ excluding output |
+| **Total Intersection Length** | $O(n + m)$ | $O(1)$ |
