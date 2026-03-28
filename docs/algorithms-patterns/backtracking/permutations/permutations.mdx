@@ -1,0 +1,107 @@
+---
+title: Backtracking - Permutations Pattern
+---
+
+### Introduction
+
+The **Permutations Pattern** generates all possible orderings of elements.
+
+At each recursion level:
+
+* pick one unused element,
+* add it to current path,
+* recurse,
+* remove it (backtrack).
+
+---
+
+### Intuition
+
+If `n` elements exist, level `0` has `n` choices, level `1` has `n-1`, and so on.
+
+This naturally forms `n!` leaves.
+
+---
+
+### Implementation Example
+
+#### Example A: All Permutations (Distinct Elements)
+
+```java icon="code" title="Backtracking - Permutations"
+public List<List<Integer>> permute(int[] nums) {
+    List<List<Integer>> result = new ArrayList<>();
+    boolean[] used = new boolean[nums.length];
+    backtrack(nums, used, new ArrayList<>(), result);
+    return result;
+}
+
+private void backtrack(int[] nums, boolean[] used, List<Integer> path, List<List<Integer>> result) {
+    if (path.size() == nums.length) {
+        result.add(new ArrayList<>(path));
+        return;
+    }
+
+    for (int i = 0; i < nums.length; i++) {
+        if (used[i]) continue;
+
+        used[i] = true;
+        path.add(nums[i]);
+
+        backtrack(nums, used, path, result);
+
+        path.remove(path.size() - 1);
+        used[i] = false;
+    }
+}
+```
+
+#### Example B: Unique Permutations (Duplicates Allowed in Input)
+
+```java icon="code" title="Backtracking - Unique Permutations"
+public List<List<Integer>> permuteUnique(int[] nums) {
+    Arrays.sort(nums);
+    List<List<Integer>> result = new ArrayList<>();
+    boolean[] used = new boolean[nums.length];
+    dfs(nums, used, new ArrayList<>(), result);
+    return result;
+}
+
+private void dfs(int[] nums, boolean[] used, List<Integer> path, List<List<Integer>> result) {
+    if (path.size() == nums.length) {
+        result.add(new ArrayList<>(path));
+        return;
+    }
+
+    for (int i = 0; i < nums.length; i++) {
+        if (used[i]) continue;
+
+        // Skip duplicates at same tree level
+        if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) continue;
+
+        used[i] = true;
+        path.add(nums[i]);
+
+        dfs(nums, used, path, result);
+
+        path.remove(path.size() - 1);
+        used[i] = false;
+    }
+}
+```
+
+---
+
+### When to Use
+
+* "Return all arrangements/orderings."
+* Need sequence where position matters.
+* Small-to-medium input size (`n <= 10` usually).
+
+### Complexity Analysis
+
+| Variant | Time | Space |
+| --- | --- | --- |
+| Distinct permutations | $O(n * n!)$ | $O(n)$ recursion + output |
+| Unique permutations | $O(n * n!)$ worst case | $O(n)$ recursion + output |
+
+The `n` multiplier is for copying each complete path.

@@ -1,0 +1,62 @@
+---
+title: Backtracking - Subsets II Pattern
+---
+
+### Introduction
+
+The **Subsets II Pattern** generates power set when input contains duplicates.
+
+Goal: return all unique subsets only.
+
+---
+
+### Intuition
+
+Sort array first.
+
+At each recursion level:
+
+* include current element,
+* recurse forward,
+* skip repeated values at the same depth to avoid duplicate subsets.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Backtracking - Subsets II"
+public List<List<Integer>> subsetsWithDup(int[] nums) {
+    Arrays.sort(nums);
+    List<List<Integer>> result = new ArrayList<>();
+    backtrack(0, nums, new ArrayList<>(), result);
+    return result;
+}
+
+private void backtrack(int start, int[] nums, List<Integer> path, List<List<Integer>> result) {
+    result.add(new ArrayList<>(path));
+
+    for (int i = start; i < nums.length; i++) {
+        if (i > start && nums[i] == nums[i - 1]) continue;
+
+        path.add(nums[i]);
+        backtrack(i + 1, nums, path, result);
+        path.remove(path.size() - 1);
+    }
+}
+```
+
+---
+
+### When to Use
+
+* Need all subsets from multiset/duplicate values.
+* Output uniqueness required.
+
+### Complexity Analysis
+
+| Metric | Complexity |
+| --- | --- |
+| Time | $O(n * 2^n)$ (worst-case distinct-like behavior) |
+| Space | $O(n)$ recursion + output |
+
+Duplicate skipping reduces repeated branches.

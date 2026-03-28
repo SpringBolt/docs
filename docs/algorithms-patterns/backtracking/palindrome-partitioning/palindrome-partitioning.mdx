@@ -1,0 +1,71 @@
+---
+title: Backtracking - Palindrome Partitioning Pattern
+---
+
+### Introduction
+
+The **String Partition Backtracking** pattern splits string into segments that satisfy a validity rule.
+
+In palindrome partitioning, every segment must be palindrome.
+
+---
+
+### Intuition
+
+At position `start`, try every `end >= start`:
+
+1. check if `s[start..end]` is palindrome,
+2. if valid, include substring,
+3. recurse from `end + 1`,
+4. remove substring.
+
+---
+
+### Implementation Example
+
+```java icon="code" title="Backtracking - Palindrome Partitioning"
+public List<List<String>> partition(String s) {
+    List<List<String>> result = new ArrayList<>();
+    backtrack(0, s, new ArrayList<>(), result);
+    return result;
+}
+
+private void backtrack(int start, String s, List<String> path, List<List<String>> result) {
+    if (start == s.length()) {
+        result.add(new ArrayList<>(path));
+        return;
+    }
+
+    for (int end = start; end < s.length(); end++) {
+        if (!isPalindrome(s, start, end)) continue;
+
+        path.add(s.substring(start, end + 1));
+        backtrack(end + 1, s, path, result);
+        path.remove(path.size() - 1);
+    }
+}
+
+private boolean isPalindrome(String s, int left, int right) {
+    while (left < right) {
+        if (s.charAt(left) != s.charAt(right)) return false;
+        left++;
+        right--;
+    }
+    return true;
+}
+```
+
+---
+
+### Optimization
+
+Precompute palindrome table `pal[i][j]` in `O(n^2)` to avoid repeated checks.
+
+### Complexity Analysis
+
+| Metric | Complexity |
+| --- | --- |
+| Time | Exponential (up to $O(n * 2^n)$ behavior) |
+| Space | $O(n)$ recursion + output |
+
+Partition count drives runtime.
